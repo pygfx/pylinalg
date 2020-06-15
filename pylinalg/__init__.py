@@ -1,5 +1,4 @@
 # flake8: noqa
-
 # Most of this module is derived from three.js, original license at time of writing copied below:
 # ---
 # The MIT License
@@ -25,6 +24,8 @@
 # THE SOFTWARE.
 # ---
 # End of original license copy.
+
+__version__ = "0.2.0"
 
 from .utils import *
 from .cylindrical import *
