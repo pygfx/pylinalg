@@ -65,3 +65,19 @@ def test_vector_add_scalar(v, s, out, expected):
     )
     if out is not None:
         assert result is out
+
+
+def test_vector_apply_rotation_about_z_matrix():
+    vectors = np.array(
+        [1, 0, 0],
+    )
+    expected = np.array(
+        [0, 1, 0],
+    )
+    matrix = pla.matrix_make_rotation_from_euler_angles([0, 0, np.pi / 2])
+    result = pla.vector_apply_matrix(vectors, matrix)
+
+    npt.assert_array_almost_equal(
+        result,
+        expected,
+    )
