@@ -1,0 +1,67 @@
+import numpy as np
+import numpy.testing as npt
+import pytest
+
+import pylinalg as pla
+
+
+@pytest.mark.parametrize(
+    "v1,v2,out,expected",
+    [
+        (np.array([1, 1, 1]), np.array([2, 2, 2]), None, np.array([3, 3, 3])),
+        (
+            np.array([1, 1, 1]),
+            np.array([2, 2, 2]),
+            np.array([0, 0, 0]),
+            np.array([3, 3, 3]),
+        ),
+        (
+            np.array([[1, 1, 1], [2, 2, 2]]),
+            np.array([2, 2, 2]),
+            None,
+            np.array([[3, 3, 3], [4, 4, 4]]),
+        ),
+        (
+            np.array([[1, 1, 1], [2, 2, 2]]),
+            np.array([[2, 2, 2], [3, 3, 3]]),
+            None,
+            np.array([[3, 3, 3], [5, 5, 5]]),
+        ),
+    ],
+)
+def test_vector_add_vector(v1, v2, out, expected):
+    result = pla.vector_add_vector(v1, v2, out=out)
+    npt.assert_array_equal(
+        result,
+        expected,
+    )
+    if out is not None:
+        assert result is out
+
+
+@pytest.mark.parametrize(
+    "v,s,out,expected",
+    [
+        (np.array([1, 1, 1]), 2, None, np.array([3, 3, 3])),
+        (
+            np.array([1, 1, 1]),
+            2,
+            np.array([0, 0, 0]),
+            np.array([3, 3, 3]),
+        ),
+        (
+            np.array([[1, 1, 1], [2, 2, 2]]),
+            2,
+            None,
+            np.array([[3, 3, 3], [4, 4, 4]]),
+        ),
+    ],
+)
+def test_vector_add_scalar(v, s, out, expected):
+    result = pla.vector_add_scalar(v, s, out=out)
+    npt.assert_array_equal(
+        result,
+        expected,
+    )
+    if out is not None:
+        assert result is out
