@@ -7,7 +7,10 @@ def test_linalgbase_eq():
 
     # array_like comparison
     # type is ignored
+    # good value
     assert p + v == [4, 5, 6]
+    # wrong value
+    assert p + v != [4, 5, 7]
 
     # linalgbase type comparisons
     # type matters
