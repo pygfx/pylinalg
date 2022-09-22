@@ -41,7 +41,9 @@ def matrix_make_scaling(factors, dtype="f8"):
         raise NotImplementedError()
 
     matrix = np.identity(4, dtype=dtype)
-    np.fill_diagonal(matrix, factors)
+    matrix[0, 0] = factors[0]
+    matrix[1, 1] = factors[1]
+    matrix[2, 2] = factors[2]
     return matrix
 
 
