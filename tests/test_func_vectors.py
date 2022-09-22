@@ -67,7 +67,38 @@ def test_vector_add_scalar(v, s, out, expected):
         assert result is out
 
 
+@pytest.mark.parametrize(
+    "vectors,value,expected",
+    [
+        ([1, 1, 1], 1, [1, 1, 1, 1]),
+        ([1, 1, 1], 0, [1, 1, 1, 0]),
+        ([[1, 1, 1]], 1, [[1, 1, 1, 1]]),
+        ([[1, 1, 1], [2, 2, 2]], 1, [[1, 1, 1, 1], [2, 2, 2, 1]]),
+        ([[1, 1, 1], [2, 2, 2]], 0, [[1, 1, 1, 0], [2, 2, 2, 0]]),
+    ],
+)
+def test_vector_make_homogeneous(vectors, value, expected):
+    vectors = np.asarray(vectors)
+    expected = np.asarray(expected)
+    result = pla.vector_make_homogeneous(vectors, w=value)
+    npt.assert_array_equal(result, expected)
+
+
+def test_vector_apply_translation():
+    vectors = np.array([[1, 0, 0]])
+    expected = np.array([[0, 2, 2]])
+    matrix = pla.matrix_make_translation([-1, 2, 2])
+    result = pla.vector_apply_matrix(vectors, matrix)
+
+    npt.assert_array_almost_equal(
+        result,
+        expected,
+    )
+
+
 def test_vector_apply_rotation_about_z_matrix():
+    """Test that a positive pi/2 rotation about the z-axis results
+    in counter clockwise rotation, in accordance with the unit circle."""
     vectors = np.array(
         [1, 0, 0],
     )

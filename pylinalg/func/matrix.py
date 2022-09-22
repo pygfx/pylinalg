@@ -53,20 +53,20 @@ def matrix_make_rotation_from_euler_angles(angles, dtype="f8"):
 
     matrix_x = np.identity(4, dtype=dtype)  # x axis rotation
     matrix_x[1, 1] = np.cos(angles[0])
-    matrix_x[1, 2] = np.sin(angles[0])
-    matrix_x[2, 1] = -np.sin(angles[0])
+    matrix_x[1, 2] = -np.sin(angles[0])
+    matrix_x[2, 1] = np.sin(angles[0])
     matrix_x[2, 2] = np.cos(angles[0])
 
     matrix_y = np.identity(4, dtype=dtype)  # y axis rotation
     matrix_y[0, 0] = np.cos(angles[1])
-    matrix_y[0, 2] = -np.sin(angles[1])
-    matrix_y[2, 0] = np.sin(angles[1])
+    matrix_y[0, 2] = np.sin(angles[1])
+    matrix_y[2, 0] = -np.sin(angles[1])
     matrix_y[2, 2] = np.cos(angles[1])
 
     matrix_z = np.identity(4, dtype=dtype)  # z axis rotation
     matrix_z[0, 0] = np.cos(angles[2])
-    matrix_z[0, 1] = np.sin(angles[2])
-    matrix_z[1, 0] = -np.sin(angles[2])
+    matrix_z[0, 1] = -np.sin(angles[2])
+    matrix_z[1, 0] = np.sin(angles[2])
     matrix_z[1, 1] = np.cos(angles[2])
 
-    return matrix_combine([matrix_x, matrix_y, matrix_z])
+    return matrix_combine([matrix_z, matrix_y, matrix_x])

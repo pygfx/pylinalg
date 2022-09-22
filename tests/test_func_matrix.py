@@ -93,8 +93,8 @@ def test_matrix_make_rotation_from_euler_angles():
     npt.assert_array_almost_equal(
         result,
         [
-            [0, 1, 0, 0],
-            [-1, 0, 0, 0],
+            [0, -1, 0, 0],
+            [1, 0, 0, 0],
             [0, 0, 1, 0],
             [0, 0, 0, 1],
         ],
@@ -106,8 +106,8 @@ def test_matrix_make_rotation_from_euler_angles_dtype():
     npt.assert_array_almost_equal(
         result,
         [
-            [0, 1, 0, 0],
-            [-1, 0, 0, 0],
+            [0, -1, 0, 0],
+            [1, 0, 0, 0],
             [0, 0, 1, 0],
             [0, 0, 0, 1],
         ],
@@ -126,8 +126,8 @@ def test_matrix_combine():
     npt.assert_array_almost_equal(
         result,
         [
-            [0, 2, 0, 2],
-            [-2, 0, 0, 2],
+            [0, -2, 0, 2],
+            [2, 0, 0, 2],
             [0, 0, 2, 2],
             [0, 0, 0, 1],
         ],

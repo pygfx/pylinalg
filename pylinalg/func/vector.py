@@ -11,7 +11,7 @@ vector_mul_scalar = np.multiply
 vector_div_scalar = np.divide
 
 
-def vector_make_homogeneous(vectors, value=0):
+def vector_make_homogeneous(vectors, w=1):
     """
     Append homogeneous coordinates to v.
 
@@ -19,8 +19,11 @@ def vector_make_homogeneous(vectors, value=0):
     ----------
     vectors : ndarray, [..., ndim]
         array of vectors
-    value : number, optional, default is 0
-        the value for the additional dimensionality. use 0 for vectors, 1 for vectors.
+    w : number, optional, default is 1
+        the value for the homogeneous dimensionality.
+        this affects the result of translation transforms. use 0 (vectors)
+        if the translation component should not be applied, 1 (positions)
+        otherwise.
 
     Returns
     -------
@@ -31,12 +34,12 @@ def vector_make_homogeneous(vectors, value=0):
     shape = list(vectors.shape)
     shape[-1] += 1
     out = np.empty_like(vectors, shape=shape)
-    out[..., -1] = value
+    out[..., -1] = w
     out[..., :-1] = vectors
     return out
 
 
-def vector_apply_matrix(vectors, matrix):
+def vector_apply_matrix(vectors, matrix, w=1):
     """
     Transform vectors by a transformation matrix.
 
@@ -46,11 +49,17 @@ def vector_apply_matrix(vectors, matrix):
         array of vectors
     transform : ndarray, [ndim + 1, ndim + 1]
         transformation matrix
+    w : number, optional, default is 1
+        the value for the homogeneous dimensionality.
+        this affects the result of translation transforms. use 0 (vectors)
+        if the translation component should not be applied, 1 (positions)
+        otherwise.
 
     Returns
     -------
     ndarray, [..., ndim]
         transformed vectors
     """
-    vectors = vector_make_homogeneous(vectors, value=0)
-    return np.dot(vectors, matrix)[..., :-1]
+    vectors = vector_make_homogeneous(vectors, w=w)
+    # the transpose is necessary due to the shape of the vectors matrix
+    return np.dot(vectors, matrix.T)[..., :-1]
