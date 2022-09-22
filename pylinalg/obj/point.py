@@ -8,10 +8,35 @@ from ..func import vector_add_vector
 class Point(LinalgBase):
     """A representation of a location in 3D Euclidean space."""
 
-    _n = 3
+    def __init__(self, x=0, y=0, z=0, /, *, dtype="f8"):
+        self._val = np.array([x, y, z], dtype=dtype)
 
-    def __init__(self, x, y, z):
-        self._val = np.array([x, y, z], dtype="f8")
+    @property
+    def x(self):
+        return self._val[0]
+
+    @x.setter
+    def x(self, val):
+        self._val[0] = val
+
+    @property
+    def y(self):
+        return self._val[1]
+
+    @y.setter
+    def y(self, val):
+        self._val[1] = val
+
+    @property
+    def z(self):
+        return self._val[2]
+
+    @z.setter
+    def z(self, val):
+        self._val[2] = val
+
+    def set(self, x, y, z):
+        self._val[:] = x, y, z
 
     def __add__(self, vector):
         if isinstance(vector, LinalgBase):

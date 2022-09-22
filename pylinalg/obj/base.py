@@ -17,13 +17,17 @@ class LinalgBase:
         return f"<{self.__class__.__name__} {self._val}>"
 
     def __len__(self):
-        return self._n
+        return len(self._val)
 
     def __getitem__(self, index):
         return self._val[index]
 
     def __iter__(self):
         return self._val.__iter__()
+
+    @property
+    def dtype(self):
+        return self._val.dtype
 
     @property
     def __array_interface__(self):
