@@ -1,10 +1,9 @@
-from functools import reduce
+from functools import partial, reduce
 
 import numpy as np
 
 
-def matrix_combine(matrices):
-    return reduce(np.dot, matrices)
+matrix_combine = partial(reduce, np.dot)
 
 
 def matrix_make_translation(vector, dtype="f8"):
@@ -50,28 +49,25 @@ def matrix_make_scaling(factors, dtype="f8"):
 def matrix_make_rotation_from_euler_angles(angles, order="xyz", dtype="f8"):
     """Make a matrix given euler angles per axis."""
     angles = np.asarray(angles)
-
-    matrix_x = np.identity(4, dtype=dtype)  # x axis rotation
-    matrix_x[1, 1] = np.cos(angles[0])
-    matrix_x[1, 2] = -np.sin(angles[0])
-    matrix_x[2, 1] = np.sin(angles[0])
-    matrix_x[2, 2] = np.cos(angles[0])
-
-    matrix_y = np.identity(4, dtype=dtype)  # y axis rotation
-    matrix_y[0, 0] = np.cos(angles[1])
-    matrix_y[0, 2] = np.sin(angles[1])
-    matrix_y[2, 0] = -np.sin(angles[1])
-    matrix_y[2, 2] = np.cos(angles[1])
-
-    matrix_z = np.identity(4, dtype=dtype)  # z axis rotation
-    matrix_z[0, 0] = np.cos(angles[2])
-    matrix_z[0, 1] = -np.sin(angles[2])
-    matrix_z[1, 0] = np.sin(angles[2])
-    matrix_z[1, 1] = np.cos(angles[2])
-
-    lookup = {
-        "x": matrix_x,
-        "y": matrix_y,
-        "z": matrix_z,
+    matrix = {
+        "x": np.identity(4, dtype=dtype),
+        "y": np.identity(4, dtype=dtype),
+        "z": np.identity(4, dtype=dtype),
     }
-    return matrix_combine([lookup[i] for i in reversed(order.lower())])
+
+    matrix["x"][1, 1] = np.cos(angles[0])
+    matrix["x"][1, 2] = -np.sin(angles[0])
+    matrix["x"][2, 1] = np.sin(angles[0])
+    matrix["x"][2, 2] = np.cos(angles[0])
+
+    matrix["y"][0, 0] = np.cos(angles[1])
+    matrix["y"][0, 2] = np.sin(angles[1])
+    matrix["y"][2, 0] = -np.sin(angles[1])
+    matrix["y"][2, 2] = np.cos(angles[1])
+
+    matrix["z"][0, 0] = np.cos(angles[2])
+    matrix["z"][0, 1] = -np.sin(angles[2])
+    matrix["z"][1, 0] = np.sin(angles[2])
+    matrix["z"][1, 1] = np.cos(angles[2])
+
+    return matrix_combine([matrix[i] for i in reversed(order.lower())])
