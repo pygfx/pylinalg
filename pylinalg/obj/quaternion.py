@@ -46,7 +46,8 @@ class Quaternion(LinalgBase):
         from .matrix import Matrix
 
         m = Matrix(dtype=self.dtype)
-        return quaternion_to_matrix(self._val, out=m)
+        quaternion_to_matrix(self._val, out=m._val)
+        return m
 
     def from_matrix(self, matrix):
         matrix_to_quaternion(matrix, out=self._val)
