@@ -71,3 +71,77 @@ def matrix_make_rotation_from_euler_angles(angles, order="xyz", dtype="f8"):
     matrix["z"][1, 1] = np.cos(angles[2])
 
     return matrix_combine([matrix[i] for i in reversed(order.lower())])
+
+
+def matrix_to_quaternion(matrix, out=None):
+    m = matrix[:3, :3]
+    t = np.trace(m)
+
+    if t > 0:
+        s = 0.5 / np.sqrt(t + 1)
+        x = (m[2, 1] - m[1, 2]) * s
+        y = (m[0, 2] - m[2, 0]) * s
+        z = (m[1, 0] - m[0, 1]) * s
+        w = 0.25 / s
+
+    elif m[0, 0] > m[1, 1] and m[0, 0] > m[2, 2]:
+        s = 2 * np.sqrt(1 + m[0, 0] - m[1, 1] - m[2, 2])
+        x = 0.25 * s
+        y = (m[0, 1] + m[1, 0]) / s
+        z = (m[0, 2] + m[2, 0]) / s
+        w = (m[2, 1] - m[1, 2]) / s
+
+    elif m[1, 1] > m[2, 2]:
+        s = 2 * np.sqrt(1 + m[1, 1] - m[0, 0] - m[2, 2])
+        x = (m[0, 1] + m[1, 0]) / s
+        y = 0.25 * s
+        z = (m[1, 2] + m[2, 1]) / s
+        w = (m[0, 2] - m[2, 0]) / s
+
+    else:
+        s = 2 * np.sqrt(1 + m[2, 2] - m[0, 0] - m[1, 1])
+        x = (m[0, 2] + m[2, 0]) / s
+        y = (m[1, 2] + m[2, 1]) / s
+        z = 0.25 * s
+        w = (m[1, 0] - m[0, 1]) / s
+
+    if out is None:
+        out = np.empty((4,), dtype=matrix.dtype)
+    out[:] = x, y, z, w
+    return out
+
+
+matrix_inverse = np.linalg.inv
+
+
+def matrix_compose(translation, rotation, scaling, out=None):
+    from .quaternion import quaternion_to_matrix
+
+    if out is None:
+        out = np.identity(4, dtype=translation.dtype)
+    out[:] = matrix_combine(
+        [
+            matrix_make_translation(translation),
+            quaternion_to_matrix(rotation),
+            matrix_make_scaling(scaling),
+        ]
+    )
+    return out
+
+
+def matrix_decompose(matrix, translation=None, rotation=None, scaling=None):
+    if translation is None:
+        translation = np.zeros((3,), dtype=matrix.dtype)
+    translation[:] = matrix[:-1, -1]
+
+    if scaling is None:
+        scaling = np.zeros((3,), dtype=matrix.dtype)
+    scaling[:] = np.linalg.norm(matrix[:-1, :-1], axis=0)
+    if np.linalg.det(matrix) < 0:
+        scaling[0] *= -1
+
+    if rotation is None:
+        rotation = np.array([0, 0, 0, 1], dtype=matrix.dtype)
+    matrix_to_quaternion(rotation[:-1, :-1] * (1 / scaling)[:, None], out=rotation)
+
+    return translation, rotation, scaling

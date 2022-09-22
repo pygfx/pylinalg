@@ -11,4 +11,5 @@ vectorize operations on large sets of things.
 """
 
 from .matrix import *
+from .quaternion import *
 from .vector import *

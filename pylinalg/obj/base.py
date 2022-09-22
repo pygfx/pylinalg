@@ -40,3 +40,6 @@ class LinalgBase:
         if isinstance(other, LinalgBase) and not isinstance(other, self.__class__):
             return False
         return np.array_equal(self._val, other)
+
+    def tolist(self):
+        return self._val.tolist()

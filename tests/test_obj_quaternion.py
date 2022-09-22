@@ -5,7 +5,7 @@ import pylinalg as pla
 
 def test_quaternion_init():
     q = pla.Quaternion()
-    assert q == [0, 0, 0, 0]
+    assert q == [0, 0, 0, 1]
     assert q.dtype == "f8"
 
     q = pla.Quaternion(1, 2, 3, 4, dtype="f4")
@@ -21,7 +21,7 @@ def test_quaternion_init():
 
 def test_quaternion_set():
     q = pla.Quaternion()
-    assert q.w == 0
+    assert q.w == 1
 
     val = q._val
     q[:] = 0, 1, 0, 4
