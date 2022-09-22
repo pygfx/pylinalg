@@ -13,6 +13,11 @@ def test_linalgbase_eq():
     # type matters
 
     # point + vector => point
+    # good type, good value
     assert p + v == pla.Point(4, 5, 6)
-    # point + vector => point
+    # good type, wrong value
+    assert p + v != pla.Point(4, 5, 7)
+    # wrong type, good value
     assert p + v != pla.Vector(4, 5, 6)
+    # wrong type, wrong value
+    assert p + v != pla.Vector(4, 5, 7)

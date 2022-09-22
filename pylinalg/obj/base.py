@@ -32,5 +32,4 @@ class LinalgBase:
     def __eq__(self, other):
         if isinstance(other, LinalgBase) and not isinstance(other, self.__class__):
             return False
-        else:
-            return np.array_equal(self._val, other)
+        return np.array_equal(self._val, other)
