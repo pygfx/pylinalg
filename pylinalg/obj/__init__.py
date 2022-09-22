@@ -12,5 +12,6 @@ because semantics matters here: a point is not the same as a vector.
 """
 
 from .base import *
+from .matrix import *
 from .point import *
 from .vector import *

@@ -26,12 +26,14 @@ def test_point_set():
     assert p.y == 0
 
     val = p._val
-    p.set(0, 1, 0)
+    p[:] = 0, 1, 0
     assert p.y == 1
+    assert p[1] == 1
     assert p._val[1] == 1
     assert p._val is val
 
     p.y = 2
     assert p.y == 2
+    assert p[1] == 2
     assert p._val[1] == 2
     assert p._val is val

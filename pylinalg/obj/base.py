@@ -22,6 +22,9 @@ class LinalgBase:
     def __getitem__(self, index):
         return self._val[index]
 
+    def __setitem__(self, index, value):
+        self._val[index] = value
+
     def __iter__(self):
         return self._val.__iter__()
 

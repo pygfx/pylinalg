@@ -24,12 +24,14 @@ def test_vector_set():
     assert v.y == 0
 
     val = v._val
-    v.set(0, 1, 0)
+    v[:] = 0, 1, 0
     assert v.y == 1
+    assert v[1] == 1
     assert v._val[1] == 1
     assert v._val is val
 
     v.y = 2
     assert v.y == 2
+    assert v[1] == 2
     assert v._val[1] == 2
     assert v._val is val

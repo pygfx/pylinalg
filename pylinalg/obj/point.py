@@ -35,9 +35,6 @@ class Point(LinalgBase):
     def z(self, val):
         self._val[2] = val
 
-    def set(self, x, y, z):
-        self._val[:] = x, y, z
-
     def __add__(self, vector):
         if isinstance(vector, LinalgBase):
             if not isinstance(vector, Vector):
