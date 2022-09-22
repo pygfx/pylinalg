@@ -47,7 +47,7 @@ def matrix_make_scaling(factors, dtype="f8"):
     return matrix
 
 
-def matrix_make_rotation_from_euler_angles(angles, dtype="f8"):
+def matrix_make_rotation_from_euler_angles(angles, order="xyz", dtype="f8"):
     """Make a matrix given euler angles per axis."""
     angles = np.asarray(angles)
 
@@ -69,4 +69,9 @@ def matrix_make_rotation_from_euler_angles(angles, dtype="f8"):
     matrix_z[1, 0] = np.sin(angles[2])
     matrix_z[1, 1] = np.cos(angles[2])
 
-    return matrix_combine([matrix_z, matrix_y, matrix_x])
+    lookup = {
+        "x": matrix_x,
+        "y": matrix_y,
+        "z": matrix_z,
+    }
+    return matrix_combine([lookup[i] for i in reversed(order.lower())])

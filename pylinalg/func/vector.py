@@ -13,7 +13,7 @@ vector_div_scalar = np.divide
 
 def vector_make_homogeneous(vectors, w=1):
     """
-    Append homogeneous coordinates to v.
+    Append homogeneous coordinates to vectors.
 
     Parameters
     ----------

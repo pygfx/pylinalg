@@ -112,3 +112,23 @@ def test_vector_apply_rotation_about_z_matrix():
         result,
         expected,
     )
+
+
+def test_vector_apply_rotation_ordered():
+    """Test that a positive pi/2 rotation about the z-axis and then the y-axis
+    results in a different output then in standard rotation ordering."""
+    vectors = np.array(
+        [1, 0, 0],
+    )
+    expected = np.array(
+        [0, 1, 0],
+    )
+    matrix = pla.matrix_make_rotation_from_euler_angles(
+        [0, np.pi / 2, np.pi / 2], order="zyx"
+    )
+    result = pla.vector_apply_matrix(vectors, matrix)
+
+    npt.assert_array_almost_equal(
+        result,
+        expected,
+    )
