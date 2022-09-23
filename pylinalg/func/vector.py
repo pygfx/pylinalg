@@ -61,5 +61,10 @@ def vector_apply_matrix(vectors, matrix, w=1):
         transformed vectors
     """
     vectors = vector_make_homogeneous(vectors, w=w)
-    # the transpose is necessary due to the shape of the vectors matrix
+    # usually when applying a transformation matrix to a vector
+    # the vector is a column, so if you were to have an array of vectors
+    # it would have shape (ndim, nvectors).
+    # however, we instead have the convention (nvectors, ndim) where
+    # vectors are rows.
+    # therefore it is necessary to transpose the transformation matrix
     return np.dot(vectors, matrix.T)[..., :-1]

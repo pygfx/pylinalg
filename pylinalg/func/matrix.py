@@ -117,8 +117,12 @@ matrix_inverse = np.linalg.inv
 def matrix_compose(translation, rotation, scaling, out=None):
     from .quaternion import quaternion_to_matrix
 
+    translation = np.asarray(translation)
+    rotation = np.asarray(rotation)
+    scaling = np.asarray(scaling)
+
     if out is None:
-        out = np.identity(4, dtype=translation.dtype)
+        out = np.empty((4, 4), dtype=translation.dtype)
     out[:] = matrix_combine(
         [
             matrix_make_translation(translation),
@@ -130,18 +134,19 @@ def matrix_compose(translation, rotation, scaling, out=None):
 
 
 def matrix_decompose(matrix, translation=None, rotation=None, scaling=None):
+    matrix = np.asarray(matrix)
+
     if translation is None:
-        translation = np.zeros((3,), dtype=matrix.dtype)
+        translation = np.empty((3,), dtype=matrix.dtype)
     translation[:] = matrix[:-1, -1]
 
     if scaling is None:
-        scaling = np.zeros((3,), dtype=matrix.dtype)
+        scaling = np.empty((3,), dtype=matrix.dtype)
     scaling[:] = np.linalg.norm(matrix[:-1, :-1], axis=0)
     if np.linalg.det(matrix) < 0:
         scaling[0] *= -1
 
-    if rotation is None:
-        rotation = np.array([0, 0, 0, 1], dtype=matrix.dtype)
-    matrix_to_quaternion(rotation[:-1, :-1] * (1 / scaling)[:, None], out=rotation)
+    normal_rotation_matrix = matrix[:-1, :-1] * (1 / scaling)[None, :]
+    rotation = matrix_to_quaternion(normal_rotation_matrix)
 
     return translation, rotation, scaling
