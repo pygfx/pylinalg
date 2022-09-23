@@ -43,3 +43,9 @@ class LinalgBase:
 
     def tolist(self):
         return self._val.tolist()
+
+    def __truediv__(self, other):
+        return self._val.__truediv__(other)
+
+    def __rtruediv__(self, other):
+        return self._val.__rtruediv__(other)

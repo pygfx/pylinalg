@@ -73,7 +73,7 @@ def matrix_make_rotation_from_euler_angles(angles, order="xyz", dtype="f8"):
     return matrix_combine([matrix[i] for i in reversed(order.lower())])
 
 
-def matrix_to_quaternion(matrix, out=None):
+def matrix_to_quaternion(matrix, out=None, dtype="f8"):
     m = matrix[:3, :3]
     t = np.trace(m)
 
@@ -106,15 +106,15 @@ def matrix_to_quaternion(matrix, out=None):
         w = (m[1, 0] - m[0, 1]) / s
 
     if out is None:
-        out = np.empty((4,), dtype=matrix.dtype)
-    out[:] = x, y, z, w
+        out = np.empty((4,), dtype=dtype)
+    out[:] = np.array([x, y, z, w])
     return out
 
 
 matrix_inverse = np.linalg.inv
 
 
-def matrix_compose(translation, rotation, scaling, out=None):
+def matrix_compose(translation, rotation, scaling, out=None, dtype="f8"):
     from .quaternion import quaternion_to_matrix
 
     translation = np.asarray(translation)
@@ -122,7 +122,7 @@ def matrix_compose(translation, rotation, scaling, out=None):
     scaling = np.asarray(scaling)
 
     if out is None:
-        out = np.empty((4, 4), dtype=translation.dtype)
+        out = np.empty((4, 4), dtype=dtype)
     out[:] = matrix_combine(
         [
             matrix_make_translation(translation),
@@ -133,20 +133,22 @@ def matrix_compose(translation, rotation, scaling, out=None):
     return out
 
 
-def matrix_decompose(matrix, translation=None, rotation=None, scaling=None):
+def matrix_decompose(matrix, translation=None, rotation=None, scaling=None, dtype="f8"):
     matrix = np.asarray(matrix)
 
     if translation is None:
-        translation = np.empty((3,), dtype=matrix.dtype)
+        translation = np.empty((3,), dtype=dtype)
     translation[:] = matrix[:-1, -1]
 
     if scaling is None:
-        scaling = np.empty((3,), dtype=matrix.dtype)
+        scaling = np.empty((3,), dtype=dtype)
     scaling[:] = np.linalg.norm(matrix[:-1, :-1], axis=0)
     if np.linalg.det(matrix) < 0:
         scaling[0] *= -1
 
     normal_rotation_matrix = matrix[:-1, :-1] * (1 / scaling)[None, :]
-    rotation = matrix_to_quaternion(normal_rotation_matrix)
+    if rotation is None:
+        rotation = np.empty((4,), dtype=dtype)
+    matrix_to_quaternion(normal_rotation_matrix, out=rotation)
 
     return translation, rotation, scaling

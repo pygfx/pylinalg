@@ -164,7 +164,7 @@ def test_matrix_make_rotation_from_euler_angles_dtype():
 )
 def test_matrix_to_quaternion(angles, expected, dtype):
     matrix = pla.matrix_make_rotation_from_euler_angles(angles, dtype=dtype)
-    quaternion = pla.matrix_to_quaternion(matrix)
+    quaternion = pla.matrix_to_quaternion(matrix, dtype=dtype)
     npt.assert_array_almost_equal(
         quaternion,
         expected,

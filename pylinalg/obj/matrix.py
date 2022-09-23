@@ -23,8 +23,8 @@ class Matrix(LinalgBase):
                 dtype = "f8"
             self._val = np.identity(4, dtype=dtype)
 
-    def compose(self, translation, rotation, scaling):
-        matrix_compose(translation._val, rotation._val, scaling._val, out=self._val)
+    def icompose(self, translation, rotation, scaling):
+        matrix_compose(translation, rotation, scaling, out=self)
         return self
 
     def decompose(self, translation=None, rotation=None, scaling=None):
@@ -38,8 +38,30 @@ class Matrix(LinalgBase):
         if scaling is None:
             scaling = Vector()
 
-        matrix_decompose(self._val, translation._val, rotation._val, scaling._val)
+        matrix_decompose(self, translation, rotation, scaling)
         return translation, rotation, scaling
 
     def inverse(self):
         return Matrix(matrix_inverse(self._val))
+
+    def iinverse(self):
+        self._val[:] = matrix_inverse(self._val)
+        return self
+
+    def multiply(self, matrix):
+        return self @ matrix
+
+    def imultiply(self, matrix):
+        self @= matrix
+
+    def premultiply(self, matrix):
+        return matrix @ self
+
+    def ipremultiply(self, matrix):
+        self._val[:] = matrix @ self._val
+
+    def __imatmul__(self, matrix):
+        self._val @= matrix
+
+    def __matmul__(self, matrix):
+        return self._val @ matrix
