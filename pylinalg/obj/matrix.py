@@ -61,7 +61,8 @@ class Matrix(LinalgBase):
         self._val[:] = matrix @ self._val
 
     def __imatmul__(self, matrix):
-        self._val @= matrix
+        self._val[:] = self._val @ matrix
+        return self
 
     def __matmul__(self, matrix):
-        return self._val @ matrix
+        return Matrix(self._val @ matrix)

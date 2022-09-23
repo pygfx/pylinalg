@@ -113,3 +113,45 @@ def test_matrix_iinverse():
     backup = matrix._val.copy()
     matrix.iinverse()
     assert matrix == np.linalg.inv(backup)
+
+
+def test_matrix_multiply():
+    a = np.arange(16).reshape((4, 4))
+    b = a.copy() + 1
+    ab = a @ b
+
+    ma = pla.Matrix(a)
+    mb = pla.Matrix(b)
+    mamb = ma.multiply(mb)
+
+    assert mamb == ab
+
+    mamb = ma @ mb
+
+    assert mamb == ab
+
+    ma2 = ma.copy()
+    ma2 @= mb
+
+    assert ma2 == ab
+
+    ma2 = ma.copy()
+    ma2.imultiply(mb)
+
+    assert ma2 == ab
+
+
+def test_matrix_premultiply():
+    a = np.arange(16).reshape((4, 4))
+    b = a.copy() + 1
+    ba = b @ a
+
+    ma = pla.Matrix(a)
+    mb = pla.Matrix(b)
+    mbma = ma.premultiply(mb)
+
+    assert mbma == ba
+
+    ma.ipremultiply(mb)
+
+    assert ma == ba
