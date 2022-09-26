@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 import pylinalg as pla
@@ -17,6 +18,16 @@ def test_vector_init():
 
     with pytest.raises(TypeError):
         v = pla.Vector(1, 2, 3, "f4")
+
+
+def test_vector_copy():
+    data = np.arange(3, dtype="f4")
+    v = pla.Vector(*data)
+    v2 = v.copy()
+    assert v == v2
+    assert v._val is not v2._val
+    assert v2._val.flags.owndata
+    assert v.dtype == v2.dtype
 
 
 def test_vector_set():

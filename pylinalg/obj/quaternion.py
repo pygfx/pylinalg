@@ -10,6 +10,9 @@ class Quaternion(LinalgBase):
     def __init__(self, x=0, y=0, z=0, w=1, /, *, dtype="f8"):
         self._val = np.array([x, y, z, w], dtype=dtype)
 
+    def copy(self):
+        return self.__class__(*self._val.copy(), dtype=self._val.dtype)
+
     @property
     def x(self):
         return self._val[0]

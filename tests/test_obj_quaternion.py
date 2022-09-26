@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 import pylinalg as pla
@@ -17,6 +18,16 @@ def test_quaternion_init():
 
     with pytest.raises(TypeError):
         q = pla.Quaternion(1, 2, 3, 4, "f4")
+
+
+def test_quaternion_copy():
+    data = np.arange(4, dtype="f4")
+    q = pla.Quaternion(*data)
+    q2 = q.copy()
+    assert q == q2
+    assert q._val is not q2._val
+    assert q2._val.flags.owndata
+    assert q.dtype == q2.dtype
 
 
 def test_quaternion_set():

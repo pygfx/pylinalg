@@ -23,6 +23,9 @@ class Matrix(LinalgBase):
                 dtype = "f8"
             self._val = np.identity(4, dtype=dtype)
 
+    def copy(self):
+        return self.__class__(self._val.copy())
+
     def icompose(self, translation, rotation, scaling):
         matrix_compose(translation, rotation, scaling, out=self)
         return self

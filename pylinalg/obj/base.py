@@ -49,6 +49,3 @@ class LinalgBase:
 
     def __rtruediv__(self, other):
         return self._val.__rtruediv__(other)
-
-    def copy(self):
-        return self.__class__(self._val.copy())

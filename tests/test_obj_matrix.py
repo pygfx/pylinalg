@@ -29,6 +29,16 @@ def test_matrix_init():
         m = pla.Matrix(np.zeros((4, 4)), "i2")
 
 
+def test_matrix_copy():
+    data = np.arange(16, dtype="f4").reshape(4, 4)
+    m = pla.Matrix(data)
+    m2 = m.copy()
+    assert m == m2
+    assert m._val is not m2._val
+    assert m2._val.flags.owndata
+    assert m.dtype == m2.dtype
+
+
 def test_matrix_set():
     m = pla.Matrix()
     assert m == np.identity(4)
