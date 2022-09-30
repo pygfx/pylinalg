@@ -1,8 +1,8 @@
 import numpy as np
 
 
-def quaternion_to_matrix(quaternion, out=None):
-    x, y, z, w = quaternion
+def quaternion_to_matrix(q, out=None):
+    x, y, z, w = q
     x2 = x * 2
     y2 = y * 2
     z2 = z * 2
@@ -17,7 +17,7 @@ def quaternion_to_matrix(quaternion, out=None):
     wz = w * z2
 
     if out is None:
-        out = np.identity(4, dtype=quaternion.dtype)
+        out = np.identity(4, dtype=q.dtype)
 
     out[0, 0] = 1 - (yy + zz)
     out[1, 0] = xy + wz
@@ -30,3 +30,23 @@ def quaternion_to_matrix(quaternion, out=None):
     out[2, 2] = 1 - (xx + yy)
 
     return out
+
+
+quaternion_add_quaternion = np.add
+quaternion_subtract_quaternion = np.subtract
+
+
+def quaternion_multiply_quaternion(a, b, out=None):
+    if out is None:
+        out = np.empty(4, dtype=a.dtype)
+
+    xyz = a[3] * b[:3] + b[3] * a[:3] + np.cross(a[:3], b[:3])
+    w = a[3] * b[3] - a[:3].dot(b[:3])
+
+    out[:3] = xyz
+    out[3] = w
+
+    return out
+
+
+quaternion_norm = np.linalg.norm

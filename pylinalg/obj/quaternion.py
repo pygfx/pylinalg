@@ -1,7 +1,11 @@
 import numpy as np
 
 from .base import LinalgBase
-from ..func import matrix_to_quaternion, quaternion_to_matrix
+from ..func import (
+    matrix_to_quaternion,
+    quaternion_to_matrix,
+    quaternion_multiply_quaternion,
+)
 
 
 class Quaternion(LinalgBase):
@@ -56,3 +60,21 @@ class Quaternion(LinalgBase):
         matrix_to_quaternion(matrix, out=self._val)
 
         return self
+
+    def multiply(self, quaternion):
+        return Quaternion(*quaternion_multiply_quaternion(self, quaternion))
+
+    def imultiply(self, quaternion):
+        return quaternion_multiply_quaternion(self, quaternion, out=self)
+
+    def premultiply(self, quaternion):
+        return Quaternion(*quaternion_multiply_quaternion(quaternion, self))
+
+    def ipremultiply(self, quaternion):
+        return quaternion_multiply_quaternion(quaternion, self, out=self)
+
+    def __mul__(self, quaternion):
+        return self.multiply(quaternion)
+
+    def __imul__(self, quaternion):
+        return self.imultiply(quaternion)

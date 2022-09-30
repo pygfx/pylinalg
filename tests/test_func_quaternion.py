@@ -45,3 +45,41 @@ def test_quaternion_to_matrix(expected, quaternion, dtype):
         decimal=5,
     )
     assert matrix.dtype == dtype
+
+
+def test_quaternion_add_quaternion():
+    # quaternion corresponding to 90 degree rotation about z-axis
+    a = np.array([0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
+    b = np.array([0, 0, 0, 1])
+    c = pla.quaternion_add_quaternion(a, b)
+    npt.assert_array_equal(a + b, c)
+
+
+def test_quaternion_subtract_quaternion():
+    # quaternion corresponding to 90 degree rotation about z-axis
+    a = np.array([0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
+    b = np.array([0, 0, 0, 1])
+    c = pla.quaternion_subtract_quaternion(a, b)
+    npt.assert_array_equal(a - b, c)
+
+
+def test_quaternion_multiply_quaternion():
+    # quaternion corresponding to 90 degree rotation about z-axis
+    a = np.array([0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
+    b = np.array([0, 0, 0, 1])
+    c = pla.quaternion_multiply_quaternion(a, b)
+    # multiplying by the identity quaternion
+    npt.assert_array_equal(c, a)
+
+    d = pla.quaternion_multiply_quaternion(a, a)
+    # should be 180 degree rotation about z-axis
+    npt.assert_array_almost_equal(d, [0, 0, 1, 0])
+
+
+def test_quaternion_norm():
+    a = np.array([0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
+    b = np.array([0, 0, 0, 1])
+    c = np.array([0, 0, 1, 0])
+    assert pla.quaternion_norm(a) == 1
+    assert pla.quaternion_norm(b) == 1
+    assert pla.quaternion_norm(c) == 1
