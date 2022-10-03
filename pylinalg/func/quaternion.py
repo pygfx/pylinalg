@@ -50,3 +50,18 @@ def quaternion_multiply_quaternion(a, b, out=None):
 
 
 quaternion_norm = np.linalg.norm
+
+
+def quaternion_from_unit_vectors(a, b, out=None, dtype=None):
+    if out is None:
+        out = np.empty(4, dtype=dtype)
+
+    w = 1 + np.dot(a, b)
+    xyz = np.cross(a, b)
+
+    out[:3] = xyz
+    out[3] = w
+
+    out /= quaternion_norm(out)
+
+    return out

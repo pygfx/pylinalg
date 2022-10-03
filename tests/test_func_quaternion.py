@@ -83,3 +83,15 @@ def test_quaternion_norm():
     assert pla.quaternion_norm(a) == 1
     assert pla.quaternion_norm(b) == 1
     assert pla.quaternion_norm(c) == 1
+
+
+def test_quaternion_norm_vectorized():
+    a = np.array([[0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2]])
+    npt.assert_array_equal(pla.quaternion_norm(a, axis=-1), [1])
+
+
+def test_quaternion_from_unit_vectors():
+    a = np.array([1, 0, 0])
+    b = np.array([0, 1, 0])
+    q = pla.quaternion_from_unit_vectors(a, b)
+    npt.assert_almost_equal(q, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])

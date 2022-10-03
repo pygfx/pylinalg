@@ -71,3 +71,29 @@ def test_quaternion_multiply():
     npt.assert_array_almost_equal(
         q90z * q90z * q90y, [-np.sqrt(2) / 2, 0, np.sqrt(2) / 2, 0]
     )
+
+
+def test_quaternion_norm():
+    a = pla.Quaternion(0, 0, 1, 1)
+    assert a.norm() == np.sqrt(2)
+
+    b = a.normalize()
+    npt.assert_almost_equal(b.norm(), 1)
+    assert a is not b
+    npt.assert_almost_equal(b, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
+
+    a.inormalize()
+    npt.assert_almost_equal(a.norm(), 1)
+    npt.assert_almost_equal(a, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
+
+
+def test_quaternion_from_unit_vectors():
+    a = pla.Vector(1, 0, 0)
+    b = pla.Vector(0, 1, 0)
+    q = pla.Quaternion()
+    q2 = q.ifrom_unit_vectors(a, b)
+    assert q is q2
+    npt.assert_almost_equal(q, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
+
+    q3 = pla.Quaternion.from_unit_vectors(a, b)
+    npt.assert_almost_equal(q3, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])

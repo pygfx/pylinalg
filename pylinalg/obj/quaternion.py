@@ -3,8 +3,10 @@ import numpy as np
 from .base import LinalgBase
 from ..func import (
     matrix_to_quaternion,
-    quaternion_to_matrix,
+    quaternion_from_unit_vectors,
     quaternion_multiply_quaternion,
+    quaternion_norm,
+    quaternion_to_matrix,
 )
 
 
@@ -56,8 +58,21 @@ class Quaternion(LinalgBase):
         quaternion_to_matrix(self._val, out=m._val)
         return m
 
-    def from_matrix(self, matrix):
+    @classmethod
+    def from_matrix(cls, matrix, dtype=None):
+        return cls(*matrix_to_quaternion(matrix), dtype=dtype)
+
+    def ifrom_matrix(self, matrix):
         matrix_to_quaternion(matrix, out=self._val)
+
+        return self
+
+    @classmethod
+    def from_unit_vectors(cls, a, b, dtype=None):
+        return cls(*quaternion_from_unit_vectors(a, b, dtype=dtype), dtype=dtype)
+
+    def ifrom_unit_vectors(self, a, b):
+        quaternion_from_unit_vectors(a, b, out=self._val)
 
         return self
 
@@ -78,3 +93,13 @@ class Quaternion(LinalgBase):
 
     def __imul__(self, quaternion):
         return self.imultiply(quaternion)
+
+    def norm(self):
+        return quaternion_norm(self._val)
+
+    def normalize(self):
+        return Quaternion(*(self._val / quaternion_norm(self._val)))
+
+    def inormalize(self):
+        self._val /= quaternion_norm(self._val)
+        return self
