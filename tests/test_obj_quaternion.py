@@ -97,3 +97,48 @@ def test_quaternion_from_unit_vectors():
 
     q3 = pla.Quaternion.from_unit_vectors(a, b)
     npt.assert_almost_equal(q3, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
+
+
+def test_quaternion_add():
+    a = pla.Quaternion()
+    b = pla.Quaternion(0, 0, 1, 1)
+    npt.assert_almost_equal(a + b, [0, 0, 1, 2])
+    npt.assert_almost_equal(a.add(b), [0, 0, 1, 2])
+
+    c = pla.Quaternion()
+    c += b
+    npt.assert_almost_equal(c, [0, 0, 1, 2])
+    c = pla.Quaternion()
+    c.iadd(b)
+    npt.assert_almost_equal(c, [0, 0, 1, 2])
+
+
+def test_quaternion_subtract():
+    a = pla.Quaternion()
+    b = pla.Quaternion(0, 0, 1, 1)
+    npt.assert_almost_equal(a - b, [0, 0, -1, 0])
+    npt.assert_almost_equal(a.subtract(b), [0, 0, -1, 0])
+
+    c = pla.Quaternion()
+    c -= b
+    npt.assert_almost_equal(c, [0, 0, -1, 0])
+    c = pla.Quaternion()
+    c.isubtract(b)
+    npt.assert_almost_equal(c, [0, 0, -1, 0])
+
+
+def test_quaternion_inverse():
+    q = pla.Quaternion(0, 0, 1, 1)
+    npt.assert_almost_equal(q.inverse(), [0, 0, -1, 1])
+
+    q.iinverse()
+    npt.assert_almost_equal(q, [0, 0, -1, 1])
+
+
+def test_quaternion_from_axis_angle():
+    q = pla.Quaternion.from_axis_angle([1, 0, 0], np.pi / 2)
+    assert q == [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2]
+
+    q = pla.Quaternion()
+    q.ifrom_axis_angle([1, 0, 0], np.pi / 2)
+    assert q == [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2]

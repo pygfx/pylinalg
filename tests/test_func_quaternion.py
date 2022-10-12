@@ -95,3 +95,32 @@ def test_quaternion_from_unit_vectors():
     b = np.array([0, 1, 0])
     q = pla.quaternion_from_unit_vectors(a, b)
     npt.assert_almost_equal(q, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
+
+
+def test_quaternion_inverse():
+    a = np.array([0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
+    ai = pla.quaternion_inverse(a)
+
+    npt.assert_array_equal(a[:3], -ai[:3])
+    npt.assert_array_equal(a[3], ai[3])
+
+    # broadcasting over multiple quaternions
+    b = np.array(
+        [
+            [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2],
+            [0, 0, 0, 1],
+            [0, 0, 1, 0],
+        ]
+    )
+    bi = pla.quaternion_inverse(b)
+
+    npt.assert_array_equal(b[..., :3], -bi[..., :3])
+    npt.assert_array_equal(b[..., 3], bi[..., 3])
+
+
+def test_quaternion_from_axis_angle():
+    axis = np.array([1, 0, 0], dtype="f4")
+    angle = np.pi / 2
+    q = pla.quaternion_from_axis_angle(axis, angle)
+
+    npt.assert_array_almost_equal(q, [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2])

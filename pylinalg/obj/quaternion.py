@@ -3,9 +3,13 @@ import numpy as np
 from .base import LinalgBase
 from ..func import (
     matrix_to_quaternion,
+    quaternion_add_quaternion,
+    quaternion_from_axis_angle,
     quaternion_from_unit_vectors,
+    quaternion_inverse,
     quaternion_multiply_quaternion,
     quaternion_norm,
+    quaternion_subtract_quaternion,
     quaternion_to_matrix,
 )
 
@@ -76,6 +80,15 @@ class Quaternion(LinalgBase):
 
         return self
 
+    @classmethod
+    def from_axis_angle(cls, axis, angle, dtype=None):
+        return cls(*quaternion_from_axis_angle(axis, angle, dtype=dtype), dtype=dtype)
+
+    def ifrom_axis_angle(self, axis, angle):
+        quaternion_from_axis_angle(axis, angle, out=self._val)
+
+        return self
+
     def multiply(self, quaternion):
         return Quaternion(*quaternion_multiply_quaternion(self, quaternion))
 
@@ -94,6 +107,32 @@ class Quaternion(LinalgBase):
     def __imul__(self, quaternion):
         return self.imultiply(quaternion)
 
+    def add(self, quaternion):
+        return Quaternion(*quaternion_add_quaternion(self._val, quaternion))
+
+    def iadd(self, quaternion):
+        quaternion_add_quaternion(self, quaternion, out=self._val)
+        return self
+
+    def __add__(self, quaternion):
+        return self.add(quaternion)
+
+    def __iadd__(self, quaternion):
+        return self.iadd(quaternion)
+
+    def subtract(self, quaternion):
+        return Quaternion(*quaternion_subtract_quaternion(self._val, quaternion))
+
+    def isubtract(self, quaternion):
+        quaternion_subtract_quaternion(self, quaternion, out=self._val)
+        return self
+
+    def __sub__(self, quaternion):
+        return self.subtract(quaternion)
+
+    def __isub__(self, quaternion):
+        return self.isubtract(quaternion)
+
     def norm(self):
         return quaternion_norm(self._val)
 
@@ -102,4 +141,11 @@ class Quaternion(LinalgBase):
 
     def inormalize(self):
         self._val /= quaternion_norm(self._val)
+        return self
+
+    def inverse(self):
+        return Quaternion(*quaternion_inverse(self._val))
+
+    def iinverse(self):
+        quaternion_inverse(self._val, out=self._val)
         return self

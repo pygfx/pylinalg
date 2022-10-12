@@ -1,3 +1,5 @@
+"""Note that we assume unit quaternions for faster implementations"""
+
 import numpy as np
 
 
@@ -63,5 +65,26 @@ def quaternion_from_unit_vectors(a, b, out=None, dtype=None):
     out[3] = w
 
     out /= quaternion_norm(out)
+
+    return out
+
+
+def quaternion_inverse(q, out=None, dtype=None):
+    if out is None:
+        out = np.empty_like(q, dtype=dtype)
+
+    out[:] = q
+    out[..., :3] *= -1
+
+    return out
+
+
+def quaternion_from_axis_angle(axis, angle, out=None, dtype=None):
+    if out is None:
+        out = np.empty(4, dtype=dtype)
+
+    angle_half = angle / 2
+    out[:3] = np.asarray(axis) * np.sin(angle_half)
+    out[3] = np.cos(angle_half)
 
     return out
