@@ -156,7 +156,7 @@ def matrix_decompose(matrix, translation=None, rotation=None, scaling=None, dtyp
 
 def matrix_make_perspective(left, right, top, bottom, near, far, out=None, dtype="f8"):
     if out is None:
-        out = np.zeros((4, 4), dtype=dtype)
+        out = np.empty((4, 4), dtype=dtype)
 
     x = 2 * near / (right - left)
     y = 2 * near / (top - bottom)
@@ -166,6 +166,7 @@ def matrix_make_perspective(left, right, top, bottom, near, far, out=None, dtype
     c = -(far + near) / (far - near)
     d = -2 * far * near / (far - near)
 
+    out[:] = 0
     out[0, 0] = x
     out[0, 2] = a
     out[1, 1] = y
@@ -179,7 +180,7 @@ def matrix_make_perspective(left, right, top, bottom, near, far, out=None, dtype
 
 def matrix_make_orthographic(left, right, top, bottom, near, far, out=None, dtype="f8"):
     if out is None:
-        out = np.zeros((4, 4), dtype=dtype)
+        out = np.empty((4, 4), dtype=dtype)
 
     w = 1.0 / (right - left)
     h = 1.0 / (top - bottom)
@@ -189,6 +190,7 @@ def matrix_make_orthographic(left, right, top, bottom, near, far, out=None, dtyp
     y = (top + bottom) * h
     z = (far + near) * p
 
+    out[:] = 0
     out[0, 0] = 2 * w
     out[0, 3] = -x
     out[1, 1] = 2 * h

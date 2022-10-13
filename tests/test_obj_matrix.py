@@ -165,3 +165,51 @@ def test_matrix_premultiply():
     ma.ipremultiply(mb)
 
     assert ma == ba
+
+
+def test_matrix_make_perspective():
+    a = pla.Matrix.make_perspective(-1, 1, -1, 1, 1, 100)
+    npt.assert_array_almost_equal(
+        a,
+        [
+            [1, 0, 0, 0],
+            [0, -1, 0, 0],
+            [0, 0, -101 / 99, -200 / 99],
+            [0, 0, -1, 0],
+        ],
+    )
+
+    a = pla.Matrix().imake_perspective(-1, 1, -1, 1, 1, 100)
+    npt.assert_array_almost_equal(
+        a,
+        [
+            [1, 0, 0, 0],
+            [0, -1, 0, 0],
+            [0, 0, -101 / 99, -200 / 99],
+            [0, 0, -1, 0],
+        ],
+    )
+
+
+def test_matrix_make_orthographic():
+    a = pla.Matrix.make_orthographic(-1, 1, -1, 1, 1, 100)
+    npt.assert_array_almost_equal(
+        a,
+        [
+            [1, 0, 0, 0],
+            [0, -1, 0, 0],
+            [0, 0, -2 / 99, -101 / 99],
+            [0, 0, 0, 1],
+        ],
+    )
+
+    a = pla.Matrix().imake_orthographic(-1, 1, -1, 1, 1, 100)
+    npt.assert_array_almost_equal(
+        a,
+        [
+            [1, 0, 0, 0],
+            [0, -1, 0, 0],
+            [0, 0, -2 / 99, -101 / 99],
+            [0, 0, 0, 1],
+        ],
+    )

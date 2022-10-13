@@ -5,6 +5,8 @@ from ..func import (
     matrix_compose,
     matrix_decompose,
     matrix_inverse,
+    matrix_make_orthographic,
+    matrix_make_perspective,
 )
 
 
@@ -28,6 +30,28 @@ class Matrix(LinalgBase):
 
     def icompose(self, translation, rotation, scaling):
         matrix_compose(translation, rotation, scaling, out=self)
+        return self
+
+    @classmethod
+    def make_perspective(cls, left, right, top, bottom, near, far, dtype=None):
+        return cls(
+            matrix_make_perspective(left, right, top, bottom, near, far, dtype=dtype)
+        )
+
+    def imake_perspective(self, left, right, top, bottom, near, far):
+        matrix_make_perspective(left, right, top, bottom, near, far, out=self._val)
+
+        return self
+
+    @classmethod
+    def make_orthographic(cls, left, right, top, bottom, near, far, dtype=None):
+        return cls(
+            matrix_make_orthographic(left, right, top, bottom, near, far, dtype=dtype)
+        )
+
+    def imake_orthographic(self, left, right, top, bottom, near, far):
+        matrix_make_orthographic(left, right, top, bottom, near, far, out=self._val)
+
         return self
 
     def decompose(self, translation=None, rotation=None, scaling=None):
