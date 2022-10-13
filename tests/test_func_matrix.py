@@ -238,3 +238,29 @@ def test_matrix_decompose():
     npt.assert_array_equal(translation, [2, 2, 2])
     npt.assert_array_equal(scaling, [1, 2, 1])
     npt.assert_array_almost_equal(rotation, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
+
+
+def test_matrix_make_perspective():
+    a = pla.matrix_make_perspective(-1, 1, -1, 1, 1, 100)
+    npt.assert_array_almost_equal(
+        a,
+        [
+            [1, 0, 0, 0],
+            [0, -1, 0, 0],
+            [0, 0, -101 / 99, -200 / 99],
+            [0, 0, -1, 0],
+        ],
+    )
+
+
+def test_matrix_make_orthographic():
+    a = pla.matrix_make_orthographic(-1, 1, -1, 1, 1, 100)
+    npt.assert_array_almost_equal(
+        a,
+        [
+            [1, 0, 0, 0],
+            [0, -1, 0, 0],
+            [0, 0, -2 / 99, -101 / 99],
+            [0, 0, 0, 1],
+        ],
+    )

@@ -152,3 +152,49 @@ def matrix_decompose(matrix, translation=None, rotation=None, scaling=None, dtyp
     matrix_to_quaternion(normal_rotation_matrix, out=rotation)
 
     return translation, rotation, scaling
+
+
+def matrix_make_perspective(left, right, top, bottom, near, far, out=None, dtype="f8"):
+    if out is None:
+        out = np.zeros((4, 4), dtype=dtype)
+
+    x = 2 * near / (right - left)
+    y = 2 * near / (top - bottom)
+
+    a = (right + left) / (right - left)
+    b = (top + bottom) / (top - bottom)
+    c = -(far + near) / (far - near)
+    d = -2 * far * near / (far - near)
+
+    out[0, 0] = x
+    out[0, 2] = a
+    out[1, 1] = y
+    out[1, 2] = b
+    out[2, 2] = c
+    out[2, 3] = d
+    out[3, 2] = -1
+
+    return out
+
+
+def matrix_make_orthographic(left, right, top, bottom, near, far, out=None, dtype="f8"):
+    if out is None:
+        out = np.zeros((4, 4), dtype=dtype)
+
+    w = 1.0 / (right - left)
+    h = 1.0 / (top - bottom)
+    p = 1.0 / (far - near)
+
+    x = (right + left) * w
+    y = (top + bottom) * h
+    z = (far + near) * p
+
+    out[0, 0] = 2 * w
+    out[0, 3] = -x
+    out[1, 1] = 2 * h
+    out[1, 3] = -y
+    out[2, 2] = -2 * p
+    out[2, 3] = -z
+    out[3, 3] = 1
+
+    return out
