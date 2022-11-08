@@ -5,7 +5,7 @@ vectorize operations on large sets of things.
 
 Performance is prioritized over extensive input validation.
 
-# Naming
+# Function naming
 
 The functional API has rather verbose names, but it makes things
 explicit.
@@ -18,6 +18,20 @@ Docstrings shall be written in NumpyDoc format.
 
 TBD: I'm not very familiar with the latest and greatest type annotation
 options for libraries that make heavy use of numpy arrays like this one.
+
+# Style
+
+Linting shall be performed with flake8, flake8-import-order, flake8-black and pep8-naming.
+
+Max line length: 88.
+
+Import order shall be google-style.
+
+Automated formatting shall be performed with black and isort.
+
+# Testing
+
+All functions need to be covered by unit tests.
 
 # Signatures
 
