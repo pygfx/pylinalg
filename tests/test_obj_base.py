@@ -5,7 +5,7 @@ import pylinalg as pla
 
 def test_linalgbase_eq():
     m = pla.Matrix()
-    v = pla.Vector(2, 2, 2)
+    v = pla.Vector([2, 2, 2])
 
     # array_like comparison
     # type is ignored
@@ -25,8 +25,8 @@ def test_linalgbase_eq():
     # type matters
 
     # good type, good value
-    assert v == pla.Vector(2, 2, 2)
+    assert v == pla.Vector([2, 2, 2])
     # good type, wrong value
-    assert v != pla.Vector(4, 5, 7)
+    assert v != pla.Vector([4, 5, 7])
     # wrong type
     assert m != v

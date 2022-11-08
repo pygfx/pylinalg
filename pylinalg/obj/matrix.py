@@ -1,3 +1,5 @@
+from functools import partial
+
 import numpy as np
 
 from ..func import (
@@ -14,19 +16,7 @@ class Matrix(LinalgBase):
     """A representation of a transformation matrix in 4D
     homogeneous (to 3D Euclidean) space."""
 
-    def __init__(self, matrix=None, /, *, dtype=None):
-        if matrix is not None:
-            if dtype is None:
-                self._val = np.asarray(matrix)
-            else:
-                self._val = np.asarray(matrix, dtype=dtype)
-        else:
-            if dtype is None:
-                dtype = "f8"
-            self._val = np.identity(4, dtype=dtype)
-
-    def copy(self):
-        return self.__class__(self._val.copy())
+    _initializer = partial(np.identity, 4)
 
     def icompose(self, translation, rotation, scaling):
         matrix_compose(translation, rotation, scaling, out=self)
@@ -39,7 +29,7 @@ class Matrix(LinalgBase):
         )
 
     def imake_perspective(self, left, right, top, bottom, near, far):
-        matrix_make_perspective(left, right, top, bottom, near, far, out=self._val)
+        matrix_make_perspective(left, right, top, bottom, near, far, out=self.val)
 
         return self
 
@@ -50,7 +40,7 @@ class Matrix(LinalgBase):
         )
 
     def imake_orthographic(self, left, right, top, bottom, near, far):
-        matrix_make_orthographic(left, right, top, bottom, near, far, out=self._val)
+        matrix_make_orthographic(left, right, top, bottom, near, far, out=self.val)
 
         return self
 
@@ -69,10 +59,10 @@ class Matrix(LinalgBase):
         return translation, rotation, scaling
 
     def inverse(self):
-        return Matrix(matrix_inverse(self._val))
+        return Matrix(matrix_inverse(self.val))
 
     def iinverse(self):
-        self._val[:] = matrix_inverse(self._val)
+        self.val[:] = matrix_inverse(self.val)
         return self
 
     def multiply(self, matrix):
@@ -85,11 +75,11 @@ class Matrix(LinalgBase):
         return matrix @ self
 
     def ipremultiply(self, matrix):
-        self._val[:] = matrix @ self._val
+        self.val[:] = matrix @ self.val
 
     def __imatmul__(self, matrix):
-        self._val[:] = self._val @ matrix
+        self.val[:] = self.val @ matrix
         return self
 
     def __matmul__(self, matrix):
-        return Matrix(self._val @ matrix)
+        return Matrix(self.val @ matrix)

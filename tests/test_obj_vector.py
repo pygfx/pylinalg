@@ -9,7 +9,7 @@ def test_vector_init():
     assert v == [0, 0, 0]
     assert v.dtype == "f8"
 
-    v = pla.Vector(1, 2, 3, dtype="f4")
+    v = pla.Vector([1, 2, 3], dtype="f4")
     assert v == [1, 2, 3]
     assert v.dtype == "f4"
 
@@ -22,11 +22,11 @@ def test_vector_init():
 
 def test_vector_copy():
     data = np.arange(3, dtype="f4")
-    v = pla.Vector(*data)
+    v = pla.Vector(data)
     v2 = v.copy()
     assert v == v2
-    assert v._val is not v2._val
-    assert v2._val.flags.owndata
+    assert v.val is not v2.val
+    assert v2.val.flags.owndata
     assert v.dtype == v2.dtype
 
 
@@ -34,15 +34,15 @@ def test_vector_set():
     v = pla.Vector()
     assert v.y == 0
 
-    val = v._val
+    val = v.val
     v[:] = 0, 1, 0
     assert v.y == 1
     assert v[1] == 1
-    assert v._val[1] == 1
-    assert v._val is val
+    assert v.val[1] == 1
+    assert v.val is val
 
     v.y = 2
     assert v.y == 2
     assert v[1] == 2
-    assert v._val[1] == 2
-    assert v._val is val
+    assert v.val[1] == 2
+    assert v.val is val

@@ -1,4 +1,4 @@
-# General conventions
+# Style conventions
 
 ## Docstrings
 
@@ -9,7 +9,7 @@ Docstrings shall be written in NumpyDoc format.
 TBD: I'm not very familiar with the latest and greatest type annotation
 options for libraries that make heavy use of numpy arrays like this one.
 
-## Style
+## Linting
 
 Linting shall be performed with flake8, flake8-isort, flake8-black and pep8-naming.
 
@@ -76,6 +76,40 @@ can be created.
 
 # Object oriented API conventions
 
-TBD
+This API is for external use and for novice-users that want to
+perform linear algebra operations on conceptually familiar primitives.
+
+In this API each "thing" is represented as one object. 
+This API should make any linalg work much easier and safer, partly
+because semantics matters here: a point is not the same as a vector.
+
+These objects are array-like and iterable to make them easy to
+convert to native Python/Numpy objects. The objects support native python
+operators such as `__mul__` where applicable, and have methods
+specific to the type of object.
 
 Extensive input validation and ease of use is prioritized over performance.
+
+## Imports cycles
+
+Since the classes here will regularly need to instantiate other types,
+circular import dependencies exist. To work around this, only the `LinalgBase`
+type can be imported at module level, and other types will have to be imported
+at runtime in methods.
+
+## Function naming
+
+* Names should be concise and short.
+* For every method, there is an alternative in-place method, signified
+  with the prefix `i`. This is not the prettiest option, but it is
+  concise and short.
+
+## Copying and mutability
+
+* By default, methods return new objects, and do not mutate self. Such
+  methods shall be referred to as "copying methods".
+* In-place methods return `self` to enable function chaining.
+
+## Function signatures
+
+* Copying functions accept a dtype parameter, in-place methods do not.
