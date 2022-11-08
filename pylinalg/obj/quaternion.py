@@ -1,6 +1,5 @@
 import numpy as np
 
-from .base import LinalgBase
 from ..func import (
     matrix_to_quaternion,
     quaternion_add_quaternion,
@@ -12,6 +11,7 @@ from ..func import (
     quaternion_subtract_quaternion,
     quaternion_to_matrix,
 )
+from .base import LinalgBase
 
 
 class Quaternion(LinalgBase):

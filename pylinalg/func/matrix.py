@@ -2,7 +2,6 @@ from functools import partial, reduce
 
 import numpy as np
 
-
 matrix_combine = partial(reduce, np.dot)
 
 

@@ -11,7 +11,7 @@ options for libraries that make heavy use of numpy arrays like this one.
 
 ## Style
 
-Linting shall be performed with flake8, flake8-import-order, flake8-black and pep8-naming.
+Linting shall be performed with flake8, flake8-isort, flake8-black and pep8-naming.
 
 Max line length: 88.
 

@@ -1,7 +1,7 @@
 import numpy as np
 
-from .base import LinalgBase
 from ..func import vector_add_vector, vector_mul_scalar, vector_mul_vector
+from .base import LinalgBase
 
 
 class Vector(LinalgBase):

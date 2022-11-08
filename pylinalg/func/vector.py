@@ -1,6 +1,5 @@
 import numpy as np
 
-
 vector_add_vector = np.add
 vector_sub_vector = np.subtract
 vector_mul_vector = np.multiply

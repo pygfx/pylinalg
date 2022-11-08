@@ -1,6 +1,5 @@
 import numpy as np
 
-from .base import LinalgBase
 from ..func import (
     matrix_compose,
     matrix_decompose,
@@ -8,6 +7,7 @@ from ..func import (
     matrix_make_orthographic,
     matrix_make_perspective,
 )
+from .base import LinalgBase
 
 
 class Matrix(LinalgBase):
@@ -55,8 +55,8 @@ class Matrix(LinalgBase):
         return self
 
     def decompose(self, translation=None, rotation=None, scaling=None):
-        from .vector import Vector
         from .quaternion import Quaternion
+        from .vector import Vector
 
         if translation is None:
             translation = Vector()
