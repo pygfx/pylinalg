@@ -13,11 +13,9 @@ options for libraries that make heavy use of numpy arrays like this one.
 
 Linting shall be performed with flake8, flake8-isort, flake8-black and pep8-naming.
 
-Max line length: 88.
-
-Import order shall be google-style.
-
 Automated formatting shall be performed with black and isort.
+
+Black is left at defaults, flake8 and isort are configured to adhere to black.
 
 ## Testing
 
