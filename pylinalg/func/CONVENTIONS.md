@@ -1,17 +1,25 @@
-# Functional API
-
-The functional API has rather verbose names, but it makes things
-explicit.
-
-Each function accepts either singletons or arrays of
-"things", and uses Numpy's broadcasting to just make it work.
+# Functional API conventions
 
 This API is for internal use and for power-users that want to
 vectorize operations on large sets of things.
 
 Performance is prioritized over extensive input validation.
 
-# Conventions
+# Naming
+
+The functional API has rather verbose names, but it makes things
+explicit.
+
+# Docstrings
+
+Docstrings shall be written in NumpyDoc format.
+
+# Type annotations
+
+TBD: I'm not very familiar with the latest and greatest type annotation
+options for libraries that make heavy use of numpy arrays like this one.
+
+# Signatures
 
 We strive to align closely with the conventions of [numpy](https://numpy.org/doc/stable/reference/ufuncs.html#ufuncs-kwargs)
 in order to be least-surprising for pylinalg users.
