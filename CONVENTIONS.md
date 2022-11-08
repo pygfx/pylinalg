@@ -1,25 +1,15 @@
-# Functional API conventions
+# General conventions
 
-This API is for internal use and for power-users that want to
-vectorize operations on large sets of things.
-
-Performance is prioritized over extensive input validation.
-
-# Function naming
-
-The functional API has rather verbose names, but it makes things
-explicit.
-
-# Docstrings
+## Docstrings
 
 Docstrings shall be written in NumpyDoc format.
 
-# Type annotations
+## Type annotations
 
 TBD: I'm not very familiar with the latest and greatest type annotation
 options for libraries that make heavy use of numpy arrays like this one.
 
-# Style
+## Style
 
 Linting shall be performed with flake8, flake8-import-order, flake8-black and pep8-naming.
 
@@ -29,11 +19,24 @@ Import order shall be google-style.
 
 Automated formatting shall be performed with black and isort.
 
-# Testing
+## Testing
 
 All functions need to be covered by unit tests.
 
-# Signatures
+
+# Functional API conventions
+
+This API is for internal use and for power-users that want to
+vectorize operations on large sets of things.
+
+Performance is prioritized over extensive input validation.
+
+## Function naming
+
+The functional API has rather verbose names, but it makes things
+explicit.
+
+## Function signatures
 
 We strive to align closely with the conventions of [numpy](https://numpy.org/doc/stable/reference/ufuncs.html#ufuncs-kwargs)
 in order to be least-surprising for pylinalg users.
@@ -71,3 +74,10 @@ possible to simply alias a numpy function to avoid all overhead and
 implement the conventions. Optionally `functools.partial`
 can be used to limit the available arguments, or a small wrapper function
 can be created.
+
+
+# Object oriented API conventions
+
+TBD
+
+Extensive input validation and ease of use is prioritized over performance.

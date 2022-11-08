@@ -17,6 +17,7 @@ flake8 = "^5.0.4"
 black = "^22.8.0"
 flake8-black = "^0.3.3"
 flake8-import-order = "^0.18.1"
+pep8-naming = "^0.13.2"
 pytest-cov = "^3.0.0"
 twine = { version = "^4.0.1", python = "<4.0.0" }
 pytest-watcher = { version = "^0.2.3", python = "<4.0.0" }
