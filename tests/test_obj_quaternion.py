@@ -137,8 +137,8 @@ def test_quaternion_inverse():
 
 def test_quaternion_from_axis_angle():
     q = pla.Quaternion.from_axis_angle([1, 0, 0], np.pi / 2)
-    assert q == [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2]
+    npt.assert_array_almost_equal(q, [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2])
 
     q = pla.Quaternion()
     q.ifrom_axis_angle([1, 0, 0], np.pi / 2)
-    assert q == [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2]
+    npt.assert_array_almost_equal(q, [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2])
