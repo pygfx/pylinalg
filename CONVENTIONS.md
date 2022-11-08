@@ -4,9 +4,13 @@
 
 Docstrings shall be written in NumpyDoc format.
 
+Docstrings can either be just the summary text, or they must be complete.
+
 ## Type annotations
 
-TBD: I'm not very familiar with the latest and greatest type annotation
+Type annotations will not be applied (for now).
+
+Note: I'm not very familiar with the latest and greatest type annotation
 options for libraries that make heavy use of numpy arrays like this one.
 
 ## Linting
@@ -28,6 +32,9 @@ This API is for internal use and for power-users that want to
 vectorize operations on large sets of things.
 
 Performance is prioritized over extensive input validation.
+
+The source for this API resides in the `pylinalg.func` subpackage and is organized
+by type.
 
 ## Function naming
 
@@ -90,6 +97,9 @@ specific to the type of object.
 
 Extensive input validation and ease of use is prioritized over performance.
 
+The source for this API resides in the `pylinalg.obj` subpackage and is organized
+by type.
+
 ## Imports cycles
 
 Since the classes here will regularly need to instantiate other types,
@@ -112,4 +122,4 @@ at runtime in methods.
 
 ## Function signatures
 
-* Copying functions accept a dtype parameter, in-place methods do not.
+* Copying functions accept a `dtype` keyword argument, in-place methods do not.
