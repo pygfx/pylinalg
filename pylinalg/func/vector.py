@@ -1,3 +1,5 @@
+from functools import partial
+
 import numpy as np
 
 vector_add_vector = np.add
@@ -47,7 +49,7 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
     ----------
     vectors : ndarray, [..., ndim]
         Array of vectors
-    transform : ndarray, [ndim + 1, ndim + 1]
+    matrix : ndarray, [ndim + 1, ndim + 1]
         Transformation matrix
     w : number, optional, default 1
         The value for the homogeneous dimensionality.
@@ -67,8 +69,6 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
     ndarray, [..., ndim]
         transformed vectors
     """
-    if out is None:
-        out = np.empty_like(vectors, dtype=dtype)
     vectors = vector_make_homogeneous(vectors, w=w)
     # usually when applying a transformation matrix to a vector
     # the vector is a column, so if you were to have an array of vectors
@@ -76,5 +76,20 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
     # however, we instead have the convention (nvectors, ndim) where
     # vectors are rows.
     # therefore it is necessary to transpose the transformation matrix
-    out[:] = np.dot(vectors, matrix.T)[..., :-1]
+    # additionally we slice off the last row of the matrix, since we are not interested
+    # in the resulting w coordinate
+    transform = matrix[:-1, :].T
+    if out is not None:
+        try:
+            # if `out` is exactly compatible, that is the most performant
+            return np.dot(vectors, transform, out=out)
+        except ValueError:
+            # otherwise we need a temporary array and cast
+            out[:] = np.dot(vectors, transform)
+            return out
+    # otherwise just return whatever dot computes
+    out = np.dot(vectors, transform)
+    # cast if requested
+    if dtype is not None:
+        out = out.astype(dtype)
     return out

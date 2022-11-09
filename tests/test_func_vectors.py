@@ -96,6 +96,42 @@ def test_vector_apply_translation():
     )
 
 
+def test_vector_apply_matrix_out():
+    vectors = np.array([[1, 0, 0]], dtype="f4")
+    out = np.empty_like(vectors, dtype="i4")
+    matrix = pla.matrix_make_translation([-1, 2, 2])
+    result = pla.vector_apply_matrix(vectors, matrix, out=out)
+
+    assert result is out
+
+
+def test_vector_apply_matrix_out_performant():
+    vectors = np.array([[1, 0, 0]], dtype="f4")
+    out = np.empty_like(vectors, dtype="f8")
+    matrix = pla.matrix_make_translation([-1, 2, 2])
+    result = pla.vector_apply_matrix(vectors, matrix, out=out)
+
+    assert result is out
+
+
+def test_vector_apply_matrix_dtype():
+    vectors = np.array([[1, 0, 0]], dtype="f4")
+    matrix = pla.matrix_make_translation([-1, 2, 2])
+    result = pla.vector_apply_matrix(vectors, matrix, dtype="i2")
+
+    assert result.dtype == "i2"
+
+
+def test_vector_apply_matrix_out_dtype():
+    vectors = np.array([[1, 0, 0]], dtype="f4")
+    matrix = pla.matrix_make_translation([-1, 2, 2])
+    out = np.empty_like(vectors, dtype="i4")
+    result = pla.vector_apply_matrix(vectors, matrix, out=out, dtype="i2")
+
+    assert result is out
+    assert result.dtype == "i4"
+
+
 def test_vector_apply_rotation_about_z_matrix():
     """Test that a positive pi/2 rotation about the z-axis results
     in counter clockwise rotation, in accordance with the unit circle."""
