@@ -4,18 +4,22 @@
 
 Docstrings shall be written in NumpyDoc format.
 
-Docstrings can either be just the summary text, or they must be complete.
+At least the following sections shall be provided:
+
+* the short summary (one sentence at the top)
+* the parameters section (if the function has input arguments)
+* the returns section (if the function returns anything other than `None`)
 
 ## Type annotations
 
-Type annotations will not be applied (for now).
-
-Note: I'm not very familiar with the latest and greatest type annotation
-options for libraries that make heavy use of numpy arrays like this one.
+Until Numpy version 1.22+ becomes generally adopted this library will not provide type annotations.
 
 ## Linting
 
 Linting shall be performed with flake8, flake8-isort, flake8-black and pep8-naming.
+
+The default configurations for these linting tools shall be upheld, which includes
+pep8 style and naming conventions.
 
 Automated formatting shall be performed with black and isort.
 
@@ -41,38 +45,68 @@ by type.
 The functional API has rather verbose names, but it makes things
 explicit.
 
+TBD: Provide examples and identify patterns.
+
 ## Function signatures
 
-We strive to align closely with the conventions of [numpy](https://numpy.org/doc/stable/reference/ufuncs.html#ufuncs-kwargs)
-in order to be least-surprising for pylinalg users.
+We strive to align closely with numpy conventions in order to be least-surprising
+for users accustomed to numpy.
 
-All functions shall adhere as much possible to the following signature:
+* Data arguments feeding into computation are positional-only.
+* Optional arguments affecting the result of computation are keyword-only.
+* The `dtype` and `out` arguments are available whenever possible, and they
+  work as they do in numpy:
+  * The `out` argument can be provided to write the results to an existing array,
+    instead of a new array.
+  * If there are multiple outputs, `out` is expected to be a tuple
+    with matching number of elements.
+  * If a `dtype` is provided and `out` is `None`, the `dtype` argument is used to set
+    the return array data-type.
 
-`func(x1, x2, ..., /, *, out=None, dtype=None, **kwargs)`
+Here is an example of a function that complies with the conventions posed in
+this document:
 
-* All input arguments are positional-only.
-* There can be as many input arguments as needed for the function signature to make sense.
-* Input arguments are always [`array_like`](https://numpy.org/doc/stable/glossary.html?highlight=array_like#term-array_like):
-    * "Any scalar or sequence that can be interpreted as an ndarray. In
-      addition to ndarrays and scalars this category includes lists
-      (possibly nested and with different element types) and tuples.
-      Any argument accepted by `np.array` is `array_like`."
-    * TBD: require a call to `np.asarray` or `np.asanyarray` on inputs?
-* All non-input arguments are keyword-only.
-* If `out` is `None` (the default), a new return array is created. Otherwise,
-  the result of the function is written to `out`.
-    * If there are multiple outputs, `out` is expected to be a tuple
-      with matching number of elements.
-* If `dtype` is `None` (the default), the dtype of the return array
-  will be determined automatically by numpy based on the operations
-  performed on the inputs. Otherwise, the dtype of the output array(s) is
-  overridden with the
-  provided dtype with a call to `ndarray.astype`. This should ensure
-  a matching precision of the calculation. The exact calculation
-  dtypes chosen may depend on the function and the inputs may be cast
-  to this dtype to perform the calculation.
-* There may be additional keyword-only arguments as required by
-  the specifics of individual functions.
+```python
+def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
+    """
+    Transform vectors by a transformation matrix.
+
+    Parameters
+    ----------
+    vectors : ndarray, [..., ndim]
+        Array of vectors
+    transform : ndarray, [ndim + 1, ndim + 1]
+        Transformation matrix
+    w : number, optional, default 1
+        The value for the homogeneous dimensionality.
+        this affects the result of translation transforms. use 0 (vectors)
+        if the translation component should not be applied, 1 (positions)
+        otherwise.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    ndarray, [..., ndim]
+        transformed vectors
+    """
+    if out is None:
+        out = np.empty_like(vectors, dtype=dtype)
+    vectors = vector_make_homogeneous(vectors, w=w)
+    # usually when applying a transformation matrix to a vector
+    # the vector is a column, so if you were to have an array of vectors
+    # it would have shape (ndim, nvectors).
+    # however, we instead have the convention (nvectors, ndim) where
+    # vectors are rows.
+    # therefore it is necessary to transpose the transformation matrix
+    out[:] = np.dot(vectors, matrix.T)[..., :-1]
+    return out
+```
 
 Since the conventions align with those of numpy, in some cases, it is
 possible to simply alias a numpy function to avoid all overhead and
