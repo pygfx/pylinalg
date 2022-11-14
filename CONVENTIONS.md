@@ -45,7 +45,15 @@ by type.
 The functional API has rather verbose names, but it makes things
 explicit.
 
-TBD: Provide examples and identify patterns.
+Since all functions are exposed on the root `pylinalg` module object,
+a simple naming scheme is put in place:
+
+* Functions are organized by type. For example, functions that work on
+  matrices, or create matrices, go into the `pylinalg/func/matrix.py` module
+  and their function names are prefixed by `matrix_`.
+* Creation routines, for example a function that creates a new rotation matrix
+  based on an axis and an angle, are additionally prefixed with `make_`, e.g.
+  `matrix_make_rotation_angle_axis` would be a candidate function name.
 
 ## Function signatures
 
@@ -121,12 +129,13 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
     return out
 ```
 
-Since the conventions align with those of numpy, in some cases, it is
-possible to simply alias a numpy function to avoid all overhead and
-implement the conventions. Optionally `functools.partial`
-can be used to limit the available arguments, or a small wrapper function
-can be created.
+## Note on linear algebra operations already provided by numpy
 
+Since the conventions align with those of numpy, in some cases, it just
+does not make sense to add the function this library and incur all the overhead
+of maintenance, documentation and testing. For example, a function to perform
+vector addition would be exactly equal to the `np.add` function, and as such,
+it is not necessary to add them to pylinalg.
 
 # Object oriented API conventions
 
