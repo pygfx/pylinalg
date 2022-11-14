@@ -146,7 +146,7 @@ In this API each "thing" is represented as one object.
 This API should make any linalg work much easier and safer, partly
 because semantics matters here: a point is not the same as a vector.
 
-These objects are array-like and iterable to make them easy to
+These objects are backed by an array-like structure and are thus easy to
 convert to native Python/Numpy objects. The objects support native python
 operators such as `__mul__` where applicable, and have methods
 specific to the type of object.
