@@ -2,77 +2,201 @@ from functools import partial, reduce
 
 import numpy as np
 
+
 matrix_combine = partial(reduce, np.dot)
+matrix_combine.__doc__ = """
+Combine a list of affine matrices by multiplying them.
+
+Note that by matrix multiplication rules, the output matrix will applied the
+given transformations in reverse order. For example, passing a scaling,
+rotation and translation matrix (in that order), will lead to a combined
+transformation matrix that applies translation first, then rotation and finally
+scaling.
+
+Parameters
+----------
+matrices : list of ndarray, [4, 4]
+    List of affine matrices to combine.
+
+Returns
+-------
+ndarray, [4, 4]
+    Combined transformation matrix.
+"""
 
 
-def matrix_make_translation(vector, dtype="f8"):
-    """Make a matrix given a translation vector, or a
-    single offset to apply to all axes."""
-    vector = np.asarray(vector, dtype=dtype)
+def matrix_make_translation(vector, /, *, out=None, dtype=None):
+    """
+    Make a translationmatrix given a translation vector.
 
-    vector = np.atleast_1d(vector)
-    if vector.ndim != 1:
-        raise NotImplementedError()
+    Parameters
+    ----------
+    vector : number or ndarray, [3]
+        translation vector
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
 
-    if vector.size == 1:
-        vector = np.full((3,), vector[0], dtype=dtype)
-    elif vector.shape != (3,):
-        raise NotImplementedError()
+    Returns
+    -------
+    ndarray, [4, 4]
+        Translation matrix.
+    """
+    vector = np.asarray(vector)
 
     matrix = np.identity(4, dtype=dtype)
     matrix[:-1, -1] = vector
+
+    if out is not None:
+        out[:] = matrix
+        return out
+    
     return matrix
 
 
-def matrix_make_scaling(factors, dtype="f8"):
-    """Make a matrix given scaling factors per axis, or a
-    single uniform scaling factor."""
-    factors = np.asarray(factors, dtype=dtype)
+def matrix_make_scaling(factors, /, *, out=None, dtype=None):
+    """
+    Make a scaling matrix given scaling factors per axis, or a
+    single uniform scaling factor.
 
-    factors = np.atleast_1d(factors)
-    if factors.ndim != 1:
-        raise NotImplementedError()
+    Parameters
+    ----------
+    factor : number or ndarray, [3]
+        scaling factor(s)
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
 
-    if factors.size == 1:
-        factors = np.full((3,), factors[0], dtype=dtype)
-    elif factors.shape != (3,):
-        raise NotImplementedError()
+    Returns
+    -------
+    ndarray, [4, 4]
+        Scaling matrix.
+    """
+    factors = np.asarray(factors)
 
     matrix = np.identity(4, dtype=dtype)
-    matrix[0, 0] = factors[0]
-    matrix[1, 1] = factors[1]
-    matrix[2, 2] = factors[2]
+    matrix[np.diag_indices(3)] = factors
+
+    if out is not None:
+        out[:] = matrix
+        return out
+
     return matrix
 
 
-def matrix_make_rotation_from_euler_angles(angles, order="xyz", dtype="f8"):
-    """Make a matrix given euler angles per axis."""
+def matrix_make_rotation_from_euler_angles(angles, /, *, order="xyz", out=None, dtype=None):
+    """
+    Make a matrix given euler angles (in radians) per axis.
+
+    Parameters
+    ----------
+    angles : ndarray, [3]
+        The euler angles.
+    order : string, optional
+        The order in which the rotations should be applied. Default
+        is "xyz".
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    ndarray, [4, 4]
+        Rotation matrix.
+    """
     angles = np.asarray(angles)
-    matrix = {
-        "x": np.identity(4, dtype=dtype),
-        "y": np.identity(4, dtype=dtype),
-        "z": np.identity(4, dtype=dtype),
+
+    matrix_x = np.identity(4)
+    matrix_y = np.identity(4)
+    matrix_z = np.identity(4)
+
+    matrix_x[1, 1] = np.cos(angles[0])
+    matrix_x[1, 2] = -np.sin(angles[0])
+    matrix_x[2, 1] = np.sin(angles[0])
+    matrix_x[2, 2] = np.cos(angles[0])
+
+    matrix_y[0, 0] = np.cos(angles[1])
+    matrix_y[0, 2] = np.sin(angles[1])
+    matrix_y[2, 0] = -np.sin(angles[1])
+    matrix_y[2, 2] = np.cos(angles[1])
+
+    matrix_z[0, 0] = np.cos(angles[2])
+    matrix_z[0, 1] = -np.sin(angles[2])
+    matrix_z[1, 0] = np.sin(angles[2])
+    matrix_z[1, 1] = np.cos(angles[2])
+
+    lookup = {
+        "x": matrix_x,
+        "y": matrix_y,
+        "z": matrix_z,
     }
+    matrix = matrix_combine([lookup[i] for i in reversed(order.lower())])
 
-    matrix["x"][1, 1] = np.cos(angles[0])
-    matrix["x"][1, 2] = -np.sin(angles[0])
-    matrix["x"][2, 1] = np.sin(angles[0])
-    matrix["x"][2, 2] = np.cos(angles[0])
+    if out is not None:
+        out[:] = matrix
+        return out
 
-    matrix["y"][0, 0] = np.cos(angles[1])
-    matrix["y"][0, 2] = np.sin(angles[1])
-    matrix["y"][2, 0] = -np.sin(angles[1])
-    matrix["y"][2, 2] = np.cos(angles[1])
+    if dtype is not None:
+        matrix = matrix.astype(dtype, copy=False)
 
-    matrix["z"][0, 0] = np.cos(angles[2])
-    matrix["z"][0, 1] = -np.sin(angles[2])
-    matrix["z"][1, 0] = np.sin(angles[2])
-    matrix["z"][1, 1] = np.cos(angles[2])
-
-    return matrix_combine([matrix[i] for i in reversed(order.lower())])
+    return matrix
 
 
-def matrix_to_quaternion(matrix, out=None, dtype="f8"):
+def matrix_make_rotation_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
+    """
+    Make a rotation matrix given a rotation axis and an angle (in radians).
+
+    Parameters
+    ----------
+    axis : ndarray, [3]
+        The rotation axis.
+    angle : number
+        The angle (in radians) to rotate about the axis.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    ndarray, [4, 4]
+        Rotation matrix.
+    """
+    axis = np.asarray(axis)
+
+    matrix = np.identity(4)
+    rotation = np.cos(angle) * matrix[:3, :3]
+    # the second component here is the "cross product matrix" of axis
+    rotation += np.sin(angle) * np.cross(axis, matrix[:3, :3] * -1)
+    rotation += (1 - np.cos(angle)) * (np.outer(axis, axis))
+    matrix[:3, :3] = rotation
+
+    if out is not None:
+        out[:] = matrix
+        return out
+
+    if dtype is not None:
+        matrix = matrix.astype(dtype, copy=False)
+
+    return matrix
+
+
+def matrix_to_quaternion(matrix, out=None, dtype=None):
     m = matrix[:3, :3]
     t = np.trace(m)
 
@@ -110,10 +234,7 @@ def matrix_to_quaternion(matrix, out=None, dtype="f8"):
     return out
 
 
-matrix_inverse = np.linalg.inv
-
-
-def matrix_compose(translation, rotation, scaling, out=None, dtype="f8"):
+def matrix_compose(translation, rotation, scaling, out=None, dtype=None):
     from .quaternion import quaternion_to_matrix
 
     translation = np.asarray(translation)
@@ -132,7 +253,7 @@ def matrix_compose(translation, rotation, scaling, out=None, dtype="f8"):
     return out
 
 
-def matrix_decompose(matrix, translation=None, rotation=None, scaling=None, dtype="f8"):
+def matrix_decompose(matrix, translation=None, rotation=None, scaling=None, dtype=None):
     matrix = np.asarray(matrix)
 
     if translation is None:
@@ -153,7 +274,7 @@ def matrix_decompose(matrix, translation=None, rotation=None, scaling=None, dtyp
     return translation, rotation, scaling
 
 
-def matrix_make_perspective(left, right, top, bottom, near, far, out=None, dtype="f8"):
+def matrix_make_perspective(left, right, top, bottom, near, far, out=None, dtype=None):
     if out is None:
         out = np.empty((4, 4), dtype=dtype)
 
@@ -177,7 +298,7 @@ def matrix_make_perspective(left, right, top, bottom, near, far, out=None, dtype
     return out
 
 
-def matrix_make_orthographic(left, right, top, bottom, near, far, out=None, dtype="f8"):
+def matrix_make_orthographic(left, right, top, bottom, near, far, out=None, dtype=None):
     if out is None:
         out = np.empty((4, 4), dtype=dtype)
 

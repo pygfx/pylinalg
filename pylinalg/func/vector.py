@@ -1,15 +1,31 @@
-from functools import partial
-
 import numpy as np
 
-vector_add_vector = np.add
-vector_sub_vector = np.subtract
-vector_mul_vector = np.multiply
-vector_div_vector = np.divide
-vector_add_scalar = np.add
-vector_sub_scalar = np.subtract
-vector_mul_scalar = np.multiply
-vector_div_scalar = np.divide
+
+def vector_normalize(vectors, /, *, out=None, dtype=None):
+    """
+    Normalize an array of vectors.
+
+    Parameters
+    ----------
+    vectors : array_like, [..., ndim]
+        array of vectors
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    ndarray, [..., ndim]
+        array of normalized vectors.
+    """
+    vectors = np.asarray(vectors)
+    if out is None:
+        out = np.empty_like(vectors, dtype=dtype)
+    return np.divide(vectors, np.linalg.norm(vectors, axis=-1)[:, None], out=out)
 
 
 def vector_make_homogeneous(vectors, /, *, w=1, out=None, dtype=None):
@@ -25,7 +41,14 @@ def vector_make_homogeneous(vectors, /, *, w=1, out=None, dtype=None):
         this affects the result of translation transforms. use 0 (vectors)
         if the translation component should not be applied, 1 (positions)
         otherwise.
-
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+    
     Returns
     -------
     ndarray, [..., ndim + 1]
@@ -91,5 +114,5 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
     out = np.dot(vectors, transform)
     # cast if requested
     if dtype is not None:
-        out = out.astype(dtype)
+        out = out.astype(dtype, copy=False)
     return out

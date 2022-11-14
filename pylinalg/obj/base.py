@@ -19,9 +19,6 @@ class LinalgBase:
         else:
             self.val = self._initializer(dtype=dtype)
 
-    def copy(self, *args, **kwargs):
-        return self.__class__(self.val.copy(*args, **kwargs))
-
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.val}>"
 
@@ -35,7 +32,14 @@ def create_proxy(name, is_callable):
     if is_callable:
 
         def proxy(self, *args, **kwargs):
-            return getattr(self.val, name)(*args, **kwargs)
+            retval = getattr(self.val, name)(*args, **kwargs)
+            # we assume that if the shape has not changed
+            # the result can safely be wrapped
+            # if that is unexpected, subclasses will have to override
+            # the method behavior
+            if isinstance(retval, np.ndarray) and retval.shape == self.val.shape:
+                return self.__class__(retval)
+            return retval
 
     else:
 

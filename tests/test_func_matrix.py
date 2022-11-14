@@ -133,6 +133,38 @@ def test_matrix_make_rotation_from_euler_angles_dtype():
     assert result.dtype == "i2"
 
 
+def test_matrix_make_rotation_from_axis_angle_direction():
+    """Test that a positive pi/2 rotation about the z-axis results
+    in counter clockwise rotation, in accordance with the unit circle."""
+    result = pla.matrix_make_rotation_from_axis_angle([0, 0, 1], np.pi/2)
+    npt.assert_array_almost_equal(
+        result,
+        [
+            [0, -1, 0, 0],
+            [1, 0, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1],
+        ],
+    )
+
+
+def test_matrix_make_rotation_from_axis_angle_xy():
+    """Test that a negative pi rotation about the diagonal of the x-y plane
+    flips the x and y coordinates, and negates the z coordinate."""
+    axis = np.array([1, 1, 0], dtype="f8")
+    axis /= np.linalg.norm(axis)
+    result = pla.matrix_make_rotation_from_axis_angle(axis, - np.pi)
+    npt.assert_array_almost_equal(
+        result,
+        [
+            [0, 1, 0, 0],
+            [1, 0, 0, 0],
+            [0, 0, -1, 0],
+            [0, 0, 0, 1],
+        ],
+    )
+
+
 @pytest.mark.parametrize(
     "angles,expected,dtype",
     [
@@ -192,17 +224,6 @@ def test_matrix_combine():
             [0, 0, 0, 1],
         ],
     )
-
-
-def test_matrix_inverse():
-    matrix = np.identity(4, dtype="f8")
-    matrix[0, 1] = 5
-    result = pla.matrix_inverse(matrix)
-    npt.assert_array_equal(
-        np.linalg.inv(matrix),
-        result,
-    )
-    assert result.dtype == "f8"
 
 
 def test_matrix_compose():

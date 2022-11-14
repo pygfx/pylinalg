@@ -34,10 +34,6 @@ def quaternion_to_matrix(q, out=None):
     return out
 
 
-quaternion_add_quaternion = np.add
-quaternion_subtract_quaternion = np.subtract
-
-
 def quaternion_multiply_quaternion(a, b, out=None):
     if out is None:
         out = np.empty(4, dtype=a.dtype)
@@ -51,9 +47,6 @@ def quaternion_multiply_quaternion(a, b, out=None):
     return out
 
 
-quaternion_norm = np.linalg.norm
-
-
 def quaternion_from_unit_vectors(a, b, out=None, dtype=None):
     if out is None:
         out = np.empty(4, dtype=dtype)
@@ -64,7 +57,7 @@ def quaternion_from_unit_vectors(a, b, out=None, dtype=None):
     out[:3] = xyz
     out[3] = w
 
-    out /= quaternion_norm(out)
+    out /= np.linalg.norm(out)
 
     return out
 
