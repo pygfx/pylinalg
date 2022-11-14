@@ -125,7 +125,7 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
     out = np.dot(vectors, transform)
     # cast if requested
     if dtype is not None:
-        out = out.astype(dtype)
+        out = out.astype(dtype, copy=False)
     return out
 ```
 
