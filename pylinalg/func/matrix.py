@@ -1,28 +1,45 @@
-from functools import partial, reduce
-
 import numpy as np
 
 
-matrix_combine = partial(reduce, np.dot)
-matrix_combine.__doc__ = """
-Combine a list of affine matrices by multiplying them.
+def matrix_combine(matrices, /, *, out=None, dtype=None):
+    """
+    Combine a list of affine matrices by multiplying them.
 
-Note that by matrix multiplication rules, the output matrix will applied the
-given transformations in reverse order. For example, passing a scaling,
-rotation and translation matrix (in that order), will lead to a combined
-transformation matrix that applies translation first, then rotation and finally
-scaling.
+    Note that by matrix multiplication rules, the output matrix will applied the
+    given transformations in reverse order. For example, passing a scaling,
+    rotation and translation matrix (in that order), will lead to a combined
+    transformation matrix that applies translation first, then rotation and finally
+    scaling.
 
-Parameters
-----------
-matrices : list of ndarray, [4, 4]
-    List of affine matrices to combine.
+    Parameters
+    ----------
+    matrices : list of ndarray, [4, 4]
+        List of affine matrices to combine.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
 
-Returns
--------
-ndarray, [4, 4]
-    Combined transformation matrix.
-"""
+    Returns
+    -------
+    ndarray, [4, 4]
+        Combined transformation matrix.
+    """
+    n = len(matrices)
+    if n < 2:
+        raise ValueError("need at least two matrices to combine")
+    if out is None:
+        out = np.empty((4, 4), dtype=dtype)
+    out[:] = matrices[0]
+    for matrix in matrices[1:]:
+        try:
+            np.dot(out, matrix, out=out)
+        except ValueError:
+            out[:] = np.dot(out, matrix)
+    return out
 
 
 def matrix_make_translation(vector, /, *, out=None, dtype=None):
@@ -196,7 +213,27 @@ def matrix_make_rotation_from_axis_angle(axis, angle, /, *, out=None, dtype=None
     return matrix
 
 
-def matrix_to_quaternion(matrix, out=None, dtype=None):
+def matrix_to_quaternion(matrix, /, *, out=None, dtype=None):
+    """
+    Make a quaternion given a rotation matrix.
+
+    Parameters
+    ----------
+    matrix : ndarray, [3]
+        The rotation matrix.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    ndarray, [4]
+        Quaternion.
+    """
     m = matrix[:3, :3]
     t = np.trace(m)
 
@@ -234,42 +271,93 @@ def matrix_to_quaternion(matrix, out=None, dtype=None):
     return out
 
 
-def matrix_compose(translation, rotation, scaling, out=None, dtype=None):
+def matrix_compose(translation, rotation, scaling, /, *, out=None, dtype=None):
+    """
+    Compose a transformation matrix given a translation vector, a
+    quaternion and a scaling vector.
+
+    Parameters
+    ----------
+    translation : number or ndarray, [3]
+        translation vector
+    rotation : ndarray, [4]
+        quaternion
+    scaling : number or ndarray, [3]
+        scaling factor(s)
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    ndarray, [4, 4]
+        Transformation matrix
+    """
     from .quaternion import quaternion_to_matrix
 
-    translation = np.asarray(translation)
-    rotation = np.asarray(rotation)
-    scaling = np.asarray(scaling)
-
-    if out is None:
-        out = np.empty((4, 4), dtype=dtype)
-    out[:] = matrix_combine(
+    return matrix_combine(
         [
             matrix_make_translation(translation),
             quaternion_to_matrix(rotation),
             matrix_make_scaling(scaling),
-        ]
+        ],
+        out=out,
+        dtype=dtype,
     )
-    return out
 
 
-def matrix_decompose(matrix, translation=None, rotation=None, scaling=None, dtype=None):
+def matrix_decompose(matrix, /, *, dtype=None, out=None):
+    """
+    Decompose a transformation matrix into a translation vector, a
+    quaternion and a scaling vector.
+
+    Parameters
+    ----------
+    matrix : ndarray, [4, 4]
+        transformation matrix
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    translation : ndarray, [3]
+        translation vector
+    rotation : ndarray, [4]
+        quaternion
+    scaling : ndarray, [3]
+        scaling factor(s)
+    """
     matrix = np.asarray(matrix)
 
-    if translation is None:
+    if out is not None:
+        translation = out[0]
+    else:
         translation = np.empty((3,), dtype=dtype)
     translation[:] = matrix[:-1, -1]
 
-    if scaling is None:
+    if out is not None:
+        scaling = out[2]
+    else:
         scaling = np.empty((3,), dtype=dtype)
     scaling[:] = np.linalg.norm(matrix[:-1, :-1], axis=0)
     if np.linalg.det(matrix) < 0:
         scaling[0] *= -1
 
-    normal_rotation_matrix = matrix[:-1, :-1] * (1 / scaling)[None, :]
-    if rotation is None:
+    if out is not None:
+        rotation = out[1]
+    else:
         rotation = np.empty((4,), dtype=dtype)
-    matrix_to_quaternion(normal_rotation_matrix, out=rotation)
+    rotation_matrix = matrix[:-1, :-1] * (1 / scaling)[None, :]
+    matrix_to_quaternion(rotation_matrix, out=rotation)
 
     return translation, rotation, scaling
 

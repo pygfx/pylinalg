@@ -225,6 +225,39 @@ def test_matrix_combine():
         ],
     )
 
+    with pytest.raises(TypeError):
+        pla.matrix_combine()
+    with pytest.raises(ValueError):
+        pla.matrix_combine([])
+    with pytest.raises(ValueError):
+        pla.matrix_combine([translation])
+    
+    result = pla.matrix_combine([translation, translation], dtype="f4")
+    npt.assert_array_almost_equal(
+        result,
+        [
+            [1, 0, 0, 4],
+            [0, 1, 0, 4],
+            [0, 0, 1, 4],
+            [0, 0, 0, 1],
+        ],
+    )
+    assert result.dtype == "f4"
+
+    temp = np.identity(4, dtype="i4")
+    result = pla.matrix_combine([translation, translation], out=temp, dtype="f4")
+    assert result is temp
+    npt.assert_array_almost_equal(
+        result,
+        [
+            [1, 0, 0, 4],
+            [0, 1, 0, 4],
+            [0, 0, 1, 4],
+            [0, 0, 0, 1],
+        ],
+    )
+    assert result.dtype == "i4"
+
 
 def test_matrix_compose():
     """Test that the matrices are composed correctly in SRT order."""
