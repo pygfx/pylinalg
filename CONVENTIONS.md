@@ -54,6 +54,8 @@ a simple naming scheme is put in place:
 * Creation routines, for example a function that creates a new rotation matrix
   based on an axis and an angle, are additionally prefixed with `make_`, e.g.
   `matrix_make_rotation_angle_axis` would be a candidate function name.
+* Conversion routines are named simply, taking the example of a matrix to
+  quaternion function: `matrix_to_quaternion`
 
 ## Function signatures
 

@@ -71,7 +71,7 @@ def matrix_make_translation(vector, /, *, out=None, dtype=None):
     if out is not None:
         out[:] = matrix
         return out
-    
+
     return matrix
 
 
@@ -109,7 +109,9 @@ def matrix_make_scaling(factors, /, *, out=None, dtype=None):
     return matrix
 
 
-def matrix_make_rotation_from_euler_angles(angles, /, *, order="xyz", out=None, dtype=None):
+def matrix_make_rotation_from_euler_angles(
+    angles, /, *, order="xyz", out=None, dtype=None
+):
     """
     Make a matrix given euler angles (in radians) per axis.
 
@@ -133,42 +135,35 @@ def matrix_make_rotation_from_euler_angles(angles, /, *, order="xyz", out=None, 
     ndarray, [4, 4]
         Rotation matrix.
     """
-    angles = np.asarray(angles)
+    a, b, c = angles
 
     matrix_x = np.identity(4)
     matrix_y = np.identity(4)
     matrix_z = np.identity(4)
 
-    matrix_x[1, 1] = np.cos(angles[0])
-    matrix_x[1, 2] = -np.sin(angles[0])
-    matrix_x[2, 1] = np.sin(angles[0])
-    matrix_x[2, 2] = np.cos(angles[0])
+    matrix_x[1, 1] = np.cos(a)
+    matrix_x[1, 2] = -np.sin(a)
+    matrix_x[2, 1] = np.sin(a)
+    matrix_x[2, 2] = np.cos(a)
 
-    matrix_y[0, 0] = np.cos(angles[1])
-    matrix_y[0, 2] = np.sin(angles[1])
-    matrix_y[2, 0] = -np.sin(angles[1])
-    matrix_y[2, 2] = np.cos(angles[1])
+    matrix_y[0, 0] = np.cos(b)
+    matrix_y[0, 2] = np.sin(b)
+    matrix_y[2, 0] = -np.sin(b)
+    matrix_y[2, 2] = np.cos(b)
 
-    matrix_z[0, 0] = np.cos(angles[2])
-    matrix_z[0, 1] = -np.sin(angles[2])
-    matrix_z[1, 0] = np.sin(angles[2])
-    matrix_z[1, 1] = np.cos(angles[2])
+    matrix_z[0, 0] = np.cos(c)
+    matrix_z[0, 1] = -np.sin(c)
+    matrix_z[1, 0] = np.sin(c)
+    matrix_z[1, 1] = np.cos(c)
 
     lookup = {
         "x": matrix_x,
         "y": matrix_y,
         "z": matrix_z,
     }
-    matrix = matrix_combine([lookup[i] for i in reversed(order.lower())])
-
-    if out is not None:
-        out[:] = matrix
-        return out
-
-    if dtype is not None:
-        matrix = matrix.astype(dtype, copy=False)
-
-    return matrix
+    return matrix_combine(
+        [lookup[i] for i in reversed(order.lower())], out=out, dtype=dtype
+    )
 
 
 def matrix_make_rotation_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
@@ -196,21 +191,19 @@ def matrix_make_rotation_from_axis_angle(axis, angle, /, *, out=None, dtype=None
     """
     axis = np.asarray(axis)
 
-    matrix = np.identity(4)
-    rotation = np.cos(angle) * matrix[:3, :3]
+    if out is None:
+        out = np.identity(4, dtype=dtype)
+    else:
+        out[:] = np.identity(4)
+
+    eye = out[:3, :3]
+    rotation = np.cos(angle) * eye
     # the second component here is the "cross product matrix" of axis
-    rotation += np.sin(angle) * np.cross(axis, matrix[:3, :3] * -1)
+    rotation += np.sin(angle) * np.cross(axis, eye * -1)
     rotation += (1 - np.cos(angle)) * (np.outer(axis, axis))
-    matrix[:3, :3] = rotation
+    out[:3, :3] = rotation
 
-    if out is not None:
-        out[:] = matrix
-        return out
-
-    if dtype is not None:
-        matrix = matrix.astype(dtype, copy=False)
-
-    return matrix
+    return out
 
 
 def matrix_to_quaternion(matrix, /, *, out=None, dtype=None):
@@ -352,19 +345,50 @@ def matrix_decompose(matrix, /, *, dtype=None, out=None):
     if np.linalg.det(matrix) < 0:
         scaling[0] *= -1
 
-    if out is not None:
-        rotation = out[1]
-    else:
-        rotation = np.empty((4,), dtype=dtype)
+    rotation = out[1] if out is not None else None
     rotation_matrix = matrix[:-1, :-1] * (1 / scaling)[None, :]
-    matrix_to_quaternion(rotation_matrix, out=rotation)
+    rotation = matrix_to_quaternion(rotation_matrix, out=rotation, dtype=dtype)
 
     return translation, rotation, scaling
 
 
-def matrix_make_perspective(left, right, top, bottom, near, far, out=None, dtype=None):
+def matrix_make_perspective(
+    left, right, top, bottom, near, far, /, *, out=None, dtype=None
+):
+    """
+    Create a perspective projection matrix.
+
+    Parameters
+    ----------
+    left : number
+        distance between the left frustum plane and the origin
+    right : number
+        distance between the right frustum plane and the origin
+    top : number
+        distance between the top frustum plane and the origin
+    bottom : number
+        distance between the bottom frustum plane and the origin
+    near : number
+        distance between the near frustum plane and the origin
+    far : number
+        distance between the far frustum plane and the origin
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    matrix : ndarray, [4, 4]
+        perspective projection matrix
+    """
     if out is None:
-        out = np.empty((4, 4), dtype=dtype)
+        out = np.zeros((4, 4), dtype=dtype)
+    else:
+        out[:] = 0.0
 
     x = 2 * near / (right - left)
     y = 2 * near / (top - bottom)
@@ -374,7 +398,6 @@ def matrix_make_perspective(left, right, top, bottom, near, far, out=None, dtype
     c = -(far + near) / (far - near)
     d = -2 * far * near / (far - near)
 
-    out[:] = 0
     out[0, 0] = x
     out[0, 2] = a
     out[1, 1] = y
@@ -386,9 +409,43 @@ def matrix_make_perspective(left, right, top, bottom, near, far, out=None, dtype
     return out
 
 
-def matrix_make_orthographic(left, right, top, bottom, near, far, out=None, dtype=None):
+def matrix_make_orthographic(
+    left, right, top, bottom, near, far, /, *, out=None, dtype=None
+):
+    """
+    Create an orthographic projection matrix.
+
+    Parameters
+    ----------
+    left : number
+        distance between the left frustum plane and the origin
+    right : number
+        distance between the right frustum plane and the origin
+    top : number
+        distance between the top frustum plane and the origin
+    bottom : number
+        distance between the bottom frustum plane and the origin
+    near : number
+        distance between the near frustum plane and the origin
+    far : number
+        distance between the far frustum plane and the origin
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    matrix : ndarray, [4, 4]
+        orthographic projection matrix
+    """
     if out is None:
-        out = np.empty((4, 4), dtype=dtype)
+        out = np.zeros((4, 4), dtype=dtype)
+    else:
+        out[:] = 0.0
 
     w = 1.0 / (right - left)
     h = 1.0 / (top - bottom)
@@ -398,7 +455,6 @@ def matrix_make_orthographic(left, right, top, bottom, near, far, out=None, dtyp
     y = (top + bottom) * h
     z = (far + near) * p
 
-    out[:] = 0
     out[0, 0] = 2 * w
     out[0, 3] = -x
     out[1, 1] = 2 * h

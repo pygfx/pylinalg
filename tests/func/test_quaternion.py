@@ -35,8 +35,7 @@ import pylinalg as pla
     ],
 )
 def test_quaternion_to_matrix(expected, quaternion, dtype):
-    quaternion = np.asarray(quaternion, dtype=dtype)
-    matrix = pla.quaternion_to_matrix(quaternion)
+    matrix = pla.quaternion_to_matrix(quaternion, dtype=dtype)
 
     expected_matrix = pla.matrix_make_rotation_from_euler_angles(expected, dtype=dtype)
     npt.assert_array_almost_equal(
@@ -47,31 +46,15 @@ def test_quaternion_to_matrix(expected, quaternion, dtype):
     assert matrix.dtype == dtype
 
 
-def test_quaternion_add_quaternion():
-    # quaternion corresponding to 90 degree rotation about z-axis
-    a = np.array([0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
-    b = np.array([0, 0, 0, 1])
-    c = pla.quaternion_add_quaternion(a, b)
-    npt.assert_array_equal(a + b, c)
-
-
-def test_quaternion_subtract_quaternion():
-    # quaternion corresponding to 90 degree rotation about z-axis
-    a = np.array([0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
-    b = np.array([0, 0, 0, 1])
-    c = pla.quaternion_subtract_quaternion(a, b)
-    npt.assert_array_equal(a - b, c)
-
-
 def test_quaternion_multiply_quaternion():
     # quaternion corresponding to 90 degree rotation about z-axis
     a = np.array([0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
     b = np.array([0, 0, 0, 1])
-    c = pla.quaternion_multiply_quaternion(a, b)
+    c = pla.quaternion_multiply(a, b)
     # multiplying by the identity quaternion
     npt.assert_array_equal(c, a)
 
-    d = pla.quaternion_multiply_quaternion(a, a)
+    d = pla.quaternion_multiply(a, a)
     # should be 180 degree rotation about z-axis
     npt.assert_array_almost_equal(d, [0, 0, 1, 0])
 
@@ -80,20 +63,20 @@ def test_quaternion_norm():
     a = np.array([0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
     b = np.array([0, 0, 0, 1])
     c = np.array([0, 0, 1, 0])
-    assert pla.quaternion_norm(a) == 1
-    assert pla.quaternion_norm(b) == 1
-    assert pla.quaternion_norm(c) == 1
+    assert np.linalg.norm(a) == 1
+    assert np.linalg.norm(b) == 1
+    assert np.linalg.norm(c) == 1
 
 
 def test_quaternion_norm_vectorized():
     a = np.array([[0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2]])
-    npt.assert_array_equal(pla.quaternion_norm(a, axis=-1), [1])
+    npt.assert_array_equal(np.linalg.norm(a, axis=-1), [1])
 
 
 def test_quaternion_from_unit_vectors():
     a = np.array([1, 0, 0])
     b = np.array([0, 1, 0])
-    q = pla.quaternion_from_unit_vectors(a, b)
+    q = pla.quaternion_make_from_unit_vectors(a, b)
     npt.assert_almost_equal(q, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
 
 
@@ -121,6 +104,6 @@ def test_quaternion_inverse():
 def test_quaternion_from_axis_angle():
     axis = np.array([1, 0, 0], dtype="f4")
     angle = np.pi / 2
-    q = pla.quaternion_from_axis_angle(axis, angle)
+    q = pla.quaternion_make_from_axis_angle(axis, angle)
 
     npt.assert_array_almost_equal(q, [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2])

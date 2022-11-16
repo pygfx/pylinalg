@@ -136,7 +136,7 @@ def test_matrix_make_rotation_from_euler_angles_dtype():
 def test_matrix_make_rotation_from_axis_angle_direction():
     """Test that a positive pi/2 rotation about the z-axis results
     in counter clockwise rotation, in accordance with the unit circle."""
-    result = pla.matrix_make_rotation_from_axis_angle([0, 0, 1], np.pi/2)
+    result = pla.matrix_make_rotation_from_axis_angle([0, 0, 1], np.pi / 2)
     npt.assert_array_almost_equal(
         result,
         [
@@ -153,7 +153,7 @@ def test_matrix_make_rotation_from_axis_angle_xy():
     flips the x and y coordinates, and negates the z coordinate."""
     axis = np.array([1, 1, 0], dtype="f8")
     axis /= np.linalg.norm(axis)
-    result = pla.matrix_make_rotation_from_axis_angle(axis, - np.pi)
+    result = pla.matrix_make_rotation_from_axis_angle(axis, -np.pi)
     npt.assert_array_almost_equal(
         result,
         [
@@ -231,7 +231,7 @@ def test_matrix_combine():
         pla.matrix_combine([])
     with pytest.raises(ValueError):
         pla.matrix_combine([translation])
-    
+
     result = pla.matrix_combine([translation, translation], dtype="f4")
     npt.assert_array_almost_equal(
         result,

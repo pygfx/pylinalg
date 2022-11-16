@@ -6,12 +6,15 @@ import pylinalg as pla
 
 
 def test_vector_normalize():
-    vectors = np.array([
-        [2, 0, 0],
-        [1, 1, 1],
-        [-1, -1, -1],
-        [1, 0, 0],
-    ], dtype="f8")
+    vectors = np.array(
+        [
+            [2, 0, 0],
+            [1, 1, 1],
+            [-1, -1, -1],
+            [1, 0, 0],
+        ],
+        dtype="f8",
+    )
     npt.assert_array_almost_equal(
         pla.vector_normalize(vectors),
         [

@@ -7,7 +7,7 @@ def vector_normalize(vectors, /, *, out=None, dtype=None):
 
     Parameters
     ----------
-    vectors : array_like, [..., ndim]
+    vectors : array_like, [..., 3]
         array of vectors
     out : ndarray, optional
         A location into which the result is stored. If provided, it
@@ -19,7 +19,7 @@ def vector_normalize(vectors, /, *, out=None, dtype=None):
 
     Returns
     -------
-    ndarray, [..., ndim]
+    ndarray, [..., 3]
         array of normalized vectors.
     """
     vectors = np.asarray(vectors)
@@ -34,7 +34,7 @@ def vector_make_homogeneous(vectors, /, *, w=1, out=None, dtype=None):
 
     Parameters
     ----------
-    vectors : array_like, [..., ndim]
+    vectors : array_like, [..., 3]
         array of vectors
     w : number, optional, default is 1
         the value for the homogeneous dimensionality.
@@ -48,10 +48,10 @@ def vector_make_homogeneous(vectors, /, *, w=1, out=None, dtype=None):
         length equal to the number of outputs.
     dtype : data-type, optional
         Overrides the data type of the result.
-    
+
     Returns
     -------
-    ndarray, [..., ndim + 1]
+    ndarray, [..., 4]
         The list of vectors with appended homogeneous value.
     """
     vectors = np.asarray(vectors)
@@ -70,9 +70,9 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
 
     Parameters
     ----------
-    vectors : ndarray, [..., ndim]
+    vectors : ndarray, [..., 3]
         Array of vectors
-    matrix : ndarray, [ndim + 1, ndim + 1]
+    matrix : ndarray, [4, 4]
         Transformation matrix
     w : number, optional, default 1
         The value for the homogeneous dimensionality.
@@ -89,7 +89,7 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
 
     Returns
     -------
-    ndarray, [..., ndim]
+    ndarray, [..., 3]
         transformed vectors
     """
     vectors = vector_make_homogeneous(vectors, w=w)
