@@ -28,7 +28,7 @@ class LinalgBase:
         return np.array_equal(self.val, other)
 
 
-def create_proxy(name, is_callable, retval_wrap_cache={}):
+def create_proxy(name, is_callable, wrap_strat_cache={}):
     if is_callable:
 
         def proxy(self, *args, **kwargs):
@@ -36,16 +36,17 @@ def create_proxy(name, is_callable, retval_wrap_cache={}):
             # we try to intelligently determine if the return value should
             # be wrapped in a class instance
             # and cache the result of that evaluation
-            if name not in retval_wrap_cache:
+            wrap_strat = wrap_strat_cache.get(name)
+            if wrap_strat is None:
                 if retval is None:
-                    retval_wrap_cache[name] = False
+                    wrap_strat = False
                 elif retval is self.val:
-                    retval_wrap_cache[name] = "self"
+                    wrap_strat = "self"
                 elif retval.shape == self.val.shape:
-                    retval_wrap_cache[name] = True
+                    wrap_strat = True
                 else:
-                    retval_wrap_cache[name] = False
-            wrap_strat = retval_wrap_cache[name]
+                    wrap_strat = False
+                wrap_strat_cache[name] = wrap_strat
             if not wrap_strat:
                 return retval
             elif wrap_strat == "self":
