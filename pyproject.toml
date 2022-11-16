@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pylinalg"
-version = "0.2.0"
+version = "0.3.0"
 description = "Linear algebra utilities for Python"
 authors = ["Korijn van Golen <korijn@gmail.com>"]
 license = "MIT"
@@ -8,20 +8,24 @@ homepage = "https://github.com/pygfx/pylinalg"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = ">=3.8"
+numpy = ">=1.20.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.4.3"
-flake8 = "^3.8.3"
-black = "^19.10b0"
-flake8-black = "^0.2.0"
-flake8-import-order = "^0.18.1"
-flake8-print = "^3.1.4"
-pytest-cov = "^2.10.0"
+pytest = "*"
+flake8 = "*"
+black = "*"
+flake8-black = "*"
+flake8-isort = "*"
+pep8-naming = "*"
+pytest-cov = "*"
+twine = { version = "*", python = "<4.0.0" }
+pytest-watcher = { version = "*", python = "<4.0.0" }
+isort = { version = "*", python = "<4.0.0" }
 
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry>=1.2.0"]
+build-backend = "poetry.core.masonry.api"
 
-[tool.poetry.scripts]
-test = 'scripts:main'
+[tool.isort]
+profile = "black"
