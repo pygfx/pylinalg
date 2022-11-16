@@ -28,18 +28,30 @@ class LinalgBase:
         return np.array_equal(self.val, other)
 
 
-def create_proxy(name, is_callable):
+def create_proxy(name, is_callable, retval_wrap_cache={}):
     if is_callable:
 
         def proxy(self, *args, **kwargs):
             retval = getattr(self.val, name)(*args, **kwargs)
-            # we assume that if the shape has not changed
-            # the result can safely be wrapped
-            # if that is unexpected, subclasses will have to override
-            # the method behavior
-            if isinstance(retval, np.ndarray) and retval.shape == self.val.shape:
+            # we try to intelligently determine if the return value should
+            # be wrapped in a class instance
+            # and cache the result of that evaluation
+            if name not in retval_wrap_cache:
+                if retval is None:
+                    retval_wrap_cache[name] = False
+                elif retval is self.val:
+                    retval_wrap_cache[name] = "self"
+                elif retval.shape == self.val.shape:
+                    retval_wrap_cache[name] = True
+                else:
+                    retval_wrap_cache[name] = False
+            wrap_strat = retval_wrap_cache[name]
+            if not wrap_strat:
+                return retval
+            elif wrap_strat == "self":
+                return self
+            else:
                 return self.__class__(retval)
-            return retval
 
     else:
 

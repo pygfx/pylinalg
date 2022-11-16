@@ -29,6 +29,7 @@ def test_quaternion_copy():
     assert q._val is not q2._val
     assert q2._val.flags.owndata
     assert q.dtype == q2.dtype
+    assert isinstance(q2, pla.Quaternion)
 
 
 def test_quaternion_set():

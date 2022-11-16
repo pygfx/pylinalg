@@ -28,6 +28,7 @@ def test_vector_copy():
     assert v.val is not v2.val
     assert v2.val.flags.owndata
     assert v.dtype == v2.dtype
+    assert isinstance(v2, pla.Vector)
 
 
 def test_vector_set():
