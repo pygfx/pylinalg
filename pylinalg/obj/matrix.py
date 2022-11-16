@@ -2,13 +2,8 @@ from functools import partial
 
 import numpy as np
 
-from ..func import (
-    matrix_compose,
-    matrix_decompose,
-    matrix_inverse,
-    matrix_make_orthographic,
-    matrix_make_perspective,
-)
+from ..func import matrix
+from ..func.quaternion import quaternion_to_matrix
 from .base import LinalgBase
 
 
@@ -18,68 +13,47 @@ class Matrix(LinalgBase):
 
     _initializer = partial(np.identity, 4)
 
-    def icompose(self, translation, rotation, scaling):
-        matrix_compose(translation, rotation, scaling, out=self)
-        return self
+    @classmethod
+    def transform(cls, translation, rotation, scaling):
+        return cls(matrix.matrix_make_transform(translation, rotation, scaling))
 
     @classmethod
-    def make_perspective(cls, left, right, top, bottom, near, far, dtype=None):
-        return cls(
-            matrix_make_perspective(left, right, top, bottom, near, far, dtype=dtype)
-        )
-
-    def imake_perspective(self, left, right, top, bottom, near, far):
-        matrix_make_perspective(left, right, top, bottom, near, far, out=self.val)
-
-        return self
+    def translation(cls, vector):
+        return cls(matrix.matrix_make_translation(vector))
 
     @classmethod
-    def make_orthographic(cls, left, right, top, bottom, near, far, dtype=None):
-        return cls(
-            matrix_make_orthographic(left, right, top, bottom, near, far, dtype=dtype)
-        )
+    def scaling(cls, factors):
+        return cls(matrix.matrix_make_scaling(factors))
 
-    def imake_orthographic(self, left, right, top, bottom, near, far):
-        matrix_make_orthographic(left, right, top, bottom, near, far, out=self.val)
+    @classmethod
+    def rotation_from_axis_angle(cls, axis, angle):
+        return cls(matrix.matrix_make_rotation_from_axis_angle(axis, angle))
 
-        return self
+    @classmethod
+    def rotation_from_euler_angles(cls, angles, order="xyz"):
+        return cls(matrix.matrix_make_rotation_from_euler_angles(angles, order=order))
 
-    def decompose(self, translation=None, rotation=None, scaling=None):
+    @classmethod
+    def perspective(cls, left, right, top, bottom, near, far):
+        return cls(matrix.matrix_make_perspective(left, right, top, bottom, near, far))
+
+    @classmethod
+    def orthographic(cls, left, right, top, bottom, near, far):
+        return cls(matrix.matrix_make_orthographic(left, right, top, bottom, near, far))
+
+    @classmethod
+    def combine(cls, matrices):
+        return cls(matrix.matrix_combine(matrices))
+
+    def decompose(self):
         from .quaternion import Quaternion
         from .vector import Vector
 
-        if translation is None:
-            translation = Vector()
-        if rotation is None:
-            rotation = Quaternion()
-        if scaling is None:
-            scaling = Vector()
-
-        matrix_decompose(self, translation, rotation, scaling)
-        return translation, rotation, scaling
+        return matrix.matrix_decompose(self, out=(Vector(), Quaternion(), Vector()))
 
     def inverse(self):
-        return Matrix(matrix_inverse(self.val))
+        return Matrix(np.linalg.inv(self))
 
-    def iinverse(self):
-        self.val[:] = matrix_inverse(self.val)
-        return self
-
-    def multiply(self, matrix):
-        return self @ matrix
-
-    def imultiply(self, matrix):
-        self @= matrix
-
-    def premultiply(self, matrix):
-        return matrix @ self
-
-    def ipremultiply(self, matrix):
-        self.val[:] = matrix @ self.val
-
-    def __imatmul__(self, matrix):
-        self.val[:] = self.val @ matrix
-        return self
-
-    def __matmul__(self, matrix):
-        return Matrix(self.val @ matrix)
+    @classmethod
+    def from_quaternion(cls, quaternion):
+        return quaternion_to_matrix(quaternion, out=cls())

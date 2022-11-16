@@ -33,6 +33,7 @@ def create_proxy(name, is_callable, wrap_strat_cache={}):
 
         def proxy(self, *args, **kwargs):
             retval = getattr(self.val, name)(*args, **kwargs)
+
             # we try to intelligently determine if the return value should
             # be wrapped in a class instance
             # and cache the result of that evaluation
@@ -47,6 +48,7 @@ def create_proxy(name, is_callable, wrap_strat_cache={}):
                 else:
                     wrap_strat = False
                 wrap_strat_cache[name] = wrap_strat
+
             if not wrap_strat:
                 return retval
             elif wrap_strat == "self":

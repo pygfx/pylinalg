@@ -259,7 +259,7 @@ def test_matrix_combine():
     assert result.dtype == "i4"
 
 
-def test_matrix_compose():
+def test_matrix_make_transform():
     """Test that the matrices are composed correctly in SRT order."""
     # non-uniform scaling such that the test would fail if rotation/scaling are
     # applied in the incorrect order
@@ -268,7 +268,7 @@ def test_matrix_compose():
     rotation = [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2]
     translation = [2, 2, 2]
     # compose the transform
-    result = pla.matrix_compose(translation, rotation, scaling)
+    result = pla.matrix_make_transform(translation, rotation, scaling)
     npt.assert_array_almost_equal(
         result,
         [

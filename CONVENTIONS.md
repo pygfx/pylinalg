@@ -83,9 +83,9 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
 
     Parameters
     ----------
-    vectors : ndarray, [..., ndim]
+    vectors : ndarray, [..., 3]
         Array of vectors
-    matrix : ndarray, [ndim + 1, ndim + 1]
+    matrix : ndarray, [4, 4]
         Transformation matrix
     w : number, optional, default 1
         The value for the homogeneous dimensionality.
@@ -102,7 +102,7 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
 
     Returns
     -------
-    ndarray, [..., ndim]
+    ndarray, [..., 3]
         transformed vectors
     """
     vectors = vector_make_homogeneous(vectors, w=w)

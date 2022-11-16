@@ -264,7 +264,7 @@ def matrix_to_quaternion(matrix, /, *, out=None, dtype=None):
     return out
 
 
-def matrix_compose(translation, rotation, scaling, /, *, out=None, dtype=None):
+def matrix_make_transform(translation, rotation, scaling, /, *, out=None, dtype=None):
     """
     Compose a transformation matrix given a translation vector, a
     quaternion and a scaling vector.

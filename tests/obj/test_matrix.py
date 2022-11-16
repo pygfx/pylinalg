@@ -34,8 +34,8 @@ def test_matrix_copy():
     m = pla.Matrix(data)
     m2 = m.copy()
     assert m == m2
-    assert m._val is not m2._val
-    assert m2._val.flags.owndata
+    assert m.val is not m2.val
+    assert m2.val.flags.owndata
     assert m.dtype == m2.dtype
 
 
@@ -44,19 +44,18 @@ def test_matrix_set():
     assert m == np.identity(4)
     assert m[0, 0] == 1
 
-    val = m._val
+    val = m.val
     m[:] = np.zeros((4, 4))
     assert m[0, 0] == 0
-    assert m._val is val
+    assert m.val is val
 
 
-def test_matrix_icompose():
-    m = pla.Matrix()
-    m.icompose(
-        pla.Vector(2, 2, 2),
+def test_matrix_compose():
+    m = pla.Matrix.transform(
+        pla.Vector([2, 2, 2]),
         # quaternion corresponding to 90 degree rotation about z-axis
-        pla.Quaternion(0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2),
-        pla.Vector(1, 2, 1),
+        pla.Quaternion([0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2]),
+        pla.Vector([1, 2, 1]),
     )
     npt.assert_array_almost_equal(
         m,
@@ -79,34 +78,13 @@ def test_matrix_decompose():
         ]
     )
     translation, rotation, scaling = m.decompose()
-    assert translation == pla.Vector(2, 2, 2)
+    assert translation == pla.Vector([2, 2, 2])
     # quaternion corresponding to 90 degree rotation about z-axis
     npt.assert_array_almost_equal(
-        rotation, pla.Quaternion(0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2)
+        rotation, pla.Quaternion([0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
     )
     assert isinstance(rotation, pla.Quaternion)
-    assert scaling == pla.Vector(1, 2, 1)
-
-
-def test_matrix_decompose_out():
-    translation = pla.Vector()
-    rotation = pla.Quaternion()
-    scaling = pla.Vector()
-    m = pla.Matrix(
-        [
-            [0, -2, 0, 2],
-            [1, 0, 0, 2],
-            [0, 0, 1, 2],
-            [0, 0, 0, 1],
-        ]
-    )
-    m.decompose(translation, rotation, scaling)
-    assert translation == pla.Vector(2, 2, 2)
-    # quaternion corresponding to 90 degree rotation about z-axis
-    npt.assert_array_almost_equal(
-        rotation, pla.Quaternion(0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2)
-    )
-    assert scaling == pla.Vector(1, 2, 1)
+    assert scaling == pla.Vector([1, 2, 1])
 
 
 def test_matrix_inverse():
@@ -117,14 +95,6 @@ def test_matrix_inverse():
     assert result == np.linalg.inv(matrix)
 
 
-def test_matrix_iinverse():
-    matrix = pla.Matrix()
-    matrix[0, 1] = 5
-    backup = matrix._val.copy()
-    matrix.iinverse()
-    assert matrix == np.linalg.inv(backup)
-
-
 def test_matrix_multiply():
     a = np.arange(16).reshape((4, 4))
     b = a.copy() + 1
@@ -132,54 +102,25 @@ def test_matrix_multiply():
 
     ma = pla.Matrix(a)
     mb = pla.Matrix(b)
-    mamb = ma.multiply(mb)
-
-    assert mamb == ab
 
     mamb = ma @ mb
+    assert isinstance(mamb, pla.Matrix)
 
     assert mamb == ab
 
     ma2 = ma.copy()
-    ma2 @= mb
+    ma2 = ma2 @ mb
 
     assert ma2 == ab
 
     ma2 = ma.copy()
-    ma2.imultiply(mb)
+    ma2 = ma2 @ mb
 
     assert ma2 == ab
 
 
-def test_matrix_premultiply():
-    a = np.arange(16).reshape((4, 4))
-    b = a.copy() + 1
-    ba = b @ a
-
-    ma = pla.Matrix(a)
-    mb = pla.Matrix(b)
-    mbma = ma.premultiply(mb)
-
-    assert mbma == ba
-
-    ma.ipremultiply(mb)
-
-    assert ma == ba
-
-
-def test_matrix_make_perspective():
-    a = pla.Matrix.make_perspective(-1, 1, -1, 1, 1, 100)
-    npt.assert_array_almost_equal(
-        a,
-        [
-            [1, 0, 0, 0],
-            [0, -1, 0, 0],
-            [0, 0, -101 / 99, -200 / 99],
-            [0, 0, -1, 0],
-        ],
-    )
-
-    a = pla.Matrix().imake_perspective(-1, 1, -1, 1, 1, 100)
+def test_matrix_perspective():
+    a = pla.Matrix.perspective(-1, 1, -1, 1, 1, 100)
     npt.assert_array_almost_equal(
         a,
         [
@@ -191,19 +132,8 @@ def test_matrix_make_perspective():
     )
 
 
-def test_matrix_make_orthographic():
-    a = pla.Matrix.make_orthographic(-1, 1, -1, 1, 1, 100)
-    npt.assert_array_almost_equal(
-        a,
-        [
-            [1, 0, 0, 0],
-            [0, -1, 0, 0],
-            [0, 0, -2 / 99, -101 / 99],
-            [0, 0, 0, 1],
-        ],
-    )
-
-    a = pla.Matrix().imake_orthographic(-1, 1, -1, 1, 1, 100)
+def test_matrix_orthographic():
+    a = pla.Matrix.orthographic(-1, 1, -1, 1, 1, 100)
     npt.assert_array_almost_equal(
         a,
         [
