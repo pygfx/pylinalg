@@ -464,3 +464,31 @@ def matrix_make_orthographic(
     out[3, 3] = 1
 
     return out
+
+
+def look_at(self, eye, target, up) -> np.ndarray:
+    """Rotation that aligns two vectors
+
+    Computes a homogeneous rotation matrix that rotates the space such that
+    points along the line described by the vector ``eye`` are mapped onto points
+    on the line described by ``target``. This is equivalent to finding the
+    rotation matrix that makes an observer (eye) look at a given position
+    (target).
+
+    Parameters
+    ----------
+    eye : ArrayLike
+        A vector indicating the direction that should be aligned.
+    target : ArrayLike
+        A vector indicating the direction to align on.
+    up : ArrayLike
+        @Korijn What does "up" do?
+
+    Returns
+    -------
+    rotation_matrix : np.ndarray
+        A homogeneous matrix describing the rotation.
+
+    """
+
+    raise NotImplementedError()
