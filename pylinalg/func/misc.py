@@ -1,17 +1,24 @@
 import numpy as np
 
 
-def aabb_to_sphere(aabb) -> np.ndarray:
+def aabb_to_sphere(aabb, /, *, out=None, dtype=None):
     """A sphere that envelops an Axis-Aligned Bounding Box.
 
     Parameters
     ----------
-    aabb : ArrayLike
+    aabb : ndarray, [2, 3]
         The axis-aligned bounding box.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
 
     Returns
     -------
-    sphere : np.ndarray
+    sphere : ndarray, [4]
         A sphere (x, y, z, radius).
 
     """
@@ -19,15 +26,22 @@ def aabb_to_sphere(aabb) -> np.ndarray:
     raise NotImplementedError()
 
 
-def transform_aabb(aabb, homogenious_matrix) -> np.ndarray:
+def abb_transform(aabb, homogenious_matrix, /, *, out=None, dtype=None):
     """Apply an affine transformation to an axis-aligned bounding box.
 
     Parameters
     ----------
-    aabb : ArrayLike
+    aabb : ndarray, [2, 3]
         The axis-aligned bounding box.
-    homogeneous_matrix : ArrayLike
+    homogeneous_matrix : [4, 4]
         The homogeneous transformation to apply.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
 
     Returns
     -------
