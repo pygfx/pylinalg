@@ -466,8 +466,9 @@ def matrix_make_orthographic(
     return out
 
 
-def look_at(self, eye, target, up) -> np.ndarray:
-    """Rotation that aligns two vectors
+def matrix_make_look_at(self, eye, target, up, /, *, out=None, dtype=None):
+    """
+    Rotation that aligns two vectors.
 
     Computes a homogeneous rotation matrix that rotates the space such that
     points along the line described by the vector ``eye`` are mapped onto points
@@ -477,16 +478,24 @@ def look_at(self, eye, target, up) -> np.ndarray:
 
     Parameters
     ----------
-    eye : ArrayLike
+    eye : ndarray, [3]
         A vector indicating the direction that should be aligned.
-    target : ArrayLike
+    target : ndarray, [3]
         A vector indicating the direction to align on.
-    up : ArrayLike
-        @Korijn What does "up" do?
+    up : ndarray, [3]
+        The direction of the camera's up axis
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
 
     Returns
     -------
-    rotation_matrix : np.ndarray
+    rotation_matrix : ndarray, [4, 4]
         A homogeneous matrix describing the rotation.
 
     """
