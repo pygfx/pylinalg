@@ -483,7 +483,7 @@ def matrix_make_look_at(self, eye, target, up, /, *, out=None, dtype=None):
     target : ndarray, [3]
         A vector indicating the direction to align on.
     up : ndarray, [3]
-        The direction of the camera's up axis
+        The direction of the camera's up axis.
     out : ndarray, optional
         A location into which the result is stored. If provided, it
         must have a shape that the inputs broadcast to. If not provided or

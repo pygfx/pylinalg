@@ -26,7 +26,7 @@ def aabb_to_sphere(aabb, /, *, out=None, dtype=None):
     raise NotImplementedError()
 
 
-def abb_transform(aabb, homogenious_matrix, /, *, out=None, dtype=None):
+def aabb_transform(aabb, homogenious_matrix, /, *, out=None, dtype=None):
     """Apply an affine transformation to an axis-aligned bounding box.
 
     Parameters
@@ -47,6 +47,13 @@ def abb_transform(aabb, homogenious_matrix, /, *, out=None, dtype=None):
     -------
     aabb : ArrayLike
         The transformed axis-aligned bounding box.
+
+    Notes
+    -----
+    This function preserves the alignment axes of the bounding box. This means
+    that the returned values are a new bounding box for the contained object
+    with respect to the previous alignment axes, not the new world coordinates
+    of the previous bounding box.
 
     """
     raise NotImplementedError()
