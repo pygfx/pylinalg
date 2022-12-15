@@ -3,21 +3,21 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - main
     tags:
       - 'v*'
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
       - name: Install poetry
@@ -41,9 +41,9 @@ jobs:
           - name: Linux py310
             pyversion: '3.10'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.pyversion }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.pyversion }}
       - name: Install poetry
@@ -57,9 +57,9 @@ jobs:
     name: Build and test wheel
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python 3.9
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.9'
     - name: Install poetry
@@ -82,7 +82,7 @@ jobs:
     needs: [lint, test, build]
     if: success() && startsWith(github.ref, 'refs/tags/v')
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Download wheel artifact
       uses: actions/download-artifact@v1.0.0
       with:
