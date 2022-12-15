@@ -470,12 +470,11 @@ def matrix_make_look_at(eye, target, up, /, *, out=None, dtype=None):
     """
     Rotation that aligns two vectors.
 
-    Computes a homogeneous rotation matrix that rotates the space such that
-    points along the line described by the vector ``eye`` are mapped onto points
-    on the line described by ``target``. This is equivalent to finding the
-    rotation matrix that makes an observer (eye) look at a given position
-    (target).
-
+    Given a camera (frame) looking in direction ``eye``, this function computes
+    a rotation matrix that makes the camera look into direction ``target``. It
+    then rotates the camera frame around ``target`` to make the camera's up
+    direction point in direction ``up``.
+    
     Parameters
     ----------
     eye : ndarray, [3]
@@ -496,7 +495,7 @@ def matrix_make_look_at(eye, target, up, /, *, out=None, dtype=None):
     Returns
     -------
     rotation_matrix : ndarray, [4, 4]
-        A homogeneous matrix describing the rotation.
+        A matrix describing the rotation.
 
     """
 
