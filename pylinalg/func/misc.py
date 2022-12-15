@@ -51,9 +51,10 @@ def aabb_transform(aabb, matrix, /, *, out=None, dtype=None):
     Notes
     -----
     This function preserves the alignment axes of the bounding box. This means
-    that the returned values are a new bounding box for the contained object
-    with respect to the previous alignment axes, not the new world coordinates
-    of the previous bounding box.
+    the returned bounding box has the same alignment axes as the input bounding
+    box, but contains the transformed object. In other words, the box will grow
+    or shrink depending on how the contained object is transformed, but its
+    alignment axis stay the same.
 
     """
     raise NotImplementedError()
