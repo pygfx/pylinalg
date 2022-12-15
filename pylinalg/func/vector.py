@@ -145,7 +145,7 @@ def vector_unproject(vector, projection_matrix, /, *, depth=0, out=None, dtype=N
 
     Returns
     -------
-    projected_vector : ndarray
+    projected_vector : ndarray, [3]
         The unprojected vector in 3D space
     """
 
@@ -171,7 +171,7 @@ def vector_apply_quaternion_rotation(vector, quaternion, /, *, out=None, dtype=N
 
     Returns
     -------
-    rotated_vector : np.ndarray
+    rotated_vector : ndarray, [3]
         The rotated vector.
 
     """
@@ -196,7 +196,7 @@ def vector_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
 
     Returns
     -------
-    euclidean_coordinates : ArrayLike
+    euclidean : ndarray, [3]
         A vector in euclidian coordinates.
 
     """
@@ -223,7 +223,7 @@ def vector_distance_between(vectorA, vectorB, /, *, out=None, dtype=None):
 
     Returns
     -------
-    distance : np.ndarray
+    distance : ndarray
         The distance between both vectors.
 
     """

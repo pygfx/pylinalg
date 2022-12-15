@@ -26,7 +26,7 @@ def aabb_to_sphere(aabb, /, *, out=None, dtype=None):
     raise NotImplementedError()
 
 
-def aabb_transform(aabb, homogenious_matrix, /, *, out=None, dtype=None):
+def aabb_transform(aabb, matrix, /, *, out=None, dtype=None):
     """Apply an affine transformation to an axis-aligned bounding box.
 
     Parameters
@@ -45,7 +45,7 @@ def aabb_transform(aabb, homogenious_matrix, /, *, out=None, dtype=None):
 
     Returns
     -------
-    aabb : ArrayLike
+    aabb : ndarray, [2, 3]
         The transformed axis-aligned bounding box.
 
     Notes

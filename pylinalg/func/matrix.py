@@ -466,7 +466,7 @@ def matrix_make_orthographic(
     return out
 
 
-def matrix_make_look_at(self, eye, target, up, /, *, out=None, dtype=None):
+def matrix_make_look_at(eye, target, up, /, *, out=None, dtype=None):
     """
     Rotation that aligns two vectors.
 
