@@ -7,8 +7,8 @@ on:
     tags:
       - 'v*'
   pull_request:
-    branches:
-      - master
+    # branches:
+    #   - master
 
 jobs:
   lint:
