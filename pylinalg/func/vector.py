@@ -118,12 +118,12 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
     return out
 
 
-def vector_unproject(vector, projection_matrix, /, *, depth=0, out=None, dtype=None):
+def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
     """
     Un-project a vector from 2D space to 3D space.
 
     Find a ``vectorB`` in 3D euclidean space such that the projection
-    ``projection_matrix @ vectorB`` yields the provided vector (in 2D euclidean
+    ``matrix @ vectorB`` yields the provided vector (in 2D euclidean
     space). Since the solution to the above is a 1D subspace of 3D space (a
     line), ``depth`` is used to select a single vector within.
 
@@ -131,7 +131,7 @@ def vector_unproject(vector, projection_matrix, /, *, depth=0, out=None, dtype=N
     ----------
     vector : ndarray, [2]
         The vector to be un-projected.
-    projection_matrix: ndarray, [4, 4]
+    matrix: ndarray, [4, 4]
         The camera's intrinsic matrix.
     depth : number, optional
         The distance of the unprojected vector from the camera.
