@@ -470,11 +470,10 @@ def matrix_make_look_at(eye, target, up, /, *, out=None, dtype=None):
     """
     Rotation that aligns two vectors.
 
-    Given a camera (frame) looking in direction ``eye``, this function computes
-    a rotation matrix that makes the camera look into direction ``target``. It
-    then rotates the camera frame around ``target`` to make the camera's up
-    direction point in direction ``up``.
-    
+    Computes a rotation matrix that rotates the input frame's z-axis (forward)
+    to point in direction ``target - eye`` and the input frame's y-axis (up) to
+    point in direction ``up``.
+
     Parameters
     ----------
     eye : ndarray, [3]

@@ -1,6 +1,3 @@
-import numpy as np
-
-
 def aabb_to_sphere(aabb, /, *, out=None, dtype=None):
     """A sphere that envelops an Axis-Aligned Bounding Box.
 

@@ -204,14 +204,14 @@ def vector_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
     raise NotImplementedError()
 
 
-def vector_distance_between(vectorA, vectorB, /, *, out=None, dtype=None):
+def vector_distance_between(vector_a, vector_b, /, *, out=None, dtype=None):
     """The distance between two vectors
 
     Parameters
     ----------
-    vectorA : ndarray, [3]
+    vector_a : ndarray, [3]
         The first vector.
-    vectorB : ndarray, [3]
+    vector_b : ndarray, [3]
         The second vector.
     out : ndarray, optional
         A location into which the result is stored. If provided, it
