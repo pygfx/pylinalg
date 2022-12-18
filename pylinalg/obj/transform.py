@@ -150,5 +150,5 @@ class AffineTransform(Transform):
         self._orientation = np.asarray(value)
 
     @scale.setter
-    def setter(self, value):
+    def scale(self, value):
         self._scale = np.asarray(value)

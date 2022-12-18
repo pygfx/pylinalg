@@ -25,9 +25,10 @@ def test_inverse(position, orientation_raw, scale):
     else:
         orientation = np.array((0, 0, 0, 1))
 
-    transform = pla.AffineTransform(
-        position=position, orientation=orientation, scale=scale
-    )
+    transform = pla.AffineTransform()
+    transform.position = position
+    transform.orientation = orientation
+    transform.scale = scale
 
     inverse = transform.inverse()
 
