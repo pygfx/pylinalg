@@ -68,7 +68,7 @@ class AffineTransform(Transform):
         """
 
         result = np.zeros((4, 4))
-        result[-1, -1] = 1  #  affine matrix :)
+        result[-1, -1] = 1  # affine matrix :)
 
         # credit to: http://www.songho.ca/opengl/gl_quaternion.htm
         # @almarklein: Can we refactor quaternion_to_matrix to something like
@@ -76,9 +76,9 @@ class AffineTransform(Transform):
         x, y, z, w = self._orientation
         # fmt: off
         result[:3, :3] = np.array([
-            [1 - 2*y**2 - 2*z**2,       2*x*y - 2*w*z,       2*x*z + 2*w*y],
-            [      2*x*y + 2*w*z, 1 - 2*x**2 - 2*z**2,       2*y*w - 2*w*x],
-            [      2*x*w - 2*w*y,       2*y*z + 2*w*x, 1 - 2*x**2 - 2*y**2],
+            [1 - 2*y**2 - 2*z**2,       2*x*y - 2*w*z,       2*x*z + 2*w*y],  # noqa: E201, E501
+            [      2*x*y + 2*w*z, 1 - 2*x**2 - 2*z**2,       2*y*w - 2*w*x],  # noqa: E201, E501
+            [      2*x*w - 2*w*y,       2*y*z + 2*w*x, 1 - 2*x**2 - 2*y**2],  # noqa: E201, E501
         ]).T
         # fmt: on
 

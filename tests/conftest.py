@@ -1,5 +1,5 @@
-from hypothesis.extra.numpy import arrays, from_dtype
 import numpy as np
+from hypothesis.extra.numpy import arrays, from_dtype
 
 
 def normalize_quaternion(quaternion):

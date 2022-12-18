@@ -2,7 +2,8 @@ import numpy as np
 from hypothesis import given
 
 import pylinalg as pla
-from ..conftest import test_vector, test_quaternion, test_scaling
+
+from ..conftest import test_quaternion, test_scaling, test_vector
 
 
 @given(test_vector, test_vector)
