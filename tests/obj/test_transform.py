@@ -18,14 +18,7 @@ def test_affine_chaining(position, position2):
 
 
 @given(test_vector, test_quaternion, test_scaling)
-def test_inverse(position, orientation_raw, scale):
-
-    if np.any(orientation_raw != 0):
-        orientation = orientation_raw / orientation_raw[-1]
-        orientation = orientation_raw / np.linalg.norm(orientation_raw)
-    else:
-        orientation = np.array((0, 0, 0, 1))
-
+def test_inverse(position, orientation, scale):
     transform = pla.AffineTransform()
     transform.position = position
     transform.orientation = orientation
