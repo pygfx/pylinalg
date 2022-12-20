@@ -116,3 +116,195 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
     if dtype is not None:
         out = out.astype(dtype, copy=False)
     return out
+
+
+def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
+    """
+    Un-project a vector from 2D space to 3D space.
+
+    Find a ``vectorB`` in 3D euclidean space such that the projection
+    ``matrix @ vectorB`` yields the provided vector (in 2D euclidean
+    space). Since the solution to the above is a 1D subspace of 3D space (a
+    line), ``depth`` is used to select a single vector within.
+
+    Parameters
+    ----------
+    vector : ndarray, [2]
+        The vector to be un-projected.
+    matrix: ndarray, [4, 4]
+        The camera's intrinsic matrix.
+    depth : number, optional
+        The distance of the unprojected vector from the camera.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    projected_vector : ndarray, [3]
+        The unprojected vector in 3D space
+    """
+
+    raise NotImplementedError()
+
+
+def vector_apply_quaternion_rotation(vector, quaternion, /, *, out=None, dtype=None):
+    """Rotate a vector using a quaternion.
+
+    Parameters
+    ----------
+    vector : ndarray, [3]
+        The vector to be rotated.
+    quaternion : ndarray, [4]
+        The quaternion to apply (in xyzw format).
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    rotated_vector : ndarray, [3]
+        The rotated vector.
+
+    """
+
+    raise NotImplementedError()
+
+
+def vector_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
+    """Convert spherical -> euclidian coordinates.
+
+    Parameters
+    ----------
+    spherical : ndarray, [3]
+        A vector in spherical coordinates (r, phi, theta).
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    euclidean : ndarray, [3]
+        A vector in euclidian coordinates.
+
+    """
+
+    raise NotImplementedError()
+
+
+def vector_distance_between(vector_a, vector_b, /, *, out=None, dtype=None):
+    """The distance between two vectors
+
+    Parameters
+    ----------
+    vector_a : ndarray, [3]
+        The first vector.
+    vector_b : ndarray, [3]
+        The second vector.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    distance : ndarray
+        The distance between both vectors.
+
+    """
+
+    raise NotImplementedError()
+
+
+def vector_from_matrix_position(homogeneous_matrix, /, *, out=None, dtype=None):
+    """Position component of a homogeneous matrix.
+
+    Parameters
+    ----------
+    homogeneous_matrix : ndarray, [4, 4]
+        The matrix of which the position/translation component will be
+        extracted.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    position : ndarray, [3]
+        The position/translation component.
+
+    """
+
+    raise NotImplementedError()
+
+
+def vector_euclidean_to_spherical(euclidean, /, *, out=None, dtype=None):
+    """Convert euclidean -> spherical coordinates
+
+    Parameters
+    ----------
+    euclidean : ndarray, [3]
+        A vector in euclidean coordinates.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    spherical : ndarray, [3]
+        A vector in spherical coordinates (r, phi, theta).
+
+    """
+
+    raise NotImplementedError()
+
+
+def vector_make_spherical_safe(vector, /, *, out=None, dtype=None):
+    """Normalize sperhical coordinates.
+
+    Normalizes a vector of spherical coordinates to restrict phi to (eps, pi-eps) and
+    theta to (0, 2pi).
+
+    Parameters
+    ----------
+    vector : ndarray, [3]
+        A vector in spherical coordinates.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    normalized_vector : ndarray, [3]
+        A vector in spherical coordinates with restricted angle values.
+
+    """
+
+    raise NotImplementedError()

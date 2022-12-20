@@ -464,3 +464,38 @@ def matrix_make_orthographic(
     out[3, 3] = 1
 
     return out
+
+
+def matrix_make_look_at(eye, target, up, /, *, out=None, dtype=None):
+    """
+    Rotation that aligns two vectors.
+
+    Computes a rotation matrix that rotates the input frame's z-axis (forward)
+    to point in direction ``target - eye`` and the input frame's y-axis (up) to
+    point in direction ``up``.
+
+    Parameters
+    ----------
+    eye : ndarray, [3]
+        A vector indicating the direction that should be aligned.
+    target : ndarray, [3]
+        A vector indicating the direction to align on.
+    up : ndarray, [3]
+        The direction of the camera's up axis.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+
+    Returns
+    -------
+    rotation_matrix : ndarray, [4, 4]
+        A matrix describing the rotation.
+
+    """
+
+    raise NotImplementedError()
