@@ -1,8 +1,8 @@
+import hypothesis.strategies as st
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hypothesis import given, example
-import hypothesis.strategies as st
+from hypothesis import example, given
 
 import pylinalg as pla
 
@@ -24,12 +24,12 @@ def test_matrix_make_scaling(scale, dtype):
     result = pla.matrix_make_scaling(scale, dtype=dtype)
 
     if isinstance(scale, np.ndarray):
-        scaling = scale
+        scaling = np.array((*scale, 1))
     else:
-        scaling = np.repeat(scale, 3)
+        scaling = np.array((scale, scale, scale, 1))
 
-    expected = np.diag((*scaling, 1))
-    expected = expected.astype(dtype)
+    expected = np.identity(4, dtype=dtype)
+    np.fill_diagonal(expected, scaling)
 
     npt.assert_array_almost_equal(result, expected)
     assert result.dtype == dtype
@@ -37,6 +37,7 @@ def test_matrix_make_scaling(scale, dtype):
 
 @given(ct.test_angles_rad, st.permutations("xyz"), ct.test_dtype)
 @example((np.pi, -np.pi / 2, 0), "zyx", "f8")
+@example((0, np.pi / 2, 0), "xyz", "f8")
 def test_matrix_make_rotation_from_euler_angles(angles, order, dtype):
     result = pla.matrix_make_rotation_from_euler_angles(
         angles, order="".join(order), dtype=dtype
