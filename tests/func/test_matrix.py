@@ -1,23 +1,24 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
+from hypothesis import given
 
 import pylinalg as pla
 
+from ..conftest import test_vector
 
-def test_matrix_make_translation():
+
+@given(test_vector)
+def test_matrix_make_translation(position):
     """Test that the translation offsets ends up in the right slots
     in the matrix (not transposed)."""
-    result = pla.matrix_make_translation([1, 2, 3])
-    npt.assert_array_equal(
-        result,
-        [
-            [1, 0, 0, 1],
-            [0, 1, 0, 2],
-            [0, 0, 1, 3],
-            [0, 0, 0, 1],
-        ],
-    )
+
+    result = pla.matrix_make_translation(position)
+
+    expected = np.eye(4)
+    expected[:3, 3] = position
+
+    npt.assert_array_almost_equal(result, expected)
 
 
 def test_matrix_make_translation_dtype():
