@@ -16,7 +16,7 @@ def test_matrix_make_translation(position, dtype):
 
     expected = np.eye(4)
     expected[:3, 3] = position
-    expected = expected.astype(dtype)
+    expected = expected.astype(dtype, casting="unsafe")
 
     npt.assert_array_almost_equal(result, expected)
 
