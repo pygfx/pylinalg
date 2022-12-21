@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hypothesis import given, example
+from hypothesis import given
 from hypothesis.strategies import none
 
 import pylinalg as pla
@@ -23,7 +23,12 @@ def test_matrix_make_translation(position, dtype):
 def test_matrix_make_scaling(scale, dtype):
     result = pla.matrix_make_scaling(scale, dtype=dtype)
 
-    expected = np.diag((*scale, 1))
+    if isinstance(scale, np.ndarray):
+        scaling = scale
+    else:
+        scaling = np.repeat(scale, 3)
+
+    expected = np.diag((*scaling, 1))
     expected = expected.astype(dtype)
 
     npt.assert_array_almost_equal(result, expected)
