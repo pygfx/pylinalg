@@ -73,6 +73,27 @@ def generate_quaternion(
     return quaternion
 
 
+@st.composite
+def dtype_string(draw):
+    valid_letters = "?iuf"
+
+    letter_idx = draw(st.integers(min_value=0, max_value=len(valid_letters) - 1))
+    letter = valid_letters[letter_idx]
+
+    if letter == "?":
+        code = letter
+    elif letter == "f":
+        valid_lengths = "48"
+        n_bytes = draw(st.integers(min_value=0, max_value=len(valid_lengths) - 1))
+        code = letter + valid_lengths[n_bytes]
+    else:
+        valid_lengths = "1248"
+        n_bytes = draw(st.integers(min_value=0, max_value=len(valid_lengths) - 1))
+        code = letter + valid_lengths[n_bytes]
+
+    return code
+
+
 def nonzero_scale(scale):
     return np.where(np.abs(scale) < EPS, 1, scale)
 
@@ -83,3 +104,4 @@ test_vector = arrays(float, (3,), elements=legal_numbers)
 test_quaternion = generate_quaternion()
 test_matrix_affine = arrays(float, (4, 4), elements=legal_numbers)
 test_scaling = arrays(float, (3,), elements=legal_numbers).map(nonzero_scale)
+test_dtype = dtype_string()

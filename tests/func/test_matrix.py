@@ -2,50 +2,25 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 from hypothesis import given
+from hypothesis.strategies import none
 
 import pylinalg as pla
 
-from ..conftest import test_vector
+from ..conftest import test_vector, test_dtype, legal_numbers
 
 
-@given(test_vector)
-def test_matrix_make_translation(position):
+@given(test_vector | legal_numbers, test_dtype | none())
+def test_matrix_make_translation(position, dtype):
     """Test that the translation offsets ends up in the right slots
     in the matrix (not transposed)."""
 
-    result = pla.matrix_make_translation(position)
+    result = pla.matrix_make_translation(position, dtype=dtype)
 
     expected = np.eye(4)
     expected[:3, 3] = position
+    expected = expected.astype(dtype)
 
     npt.assert_array_almost_equal(result, expected)
-
-
-def test_matrix_make_translation_dtype():
-    result = pla.matrix_make_translation([1, 2, 3], dtype="i2")
-    npt.assert_array_equal(
-        result,
-        [
-            [1, 0, 0, 1],
-            [0, 1, 0, 2],
-            [0, 0, 1, 3],
-            [0, 0, 0, 1],
-        ],
-    )
-    assert result.dtype == "i2"
-
-
-def test_matrix_make_translation_uniform():
-    result = pla.matrix_make_translation(2)
-    npt.assert_array_equal(
-        result,
-        [
-            [1, 0, 0, 2],
-            [0, 1, 0, 2],
-            [0, 0, 1, 2],
-            [0, 0, 0, 1],
-        ],
-    )
 
 
 def test_matrix_make_scaling():
