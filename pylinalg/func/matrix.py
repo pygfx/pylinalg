@@ -131,8 +131,19 @@ def matrix_make_rotation_from_euler_angles(
     -------
     ndarray, [4, 4]
         Rotation matrix.
+
+
+    Notes
+    -----
+    The current implementation only supports euler-angles that are permutations
+    of "xyz". I.e., other formats like "yzy" are not supported.
+
     """
-    a, b, c = angles
+    order = order.lower()
+
+    # ensure we have matching angles and axes
+    angles = {axis: angle for axis, angle in zip(order, angles)}
+    a, b, c = angles["x"], angles["y"], angles["z"]
 
     matrix_x = np.identity(4)
     matrix_y = np.identity(4)

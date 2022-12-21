@@ -1,15 +1,15 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hypothesis import given
-from hypothesis.strategies import none
+from hypothesis import given, example
+import hypothesis.strategies as st
 
 import pylinalg as pla
 
-from ..conftest import legal_numbers, test_dtype, test_vector
+from .. import conftest as ct
 
 
-@given(legal_numbers | test_vector, none() | test_dtype)
+@given(ct.legal_numbers | ct.test_vector, st.none() | ct.test_dtype)
 def test_matrix_make_translation(position, dtype):
     result = pla.matrix_make_translation(position, dtype=dtype)
 
@@ -19,7 +19,7 @@ def test_matrix_make_translation(position, dtype):
     npt.assert_array_almost_equal(result, expected)
 
 
-@given(legal_numbers | test_vector, none() | test_dtype)
+@given(ct.legal_numbers | ct.test_scaling, st.none() | ct.test_dtype)
 def test_matrix_make_scaling(scale, dtype):
     result = pla.matrix_make_scaling(scale, dtype=dtype)
 
@@ -35,19 +35,18 @@ def test_matrix_make_scaling(scale, dtype):
     assert result.dtype == dtype
 
 
-def test_matrix_make_rotation_from_euler_angles():
-    """Test that a positive pi/2 rotation about the z-axis results
-    in counter clockwise rotation, in accordance with the unit circle."""
-    result = pla.matrix_make_rotation_from_euler_angles([0, 0, np.pi / 2])
-    npt.assert_array_almost_equal(
-        result,
-        [
-            [0, -1, 0, 0],
-            [1, 0, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1],
-        ],
-    )
+@given(ct.test_angles_rad, st.permutations("xyz"))
+@example((np.pi, -np.pi / 2, 0), "zyx")
+def test_matrix_make_rotation_from_euler_angles(angles, order):
+    result = pla.matrix_make_rotation_from_euler_angles(angles, order="".join(order))
+
+    expected = np.eye(4)
+    for axis, angle in zip(order, angles):
+        matrix = np.eye(4)
+        matrix[:3, :3] = ct.rotation_matrix(axis, angle)
+        expected = matrix @ expected
+
+    npt.assert_array_almost_equal(result, expected)
 
 
 def test_matrix_make_rotation_from_euler_angles_ordered():

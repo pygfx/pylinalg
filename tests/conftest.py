@@ -76,23 +76,38 @@ def generate_quaternion(
 
 @st.composite
 def dtype_string(draw):
-    valid_letters = "?iuf"
-
-    letter_idx = draw(st.integers(min_value=0, max_value=len(valid_letters) - 1))
-    letter = valid_letters[letter_idx]
+    letter = draw(st.sampled_from("?iuf"))
 
     if letter == "?":
         code = letter
     elif letter == "f":
-        valid_lengths = "48"
-        n_bytes = draw(st.integers(min_value=0, max_value=len(valid_lengths) - 1))
-        code = letter + valid_lengths[n_bytes]
+        code = letter + draw(st.sampled_from("48"))
     else:
-        valid_lengths = "1248"
-        n_bytes = draw(st.integers(min_value=0, max_value=len(valid_lengths) - 1))
-        code = letter + valid_lengths[n_bytes]
+        code = letter + draw(st.sampled_from("1248"))
 
     return code
+
+
+def rotation_matrix(axis, angle):
+    """Rotation by angle around the given cardinal axis.
+
+    Parameters
+    ----------
+    axis : str
+        One of "x", "y", or "z".
+    angle : float
+        The angle to rotate by (in rad).
+
+    """
+
+    matrix = np.array([[cos(angle), -sin(angle)], [sin(angle), cos(angle)]])
+
+    axis_idx = {"x": 0, "y": 1, "z": 2}[axis]
+    matrix = np.insert(matrix, axis_idx, 0, axis=0)
+    matrix = np.insert(matrix, axis_idx, 0, axis=1)
+    matrix[axis_idx, axis_idx] = 1
+
+    return matrix
 
 
 def nonzero_scale(scale):
@@ -101,8 +116,16 @@ def nonzero_scale(scale):
 
 # Hypthesis testing strategies
 legal_numbers = from_dtype(np.dtype(float), allow_infinity=False, allow_nan=False)
+legal_angle = from_dtype(
+    np.dtype(float),
+    allow_infinity=False,
+    allow_nan=False,
+    min_value=0,
+    max_value=2 * np.pi,
+)
 test_vector = arrays(float, (3,), elements=legal_numbers)
 test_quaternion = generate_quaternion()
 test_matrix_affine = arrays(float, (4, 4), elements=legal_numbers)
 test_scaling = arrays(float, (3,), elements=legal_numbers).map(nonzero_scale)
 test_dtype = dtype_string()
+test_angles_rad = arrays(float, (3,), elements=legal_angle)
