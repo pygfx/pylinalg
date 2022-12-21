@@ -22,8 +22,6 @@ pytest-cov = "*"
 twine = { version = "*", python = "<4.0.0" }
 pytest-watcher = { version = "*", python = "<4.0.0" }
 isort = { version = "*", python = "<4.0.0" }
-
-[tool.poetry.group.dev.dependencies]
 hypothesis = {extras = ["numpy"], version = "^6.61.0"}
 
 [build-system]
