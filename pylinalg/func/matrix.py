@@ -28,13 +28,10 @@ def matrix_combine(matrices, /, *, out=None, dtype=None):
     ndarray, [4, 4]
         Combined transformation matrix.
     """
-    n = len(matrices)
-    if n < 2:
-        raise ValueError("need at least two matrices to combine")
     if out is None:
         out = np.empty((4, 4), dtype=dtype)
-    out[:] = matrices[0]
-    for matrix in matrices[1:]:
+    out[:] = np.identity(4, dtype=dtype)
+    for matrix in matrices:
         try:
             np.dot(out, matrix, out=out)
         except ValueError:
