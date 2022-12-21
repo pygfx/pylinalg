@@ -3,7 +3,7 @@ from hypothesis import given
 
 import pylinalg as pla
 
-from ..conftest import test_quaternion, test_scaling, test_vector
+from ..conftest import test_quaternion, test_scaling, test_vector, EPS
 
 
 @given(test_vector, test_vector)
@@ -29,7 +29,7 @@ def test_inverse(position, orientation, scale):
     expected = np.eye(4)
 
     result = (inverse @ transform).as_matrix()
-    np.testing.assert_allclose(result, expected)
+    np.testing.assert_allclose(result, expected, atol=EPS)
 
     result = (transform @ inverse).as_matrix()
-    np.testing.assert_allclose(result, expected)
+    np.testing.assert_allclose(result, expected, atol=EPS)
