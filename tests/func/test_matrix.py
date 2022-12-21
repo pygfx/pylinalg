@@ -6,7 +6,7 @@ from hypothesis.strategies import none
 
 import pylinalg as pla
 
-from ..conftest import test_vector, test_dtype, legal_numbers
+from ..conftest import legal_numbers, test_dtype, test_vector
 
 
 @given(legal_numbers | test_vector, none() | test_dtype)

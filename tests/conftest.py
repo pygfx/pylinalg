@@ -1,8 +1,9 @@
+from math import cos, sin
+
+import hypothesis as hp
+import hypothesis.strategies as st
 import numpy as np
 from hypothesis.extra.numpy import arrays, from_dtype
-import hypothesis.strategies as st
-import hypothesis as hp
-from math import sin, cos
 
 # upper bound on approximation error
 EPS = 1e-6
