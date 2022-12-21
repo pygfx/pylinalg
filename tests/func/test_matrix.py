@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hypothesis import given
+from hypothesis import given, example
 from hypothesis.strategies import none
 
 import pylinalg as pla
@@ -9,11 +9,9 @@ import pylinalg as pla
 from ..conftest import test_vector, test_dtype, legal_numbers
 
 
-@given(test_vector | legal_numbers, test_dtype | none())
+@given(test_vector | legal_numbers, none() | test_dtype)
+@example(dtype='u4', position=4294967297.0)
 def test_matrix_make_translation(position, dtype):
-    """Test that the translation offsets ends up in the right slots
-    in the matrix (not transposed)."""
-
     result = pla.matrix_make_translation(position, dtype=dtype)
 
     expected = np.eye(4)
