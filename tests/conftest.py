@@ -32,7 +32,7 @@ def generate_quaternion(
     elements : strategy
         A strategy that creates valid elements. Defaults to any degree in [0, 360].
     snap_precision : int
-        The value to which
+        The precision to which to round ("snap") angles to.
 
     Returns
     -------
