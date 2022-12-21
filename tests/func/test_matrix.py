@@ -35,49 +35,21 @@ def test_matrix_make_scaling(scale, dtype):
     assert result.dtype == dtype
 
 
-@given(ct.test_angles_rad, st.permutations("xyz"))
-@example((np.pi, -np.pi / 2, 0), "zyx")
-def test_matrix_make_rotation_from_euler_angles(angles, order):
-    result = pla.matrix_make_rotation_from_euler_angles(angles, order="".join(order))
+@given(ct.test_angles_rad, st.permutations("xyz"), ct.test_dtype)
+@example((np.pi, -np.pi / 2, 0), "zyx", "f8")
+def test_matrix_make_rotation_from_euler_angles(angles, order, dtype):
+    result = pla.matrix_make_rotation_from_euler_angles(
+        angles, order="".join(order), dtype=dtype
+    )
 
-    expected = np.eye(4)
+    expected = np.eye(4, dtype=dtype)
     for axis, angle in zip(order, angles):
-        matrix = np.eye(4)
+        matrix = np.eye(4, dtype=dtype)
         matrix[:3, :3] = ct.rotation_matrix(axis, angle)
         expected = matrix @ expected
 
     npt.assert_array_almost_equal(result, expected)
-
-
-def test_matrix_make_rotation_from_euler_angles_ordered():
-    """Test that an ordered sequence of rotations about the z and then y axis results
-    in the correct result."""
-    result = pla.matrix_make_rotation_from_euler_angles(
-        [0, np.pi / 2, np.pi / 2], order="zyx"
-    )
-    npt.assert_array_almost_equal(
-        result,
-        [
-            [0, 0, 1, 0],
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 1],
-        ],
-    )
-
-
-def test_matrix_make_rotation_from_euler_angles_dtype():
-    result = pla.matrix_make_rotation_from_euler_angles([0, 0, np.pi / 2], dtype="i2")
-    npt.assert_array_almost_equal(
-        result,
-        [
-            [0, -1, 0, 0],
-            [1, 0, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1],
-        ],
-    )
-    assert result.dtype == "i2"
+    assert result.dtype == dtype
 
 
 def test_matrix_make_rotation_from_axis_angle_direction():
