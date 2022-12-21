@@ -9,56 +9,25 @@ import pylinalg as pla
 from ..conftest import test_vector, test_dtype, legal_numbers
 
 
-@given(test_vector | legal_numbers, none() | test_dtype)
-@example(dtype='u4', position=4294967297.0)
+@given(legal_numbers | test_vector, none() | test_dtype)
 def test_matrix_make_translation(position, dtype):
     result = pla.matrix_make_translation(position, dtype=dtype)
 
     expected = np.eye(4, dtype=dtype)
     expected[:3, 3] = np.asarray(position)
-    # expected = expected.astype(dtype, casting="unsafe")
 
     npt.assert_array_almost_equal(result, expected)
 
 
-def test_matrix_make_scaling():
-    result = pla.matrix_make_scaling([2, 3, 4])
-    npt.assert_array_equal(
-        result,
-        [
-            [2, 0, 0, 0],
-            [0, 3, 0, 0],
-            [0, 0, 4, 0],
-            [0, 0, 0, 1],
-        ],
-    )
+@given(legal_numbers | test_vector, none() | test_dtype)
+def test_matrix_make_scaling(scale, dtype):
+    result = pla.matrix_make_scaling(scale, dtype=dtype)
 
+    expected = np.diag((*scale, 1))
+    expected = expected.astype(dtype)
 
-def test_matrix_make_scaling_dtype():
-    result = pla.matrix_make_scaling([2, 3, 4], dtype="i2")
-    npt.assert_array_equal(
-        result,
-        [
-            [2, 0, 0, 0],
-            [0, 3, 0, 0],
-            [0, 0, 4, 0],
-            [0, 0, 0, 1],
-        ],
-    )
-    assert result.dtype == "i2"
-
-
-def test_matrix_make_scaling_uniform():
-    result = pla.matrix_make_scaling(2)
-    npt.assert_array_equal(
-        result,
-        [
-            [2, 0, 0, 0],
-            [0, 2, 0, 0],
-            [0, 0, 2, 0],
-            [0, 0, 0, 1],
-        ],
-    )
+    npt.assert_array_almost_equal(result, expected)
+    assert result.dtype == dtype
 
 
 def test_matrix_make_rotation_from_euler_angles():
