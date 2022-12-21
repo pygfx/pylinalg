@@ -144,8 +144,8 @@ def matrix_make_rotation_from_euler_angles(
     matrix_x[2, 2] = np.cos(a)
 
     matrix_y[0, 0] = np.cos(b)
-    matrix_y[0, 2] = np.sin(b)
-    matrix_y[2, 0] = -np.sin(b)
+    matrix_y[0, 2] = -np.sin(b)
+    matrix_y[2, 0] = np.sin(b)
     matrix_y[2, 2] = np.cos(b)
 
     matrix_z[0, 0] = np.cos(c)
