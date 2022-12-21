@@ -14,9 +14,9 @@ from ..conftest import test_vector, test_dtype, legal_numbers
 def test_matrix_make_translation(position, dtype):
     result = pla.matrix_make_translation(position, dtype=dtype)
 
-    expected = np.eye(4)
-    expected[:3, 3] = position
-    expected = expected.astype(dtype, casting="unsafe")
+    expected = np.eye(4, dtype=dtype)
+    expected[:3, 3] = np.asarray(position)
+    # expected = expected.astype(dtype, casting="unsafe")
 
     npt.assert_array_almost_equal(result, expected)
 
