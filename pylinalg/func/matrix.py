@@ -137,8 +137,12 @@ def matrix_make_rotation_from_euler_angles(
 
     Notes
     -----
-    The current implementation only supports euler-angles that are permutations
-    of "xyz". I.e., other formats like "yzy" are not supported.
+    If you are familiar with TreeJS note that this function uses ``order`` to
+    denote both, the order in which rotations are applied *and* the order in
+    which angles are provided in ``angles``. I.e.,
+    ``matrix_make_rotation_from_euler_angles([np.pi, np.pi, 0], order="zyx")``
+    will first rotate 180° ccw (counter-clockwise) around the z-axis, then 180°
+    ccw around the y-axis, and finally 0° around the x axis.
 
     """
     order = order.lower()
