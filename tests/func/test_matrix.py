@@ -24,9 +24,9 @@ def test_matrix_make_scaling(scale, dtype):
     result = pla.matrix_make_scaling(scale, dtype=dtype)
 
     if isinstance(scale, np.ndarray):
-        scaling = np.array((*scale, 1))
+        scaling = np.array((*scale, 1), dtype=dtype)
     else:
-        scaling = np.array((scale, scale, scale, 1))
+        scaling = np.array((scale, scale, scale, 1), dtype=dtype)
 
     expected = np.identity(4, dtype=dtype)
     np.fill_diagonal(expected, scaling)
