@@ -130,7 +130,7 @@ def test_matrix_combine():
     # non-uniform scaling such that the test would fail if rotation/scaling are
     # applied in the incorrect order
     scaling = pla.matrix_make_scaling([1, 2, 1])
-    rotation = pla.matrix_make_rotation_from_euler_angles([0, np.pi / 4, np.pi / 2])
+    rotation = pla.matrix_make_rotation_from_euler_angles([0, -np.pi / 4, np.pi / 2])
     translation = pla.matrix_make_translation(2)
     # apply the standard SRT ordering
     result = pla.matrix_combine([translation, rotation, scaling])
@@ -147,10 +147,6 @@ def test_matrix_combine():
 
     with pytest.raises(TypeError):
         pla.matrix_combine()
-    with pytest.raises(ValueError):
-        pla.matrix_combine([])
-    with pytest.raises(ValueError):
-        pla.matrix_combine([translation])
 
     result = pla.matrix_combine([translation, translation], dtype="f4")
     npt.assert_array_almost_equal(
