@@ -1,3 +1,5 @@
+from math import cos, sin
+
 import numpy as np
 
 
@@ -141,37 +143,22 @@ def matrix_make_rotation_from_euler_angles(
     """
     order = order.lower()
 
-    # ensure we have matching angles and axes
-    angles = {axis: angle for axis, angle in zip(order, angles)}
-    a, b, c = angles["x"], angles["y"], angles["z"]
+    matrices = []
+    for angle, axis in zip(angles, order):
+        axis_idx = {"x": 0, "y": 1, "z": 2}[axis]
 
-    matrix_x = np.identity(4)
-    matrix_y = np.identity(4)
-    matrix_z = np.identity(4)
+        matrix = np.array([[cos(angle), -sin(angle)], [sin(angle), cos(angle)]])
+        matrix = np.insert(matrix, axis_idx, 0, axis=0)
+        matrix = np.insert(matrix, axis_idx, 0, axis=1)
+        matrix[axis_idx, axis_idx] = 1
 
-    matrix_x[1, 1] = np.cos(a)
-    matrix_x[1, 2] = -np.sin(a)
-    matrix_x[2, 1] = np.sin(a)
-    matrix_x[2, 2] = np.cos(a)
+        affine_matrix = np.identity(4, dtype=dtype)
+        affine_matrix[:3, :3] = matrix
 
-    matrix_y[0, 0] = np.cos(b)
-    matrix_y[0, 2] = -np.sin(b)
-    matrix_y[2, 0] = np.sin(b)
-    matrix_y[2, 2] = np.cos(b)
+        matrices.append(affine_matrix)
 
-    matrix_z[0, 0] = np.cos(c)
-    matrix_z[0, 1] = -np.sin(c)
-    matrix_z[1, 0] = np.sin(c)
-    matrix_z[1, 1] = np.cos(c)
-
-    lookup = {
-        "x": matrix_x,
-        "y": matrix_y,
-        "z": matrix_z,
-    }
-    return matrix_combine(
-        [lookup[i] for i in reversed(order.lower())], out=out, dtype=dtype
-    )
+    # note: combining in the loop would save time and memory usage
+    return matrix_combine([x for x in reversed(matrices)], out=out, dtype=dtype)
 
 
 def matrix_make_rotation_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
