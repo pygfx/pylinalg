@@ -96,7 +96,7 @@ def matrix_make_scaling(factors, /, *, out=None, dtype=None):
     ndarray, [4, 4]
         Scaling matrix.
     """
-    factors = np.asarray(factors)
+    factors = np.asarray(factors, dtype=dtype)
 
     matrix = np.identity(4, dtype=dtype)
     matrix[np.diag_indices(3)] = factors

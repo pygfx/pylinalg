@@ -23,10 +23,8 @@ def test_matrix_make_translation(position, dtype):
 def test_matrix_make_scaling(scale, dtype):
     result = pla.matrix_make_scaling(scale, dtype=dtype)
 
-    if isinstance(scale, np.ndarray):
-        scaling = np.array((*scale, 1), dtype=dtype)
-    else:
-        scaling = np.array((scale, scale, scale, 1), dtype=dtype)
+    scaling = np.ones(4, dtype=dtype)
+    scaling[:3] = np.asarray(scale, dtype=dtype)
 
     expected = np.identity(4, dtype=dtype)
     np.fill_diagonal(expected, scaling)
