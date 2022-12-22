@@ -91,24 +91,24 @@ def test_matrix_make_rotation_from_axis_angle_xy():
         # case a
         ([0, 0, np.pi / 2], [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2], "f8"),
         # case a, two ordered rotations
-        ([0, -np.pi / 2, np.pi / 2], [0.5, -0.5, 0.5, 0.5], "f8"),
+        ([0, np.pi / 2, np.pi / 2], [0.5, -0.5, 0.5, 0.5], "f8"),
         # non-default dtype
-        ([0, -np.pi / 2, np.pi / 2], [0.5, -0.5, 0.5, 0.5], "f4"),
+        ([0, np.pi / 2, np.pi / 2], [0.5, -0.5, 0.5, 0.5], "f4"),
         # case b (contrived example for code coverage)
         (
-            [0, np.pi * 0.51, np.pi * 0.51],
+            [0, -np.pi * 0.51, np.pi * 0.51],
             [0.515705, -0.499753, -0.499753, -0.484295],
             "f8",
         ),
         # case c (contrived example for code coverage)
         (
-            [np.pi * 1.2, np.pi * 1.8, np.pi],
+            [np.pi * 1.2, -np.pi * 1.8, np.pi],
             [-0.095492, 0.904508, -0.293893, -0.293893],
             "f8",
         ),
         # case d (contrived example for code coverage)
         (
-            [np.pi * 0.45, np.pi * 1.8, np.pi],
+            [np.pi * 0.45, -np.pi * 1.8, np.pi],
             [0.234978, 0.617662, 0.723189, -0.20069],
             "f8",
         ),
