@@ -32,7 +32,7 @@ def generate_quaternion(
     elements : strategy
         A strategy that creates valid elements. Defaults to any degree in [0, 360].
     snap_precision : int
-        The value to which
+        The precision to which to round ("snap") angles to.
 
     Returns
     -------
@@ -73,13 +73,58 @@ def generate_quaternion(
     return quaternion
 
 
+@st.composite
+def dtype_string(draw):
+    letter = draw(st.sampled_from("?iuf"))
+
+    if letter == "?":
+        code = letter
+    elif letter == "f":
+        code = letter + draw(st.sampled_from("48"))
+    else:
+        code = letter + draw(st.sampled_from("1248"))
+
+    return code
+
+
+def rotation_matrix(axis, angle):
+    """Rotation by angle around the given cardinal axis.
+
+    Parameters
+    ----------
+    axis : str
+        One of "x", "y", or "z".
+    angle : float
+        The angle to rotate by (in rad).
+
+    """
+
+    matrix = np.array([[cos(angle), -sin(angle)], [sin(angle), cos(angle)]])
+
+    axis_idx = {"x": 0, "y": 1, "z": 2}[axis]
+    matrix = np.insert(matrix, axis_idx, 0, axis=0)
+    matrix = np.insert(matrix, axis_idx, 0, axis=1)
+    matrix[axis_idx, axis_idx] = 1
+
+    return matrix
+
+
 def nonzero_scale(scale):
     return np.where(np.abs(scale) < EPS, 1, scale)
 
 
 # Hypthesis testing strategies
 legal_numbers = from_dtype(np.dtype(float), allow_infinity=False, allow_nan=False)
+legal_angle = from_dtype(
+    np.dtype(float),
+    allow_infinity=False,
+    allow_nan=False,
+    min_value=0,
+    max_value=2 * np.pi,
+)
 test_vector = arrays(float, (3,), elements=legal_numbers)
 test_quaternion = generate_quaternion()
 test_matrix_affine = arrays(float, (4, 4), elements=legal_numbers)
 test_scaling = arrays(float, (3,), elements=legal_numbers).map(nonzero_scale)
+test_dtype = dtype_string()
+test_angles_rad = arrays(float, (3,), elements=legal_angle)
