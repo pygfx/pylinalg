@@ -138,7 +138,7 @@ def matrix_make_rotation_from_euler_angles(
     Notes
     -----
     If you are familiar with TreeJS note that this function uses ``order`` to
-    denote both, the order in which rotations are applied *and* the order in
+    denote both the order in which rotations are applied *and* the order in
     which angles are provided in ``angles``. I.e.,
     ``matrix_make_rotation_from_euler_angles([np.pi, np.pi, 0], order="zyx")``
     will first rotate 180° ccw (counter-clockwise) around the z-axis, then 180°
