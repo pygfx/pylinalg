@@ -107,21 +107,21 @@ class AffineTransform(Transform):
 
         scale = 1 / self.scale
         orientation = qt.quaternion_inverse(self.orientation)
-        position = (
-            -(scale * self.position) @ qt.quaternion_to_matrix(orientation)[:3, :3]
+        position = -(
+            scale * (self.position @ qt.quaternion_to_matrix(orientation)[:3, :3])
         )
 
         return AffineTransform(position=position, orientation=orientation, scale=scale)
 
     def __array__(self, dtype=None):
-        return self.transformation_matrix.astype(dtype)
+        return self.as_matrix().astype(dtype)
 
     def __matmul__(self, other):
         if not isinstance(other, AffineTransform):
             raise NotImplementedError()
 
         other_rotation = qt.quaternion_to_matrix(other.orientation)[:3, :3]
-        position = other.position + (other.scale * self.position) @ other_rotation
+        position = other.position + other.scale * (self.position @ other_rotation)
 
         orientation = qt.quaternion_multiply(self._orientation, other._orientation)
 
