@@ -1,6 +1,7 @@
 *.egg-info/
 __pycache__
-.vscode
+.vscode/
 .coverage
 dist
 playground.py
+.hypothesis/

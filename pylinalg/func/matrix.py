@@ -1,3 +1,5 @@
+from math import cos, sin
+
 import numpy as np
 
 
@@ -28,13 +30,10 @@ def matrix_combine(matrices, /, *, out=None, dtype=None):
     ndarray, [4, 4]
         Combined transformation matrix.
     """
-    n = len(matrices)
-    if n < 2:
-        raise ValueError("need at least two matrices to combine")
     if out is None:
         out = np.empty((4, 4), dtype=dtype)
-    out[:] = matrices[0]
-    for matrix in matrices[1:]:
+    out[:] = np.identity(4, dtype=dtype)
+    for matrix in matrices:
         try:
             np.dot(out, matrix, out=out)
         except ValueError:
@@ -97,7 +96,7 @@ def matrix_make_scaling(factors, /, *, out=None, dtype=None):
     ndarray, [4, 4]
         Scaling matrix.
     """
-    factors = np.asarray(factors)
+    factors = np.asarray(factors, dtype=dtype)
 
     matrix = np.identity(4, dtype=dtype)
     matrix[np.diag_indices(3)] = factors
@@ -134,36 +133,36 @@ def matrix_make_rotation_from_euler_angles(
     -------
     ndarray, [4, 4]
         Rotation matrix.
+
+
+    Notes
+    -----
+    If you are familiar with TreeJS note that this function uses ``order`` to
+    denote both the order in which rotations are applied *and* the order in
+    which angles are provided in ``angles``. I.e.,
+    ``matrix_make_rotation_from_euler_angles([np.pi, np.pi, 0], order="zyx")``
+    will first rotate 180° ccw (counter-clockwise) around the z-axis, then 180°
+    ccw around the y-axis, and finally 0° around the x axis.
+
     """
-    a, b, c = angles
+    order = order.lower()
 
-    matrix_x = np.identity(4)
-    matrix_y = np.identity(4)
-    matrix_z = np.identity(4)
+    matrices = []
+    for angle, axis in zip(angles, order):
+        axis_idx = {"x": 0, "y": 1, "z": 2}[axis]
 
-    matrix_x[1, 1] = np.cos(a)
-    matrix_x[1, 2] = -np.sin(a)
-    matrix_x[2, 1] = np.sin(a)
-    matrix_x[2, 2] = np.cos(a)
+        matrix = np.array([[cos(angle), -sin(angle)], [sin(angle), cos(angle)]])
+        matrix = np.insert(matrix, axis_idx, 0, axis=0)
+        matrix = np.insert(matrix, axis_idx, 0, axis=1)
+        matrix[axis_idx, axis_idx] = 1
 
-    matrix_y[0, 0] = np.cos(b)
-    matrix_y[0, 2] = np.sin(b)
-    matrix_y[2, 0] = -np.sin(b)
-    matrix_y[2, 2] = np.cos(b)
+        affine_matrix = np.identity(4, dtype=dtype)
+        affine_matrix[:3, :3] = matrix
 
-    matrix_z[0, 0] = np.cos(c)
-    matrix_z[0, 1] = -np.sin(c)
-    matrix_z[1, 0] = np.sin(c)
-    matrix_z[1, 1] = np.cos(c)
+        matrices.append(affine_matrix)
 
-    lookup = {
-        "x": matrix_x,
-        "y": matrix_y,
-        "z": matrix_z,
-    }
-    return matrix_combine(
-        [lookup[i] for i in reversed(order.lower())], out=out, dtype=dtype
-    )
+    # note: combining in the loop would save time and memory usage
+    return matrix_combine([x for x in reversed(matrices)], out=out, dtype=dtype)
 
 
 def matrix_make_rotation_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
