@@ -181,3 +181,47 @@ def quaternion_make_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
     out[3] = np.cos(angle_half)
 
     return out
+
+
+def quaternion_rotate(vector, quaternion, /, *, out=None, dtype=None):
+    """
+    Rotate a vector using a quaternion.
+
+    Parameters
+    ----------
+    vector : ndarray, [3]
+        The vector to rotate in local space.
+    quaternion : ndarray, [4]
+        The quaternion to rotate by in ``(x, y, z, w)`` format.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    rotated_vector : ndarray, [3]
+        The input vector rotated by the given quaternion.
+
+    Notes
+    -----
+    For improved accuracy consider normalizing the vector before applying the
+    rotation and then re-apply the original scale afterwards.
+
+    """
+
+    vector = np.asarray(vector, dtype=dtype)
+    quaternion = np.asarray(quaternion, dtype=dtype)
+
+    scalar = quaternion[..., -1]
+    q_vector = quaternion[..., :3]
+
+    # the required linalg products
+    q_v = np.tensordot(q_vector, vector, axes=(-1, -1))
+    q_q = np.tensordot(q_vector, q_vector, axes=(-1, -1))
+    qxv = np.cross(q_vector, vector, axis=-1)
+
+    return (2 * q_v * q_vector) + (scalar**2 - q_q) * vector + 2 * scalar * qxv
