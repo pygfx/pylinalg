@@ -215,6 +215,16 @@ def quaternion_rotate(vector, quaternion, /, *, out=None, dtype=None):
     dtype : data-type, optional
         Overrides the data type of the result.
 
+    Returns
+    -------
+    rotated_vector : ndarray, [3]
+        The input vector rotated by the given quaternion.
+
+    Notes
+    -----
+    For improved accuracy consider normalizing the vector before applying the
+    rotation and then re-apply the original scale afterwards.
+
     """
 
     vector = np.asarray(vector, dtype=dtype)
