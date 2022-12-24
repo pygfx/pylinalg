@@ -27,19 +27,33 @@ def quaternion_to_matrix(quaternion, /, *, out=None, dtype=None):
     quaternion = np.asarray(quaternion)
     x, y, z, w = quaternion
 
+    x2 = x * 2
+    y2 = y * 2
+    z2 = z * 2
+    xx = x * x2
+    xy = x * y2
+    xz = x * z2
+    yy = y * y2
+    yz = y * z2
+    zz = z * z2
+    wx = w * x2
+    wy = w * y2
+    wz = w * z2
+
     if out is None:
         out = np.identity(4, dtype=dtype)
     else:
         out[:] = np.identity(4)
 
-    # credit to: http://www.songho.ca/opengl/gl_quaternion.htm
-    # fmt: off
-    out[:3, :3] = np.array([
-        [1 - 2*y**2 - 2*z**2,       2*x*y - 2*w*z,       2*x*z + 2*w*y],  # noqa: E201, E501
-        [      2*x*y + 2*w*z, 1 - 2*x**2 - 2*z**2,       2*y*w - 2*w*x],  # noqa: E201, E501
-        [      2*x*w - 2*w*y,       2*y*z + 2*w*x, 1 - 2*x**2 - 2*y**2],  # noqa: E201, E501
-    ]).T
-    # fmt: on
+    out[0, 0] = 1 - (yy + zz)
+    out[1, 0] = xy + wz
+    out[2, 0] = xz - wy
+    out[0, 1] = xy - wz
+    out[1, 1] = 1 - (xx + zz)
+    out[2, 1] = yz + wx
+    out[0, 2] = xz + wy
+    out[1, 2] = yz - wx
+    out[2, 2] = 1 - (xx + yy)
 
     return out
 
@@ -186,7 +200,6 @@ def quaternion_make_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
 def quaternion_rotate(vector, quaternion, /, *, out=None, dtype=None):
     """
     Rotate a vector using a quaternion.
-
     Parameters
     ----------
     vector : ndarray, [3]
@@ -200,17 +213,14 @@ def quaternion_rotate(vector, quaternion, /, *, out=None, dtype=None):
         length equal to the number of outputs.
     dtype : data-type, optional
         Overrides the data type of the result.
-
     Returns
     -------
     rotated_vector : ndarray, [3]
         The input vector rotated by the given quaternion.
-
     Notes
     -----
     For improved accuracy consider normalizing the vector before applying the
     rotation and then re-apply the original scale afterwards.
-
     """
 
     vector = np.asarray(vector, dtype=dtype)
