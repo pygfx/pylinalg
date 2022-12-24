@@ -110,6 +110,27 @@ def rotation_matrix(axis, angle):
     return matrix
 
 
+@st.composite
+def unit_vector(
+    draw,
+    elements=st.floats(
+        allow_infinity=False, allow_nan=False, min_value=0, max_value=2 * np.pi
+    ),
+):
+    """
+    Generate a unit vector using a point on the unit-sphere
+    (essentially spherical coordinates to euclidean coordinates)
+    """
+    theta, phi = draw(elements), draw(elements)
+
+    # spherical to euclidean (r = 1)
+    x = cos(theta) * sin(phi)
+    y = sin(theta) * sin(phi)
+    z = cos(phi)
+
+    return np.array((x, y, z))
+
+
 def nonzero_scale(scale):
     return np.where(np.abs(scale) < EPS, 1, scale)
 
@@ -129,3 +150,4 @@ test_matrix_affine = arrays(float, (4, 4), elements=legal_numbers)
 test_scaling = arrays(float, (3,), elements=legal_numbers).map(nonzero_scale)
 test_dtype = dtype_string()
 test_angles_rad = arrays(float, (3,), elements=legal_angle)
+test_unit_vector = unit_vector()
