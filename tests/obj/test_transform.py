@@ -3,7 +3,7 @@ from hypothesis import given
 
 import pylinalg as pla
 
-from ..conftest import test_quaternion, test_scaling, test_vector
+from ..conftest import test_quaternion, test_scaling, test_vector, test_unit_vector
 
 
 @given(test_vector, test_vector)
@@ -17,18 +17,14 @@ def test_affine_chaining(position, position2):
     np.testing.assert_allclose(chained.position, expected, equal_nan=True)
 
 
-@given(test_vector, test_quaternion, test_scaling)
+@given(test_unit_vector, test_quaternion, test_scaling)
 def test_affine_inverse(position, orientation, scale):
     """
-    Normally, we would just test if the combination results in an identity
-    matrix. Unfortunately though, limited precision arithmetic defeats this
-    approach, because we can produce (almost) arbitrarily large errors by
-    carefully choosing the rotation and scale components of the affine transform
-    (which hypothesis is very good at doing, so it quickly finds breaking
-    examples.)
+    Checks if an affine transform times its inverse is the identity.
 
-    Instead, this test checks the position, rotation, and scale manually,
-    because there errors compound less in this case.
+    Note that this only uses unit vectors for position, because allowing
+    vectors with other scales leads to numerical inaccuracies that cause this
+    test to fail.
 
     """
     transform = pla.AffineTransform()
@@ -38,14 +34,10 @@ def test_affine_inverse(position, orientation, scale):
 
     inverse = transform.inverse()
 
-    result = inverse @ transform  # numerical identity
-    np.testing.assert_array_almost_equal(result.orientation, (0, 0, 0, 1))
-    np.testing.assert_array_almost_equal(result.scale, (1, 1, 1))
+    expected = np.identity(4)
+    actual = (transform @ inverse).as_matrix()
+    np.testing.assert_almost_equal(actual, expected)
 
-    result = transform @ inverse
-    np.testing.assert_array_almost_equal(result.orientation, (0, 0, 0, 1))
-    np.testing.assert_array_almost_equal(result.scale, (1, 1, 1))
-
-    # position is where errors compound, so we need to run a
-    # looser test here
-    # np.testing.assert_array_almost_equal(result.position, (0, 0, 0))
+    expected = np.identity(4)
+    actual = (inverse @ transform).as_matrix()
+    np.testing.assert_almost_equal(actual, expected)
