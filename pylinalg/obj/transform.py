@@ -67,26 +67,9 @@ class AffineTransform(Transform):
         child frame into an object's parent frame.
         """
 
-        result = np.zeros((4, 4))
-        result[-1, -1] = 1  # affine matrix :)
-
-        # credit to: http://www.songho.ca/opengl/gl_quaternion.htm
-        # @almarklein: Can we refactor quaternion_to_matrix to something like
-        # this? It's easier to read than the current implementation.
-        x, y, z, w = self._orientation
-        # fmt: off
-        result[:3, :3] = np.array([
-            [1 - 2*y**2 - 2*z**2,       2*x*y - 2*w*z,       2*x*z + 2*w*y],  # noqa: E201, E501
-            [      2*x*y + 2*w*z, 1 - 2*x**2 - 2*z**2,       2*y*w - 2*w*x],  # noqa: E201, E501
-            [      2*x*w - 2*w*y,       2*y*z + 2*w*x, 1 - 2*x**2 - 2*y**2],  # noqa: E201, E501
-        ]).T
-        # fmt: on
-
+        result = qt.quaternion_to_matrix(self._orientation)
         result[:, :3] = result[:, :3] * self._scale.reshape(1, 3)
-
-        # we right-multiply transformations to allow broadcasting across
-        # vectors. Hence we track the position in the bottom row
-        result[-1, :3] = self._position
+        result[:3, -1] = self._position
 
         return result
 
@@ -108,7 +91,7 @@ class AffineTransform(Transform):
         scale = 1 / self.scale
         orientation = qt.quaternion_inverse(self.orientation)
         position = -(
-            scale * (self.position @ qt.quaternion_to_matrix(orientation)[:3, :3])
+            scale * (qt.quaternion_to_matrix(orientation)[:3, :3] @ self._position)
         )
 
         return AffineTransform(position=position, orientation=orientation, scale=scale)
@@ -120,12 +103,12 @@ class AffineTransform(Transform):
         if not isinstance(other, AffineTransform):
             raise NotImplementedError()
 
-        other_rotation = qt.quaternion_to_matrix(other.orientation)[:3, :3]
-        position = other.position + other.scale * (self.position @ other_rotation)
+        rotation = qt.quaternion_to_matrix(self.orientation)[:3, :3]
+        position = self.position + self.scale * (rotation @ other.position)
 
-        orientation = qt.quaternion_multiply(self._orientation, other._orientation)
+        orientation = qt.quaternion_multiply(other._orientation, self._orientation)
 
-        scale = self.scale * other.scale
+        scale = other.scale * self.scale
 
         return AffineTransform(position=position, orientation=orientation, scale=scale)
 
