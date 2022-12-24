@@ -1,8 +1,11 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
+from hypothesis import given
 
 import pylinalg as pla
+
+from ..conftest import test_quaternion, test_unit_vector
 
 
 @pytest.mark.parametrize(
@@ -107,3 +110,28 @@ def test_quaternion_from_axis_angle():
     q = pla.quaternion_make_from_axis_angle(axis, angle)
 
     npt.assert_array_almost_equal(q, [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2])
+
+
+@given(test_unit_vector, test_quaternion)
+def test_quaternion_vs_matrix_rotate(vector, quaternion):
+    matrix = pla.quaternion_to_matrix(quaternion)
+    hom_vector = np.ones(4, dtype=vector.dtype)
+    hom_vector[:3] = vector
+
+    expected = (matrix @ hom_vector)[:3]
+    actual = pla.quaternion_rotate(vector, quaternion)
+
+    npt.assert_array_almost_equal(actual, expected)
+
+
+@given(test_unit_vector, test_quaternion)
+def test_quaternion_rotate_inversion(vector, quaternion):
+    inverse = pla.quaternion_inverse(quaternion)
+
+    tmp = pla.quaternion_rotate(vector, quaternion)
+    result = pla.quaternion_rotate(tmp, inverse)
+    npt.assert_array_almost_equal(result, vector)
+
+    tmp = pla.quaternion_rotate(vector, inverse)
+    result = pla.quaternion_rotate(tmp, quaternion)
+    npt.assert_array_almost_equal(result, vector)
