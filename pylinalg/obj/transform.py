@@ -68,7 +68,7 @@ class AffineTransform(Transform):
         """
 
         result = qt.quaternion_to_matrix(self._orientation)
-        result[:, :3] = result[:, :3] * self._scale.reshape(1, 3)
+        result[:, :3] *= self._scale.reshape(1, 3)
         result[:3, -1] = self._position
 
         return result
