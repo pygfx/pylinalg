@@ -200,6 +200,7 @@ def quaternion_make_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
 def quaternion_rotate(vector, quaternion, /, *, out=None, dtype=None):
     """
     Rotate a vector using a quaternion.
+
     Parameters
     ----------
     vector : ndarray, [3]
@@ -213,10 +214,12 @@ def quaternion_rotate(vector, quaternion, /, *, out=None, dtype=None):
         length equal to the number of outputs.
     dtype : data-type, optional
         Overrides the data type of the result.
+
     Returns
     -------
     rotated_vector : ndarray, [3]
         The input vector rotated by the given quaternion.
+
     Notes
     -----
     For improved accuracy consider normalizing the vector before applying the
