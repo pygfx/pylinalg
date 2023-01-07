@@ -71,7 +71,7 @@ class AffineTransform(Transform):
         # in the source frame. A matrix constructed from these parameters maps
         # points from the target's frame back into source's frame. We want to go
         # from source to target so we need to inverse before building the
-        # matrix. 
+        # matrix.
         inverse = self.inverse()
 
         result = qt.quaternion_to_matrix(inverse._orientation)
