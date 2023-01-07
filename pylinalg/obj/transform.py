@@ -15,23 +15,22 @@ class AffineTransform(Transform):
     A affine transformation.
 
     This transform represents an affine mapping between two coordinate frames:
-    parent and child. That is, a transformation that is linear in homogeneous
-    coordinates and that consists of a translation, rotation, and scale (applied
-    in that order).
+    source and target. That is, a transformation that is linear in homogeneous
+    coordinates and that sequentially applies a translation, rotation, and
+    scaling.
 
 
     Parameters
     ----------
     position : ndarray, [3]
-        The position of the child's frame in the parent's space. (The
-        translation to apply to map vectors from child to parent.)
+        The position of target's frame in source's space. I.e., a vector
+        describing the translation to apply.
     orientation : ndarray, [4]
-        The orientation of the parent's frame relative to the child's frame. (A
-        quaternion (format: x, y, z, w) describing the rotation from child to
-        parent.)
+        The orientation of the target's frame in source's space. I.e., a
+        quaternion (format: x, y, z, w) describing the rotation to apply.
     scale : ndarray, [3]
-        The scale of the parent expressed in child's units. (A axis-wise scaling
-        to map units from child to parent.)
+        The scale of target's units expressed in parent's units. I.e., a vector
+        describing the per-axis scaling to apply.
 
     """
 
@@ -52,19 +51,20 @@ class AffineTransform(Transform):
             self._position = np.zeros(3)
 
         if orientation is None:
-            self._orientation = np.array((0, 0, 0, 1))
+            self._orientation = np.array((0, 0, 0, 1), dtype=float)
 
         if scale is None:
             self._scale = np.ones(3)
 
     def as_matrix(self):
         """
-        The affine transforms matrix
+        The affine transformation matrix.
 
-        The returned matrix is a transformation matrix that converts
-        points in homogeneous coordinates according to the current parameters
-        of this AffineTransform object. Typically, this maps from an object's
-        child frame into an object's parent frame.
+        The returned matrix is a transformation matrix that takes points in
+        source's frame and expresses them in target's frame. This works in
+        homogeneous coordinates, i.e., both input and output vectors must be of
+        the form ``(x, y, z, 1)``.
+
         """
 
         result = qt.quaternion_to_matrix(self._orientation)
@@ -75,8 +75,7 @@ class AffineTransform(Transform):
 
     def inverse(self):
         """
-        Invert this affine transformation.
-
+        Get the inverse affine transformation.
 
         Note
         ----
@@ -106,6 +105,7 @@ class AffineTransform(Transform):
         rotation = qt.quaternion_to_matrix(self.orientation)[:3, :3]
         position = self.position + self.scale * (rotation @ other.position)
 
+        # TODO: check if the order is correct here or if it should be swapped.
         orientation = qt.quaternion_multiply(other._orientation, self._orientation)
 
         scale = other.scale * self.scale
@@ -126,12 +126,12 @@ class AffineTransform(Transform):
 
     @position.setter
     def position(self, value):
-        self._position = np.asarray(value)
+        self._position = np.asarray(value, dtype=float)
 
     @orientation.setter
     def orientation(self, value):
-        self._orientation = np.asarray(value)
+        self._orientation = np.asarray(value, dtype=float)
 
     @scale.setter
     def scale(self, value):
-        self._scale = np.asarray(value)
+        self._scale = np.asarray(value, dtype=float)
