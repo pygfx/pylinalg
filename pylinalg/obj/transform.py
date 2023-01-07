@@ -67,9 +67,16 @@ class AffineTransform(Transform):
 
         """
 
-        result = qt.quaternion_to_matrix(self._orientation)
-        result[:, :3] *= self._scale.reshape(1, 3)
-        result[:3, -1] = self._position
+        # AffineTransform describes the location/properties of the target frame
+        # in the source frame. A matrix constructed from these parameters maps
+        # points from the target's frame back into source's frame. We want to go
+        # from source to target so we need to inverse before building the
+        # matrix. 
+        inverse = self.inverse()
+
+        result = qt.quaternion_to_matrix(inverse._orientation)
+        result[:, :3] *= inverse._scale.reshape(1, 3)
+        result[:3, -1] = inverse._position
 
         return result
 
