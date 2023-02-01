@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hypothesis import example, given
+from hypothesis import given
 
 import pylinalg as pla
 
