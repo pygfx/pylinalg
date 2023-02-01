@@ -175,9 +175,24 @@ def vector_apply_quaternion_rotation(vector, quaternion, /, *, out=None, dtype=N
         The rotated vector.
 
     """
+    
+    vector = np.asarray(vector, dtype=float)
+    quaternion = np.asarray(quaternion, dtype=float)
 
-    raise NotImplementedError()
+    if out is None:
+        out = np.zeros_like(vector, dtype=dtype)
 
+    # based on https://gamedev.stackexchange.com/a/50545
+    # (more readable than my attempt at doing the same)
+
+    quat_vector = quaternion[..., :-1]
+    quat_scalar = quaternion[..., -1]
+
+    out += 2 * np.sum(quat_vector*vector, axis=-1) * quat_vector
+    out += (quat_scalar ** 2 - np.sum(quat_vector*quat_vector, axis=-1)) * vector
+    out += 2 * quat_scalar * np.cross(quat_vector, vector)
+
+    return out
 
 def vector_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
     """Convert spherical -> euclidian coordinates.

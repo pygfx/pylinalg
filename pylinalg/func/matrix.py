@@ -304,8 +304,13 @@ def matrix_make_transform(translation, rotation, scaling, /, *, out=None, dtype=
 
 def matrix_decompose(matrix, /, *, dtype=None, out=None):
     """
-    Decompose a transformation matrix into a translation vector, a
-    quaternion and a scaling vector.
+    Decompose a affine transformation matrix.
+
+    The input matrix is decomposed into a sequence of 5 matrices::
+
+        matrix = projection @ translation @ rotation @ shearing @ scaling
+
+    The individual matrices have the following form:
 
     Parameters
     ----------
@@ -321,8 +326,11 @@ def matrix_decompose(matrix, /, *, dtype=None, out=None):
 
     Returns
     -------
+    projection : ndarray, [4]
+        The projection component of the matrix as a projection
     translation : ndarray, [3]
-        translation vector
+        The translation component of the matrix as a displacement vector in the
+        source frame.
     rotation : ndarray, [4]
         quaternion
     scaling : ndarray, [3]
