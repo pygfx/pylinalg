@@ -1,9 +1,10 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hypothesis import given, assume
+from hypothesis import assume, given
 
 import pylinalg as pla
+
 from .. import conftest as ct
 
 
