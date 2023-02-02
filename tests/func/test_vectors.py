@@ -1,8 +1,10 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
+from hypothesis import given, assume
 
 import pylinalg as pla
+from .. import conftest as ct
 
 
 def test_vector_normalize():
@@ -107,6 +109,21 @@ def test_vector_apply_rotation_about_z_matrix():
         result,
         expected,
     )
+
+
+@given(ct.test_vector, ct.test_projection)
+def test_vector_unproject(expected, projection_matrix):
+    expected_hom = pla.vector_make_homogeneous(expected)
+    expected_2d = projection_matrix @ expected_hom
+
+    depth = expected_2d[..., 0]
+    vector = expected_2d[..., [1, 2]]
+
+    actual = pla.vector_unproject(vector, projection_matrix, depth=depth)
+
+    # only test stable results
+    assume(not np.any(np.isnan(actual) | np.isinf(actual)))
+    assert np.allclose(actual, expected, rtol=1e-16, atol=np.inf)
 
 
 def test_vector_apply_rotation_ordered():
