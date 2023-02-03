@@ -1,8 +1,11 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
+from hypothesis import given
 
 import pylinalg as pla
+
+from .. import conftest as ct
 
 
 def test_vector_normalize():
@@ -79,6 +82,20 @@ def test_vector_apply_matrix_dtype():
     result = pla.vector_apply_matrix(vectors, matrix, dtype="i2")
 
     assert result.dtype == "i2"
+
+
+@given(ct.test_vector, ct.test_vector)
+def test_vector_distance_between(vector_a, vector_b):
+    expected = np.linalg.norm(vector_a - vector_b)
+    result = pla.vector_distance_between(vector_a, vector_b)
+
+    npt.assert_array_almost_equal(result, expected)
+
+
+def test_vector_distance_between_exceptions():
+    tmp = np.array(0)
+    with pytest.raises(IndexError):
+        pla.vector_distance_between((0, 0, 0), (0, 1, 0), out=tmp)
 
 
 def test_vector_apply_matrix_out_dtype():
