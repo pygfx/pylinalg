@@ -1,8 +1,11 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
+from hypothesis import given
 
 import pylinalg as pla
+
+from .. import conftest as ct
 
 
 def test_vector_normalize():
@@ -53,6 +56,14 @@ def test_vector_apply_translation():
         result,
         expected,
     )
+
+
+@given(ct.test_vector)
+def test_vector_make_spherical_safe(vector):
+    result = pla.vector_make_spherical_safe(vector)
+
+    assert np.all((0 <= result[..., 1]) & (result[..., 1] < np.pi))
+    assert np.all((0 <= result[..., 2]) & (result[..., 2] < 2 * np.pi))
 
 
 def test_vector_apply_matrix_out():
