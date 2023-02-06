@@ -254,7 +254,14 @@ def vector_from_matrix_position(homogeneous_matrix, /, *, out=None, dtype=None):
 
     """
 
-    raise NotImplementedError()
+    homogeneous_matrix = np.asarray(homogeneous_matrix, dtype=float)
+
+    if out is None:
+        out = np.empty((*homogeneous_matrix.shape[:-2], 3), dtype=dtype)
+
+    out[:] = homogeneous_matrix[..., :-1, -1]
+
+    return out
 
 
 def vector_euclidean_to_spherical(euclidean, /, *, out=None, dtype=None):

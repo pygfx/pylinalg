@@ -1,8 +1,11 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
+from hypothesis import given
 
 import pylinalg as pla
+
+from .. import conftest as ct
 
 
 def test_vector_normalize():
@@ -41,6 +44,14 @@ def test_vector_make_homogeneous(vectors, value, expected):
     expected = np.asarray(expected)
     result = pla.vector_make_homogeneous(vectors, w=value)
     npt.assert_array_equal(result, expected)
+
+
+@given(ct.test_vector)
+def test_vector_from_matrix_position(translation):
+    matrix = pla.matrix_make_translation(translation)
+    result = pla.vector_from_matrix_position(matrix)
+
+    npt.assert_equal(result, translation)
 
 
 def test_vector_apply_translation():
