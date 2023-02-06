@@ -1,8 +1,11 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
+from hypothesis import given
 
 import pylinalg as pla
+
+from .. import conftest as ct
 
 
 def test_vector_normalize():
@@ -62,6 +65,13 @@ def test_vector_apply_matrix_out():
     result = pla.vector_apply_matrix(vectors, matrix, out=out)
 
     assert result is out
+
+
+@given(ct.test_vector)
+def test_vector_euclidean_to_spherical(vector):
+    # result = pla.vector_euclidean_to_spherical(vector)
+
+    raise NotImplementedError("Waiting for upstream PR.")
 
 
 def test_vector_apply_matrix_out_performant():
