@@ -112,7 +112,7 @@ def test_vector_spherical_to_euclidean(spherical):
     result = pla.vector_spherical_to_euclidean(spherical)
 
     # ensure azimuth rotates CCW
-    expected_sign = np.where(spherical[1] < np.pi / 2, -1, 1)
+    expected_sign = np.where(spherical[1] < np.pi / 2, 1, -1)
     actual_sign = np.prod(np.sign(result[..., [0, 2]]))
     assert np.all(expected_sign == actual_sign)
 
@@ -133,7 +133,7 @@ def test_vector_spherical_to_euclidean_refs():
     assert np.allclose(result, (0, 1, 0))
 
     result = pla.vector_spherical_to_euclidean((1, 0, np.pi / 2))
-    assert np.allclose(result, (0, 0, -1))
+    assert np.allclose(result, (0, 0, 1))
 
 
 def test_vector_apply_rotation_about_z_matrix():
