@@ -289,11 +289,10 @@ def vector_euclidean_to_spherical(euclidean, /, *, out=None, dtype=None):
     out[..., 0] = np.sqrt(np.sum(euclidean**2, axis=-1))
 
     # choose phi = 0 if vector runs along y-axis
-    xz_zero = np.all(euclidean[..., [0, 2]] == 0, axis=-1)
-    out[..., 1] = np.divide(
-        -euclidean[..., 2], np.sqrt(np.sum(euclidean[..., [0, 2]] ** 2)), where=xz_zero
-    )
-    out[..., 1] = np.sign(-euclidean[..., 0]) * np.arccos(out[..., 1], where=xz_zero)
+    len_xz = np.sum(euclidean[..., [0, 2]] ** 2, axis=-1)
+    xz_nonzero = ~np.all(len_xz == 0, axis=-1)
+    out[..., 1] = np.divide(euclidean[..., 2], np.sqrt(len_xz), where=xz_nonzero)
+    out[..., 1] = np.sign(euclidean[..., 0]) * np.arccos(out[..., 1], where=xz_nonzero)
 
     # choose psi = 0 at the origin (0, 0, 0)
     r_zero = np.all(out[..., [0]] == 0, axis=-1)
