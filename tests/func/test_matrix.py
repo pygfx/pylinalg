@@ -2,7 +2,7 @@ import hypothesis.strategies as st
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hypothesis import example, given
+from hypothesis import assume, example, given
 
 import pylinalg as pla
 
@@ -232,3 +232,31 @@ def test_matrix_make_orthographic():
             [0, 0, 0, 1],
         ],
     )
+
+
+@given(ct.test_unit_vector, ct.test_unit_vector, ct.test_unit_vector)
+def test_matrix_make_look_at(eye, target, up):
+    # Note: we need to find 3 independent vectors to run this test. I am doing
+    # this on a 3-sphere, because scale doesn't matter for us.
+    independence_matrix = np.stack((eye, target, up), axis=0)
+    assume(np.linalg.matrix_rank(independence_matrix) == 3)
+
+    rotation = pla.matrix_make_look_at(eye, target, up)
+
+    inverse_rotation = np.eye(4)
+    inverse_rotation[:3, :3] = rotation[:3, :3].T
+
+    # ensure matrix is inverted by its transpose
+    identity = rotation @ inverse_rotation
+    assert np.allclose(identity, np.eye(4), rtol=1e-16, atol=np.inf)
+
+    target_pointer = target - eye
+    target_pointer = target_pointer / np.linalg.norm(target_pointer)
+    target_pointer = pla.vector_make_homogeneous(target_pointer)
+    result = inverse_rotation @ target_pointer
+    assert np.allclose(result[:3], (0, 0, 1), rtol=1e-16, atol=np.inf)
+
+    up_pointer = up / np.linalg.norm(up)
+    up_pointer = pla.vector_make_homogeneous(up_pointer)
+    result = inverse_rotation @ up_pointer
+    assert np.allclose(result[:3], (0, 1, 0), rtol=1e-16, atol=np.inf)

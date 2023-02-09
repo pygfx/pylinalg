@@ -1,6 +1,7 @@
 from math import cos, sin
 
 import numpy as np
+from numpy.lib.stride_tricks import as_strided
 
 
 def matrix_combine(matrices, /, *, out=None, dtype=None):
@@ -493,8 +494,41 @@ def matrix_make_look_at(eye, target, up, /, *, out=None, dtype=None):
     Returns
     -------
     rotation_matrix : ndarray, [4, 4]
-        A matrix describing the rotation.
+        A homogeneous matrix describing the rotation.
+
+    Notes
+    -----
+    The implementation ignores the scale of ``target - eye`` and ``up``, meaning
+    that the resulting rotation makes the coordinate frame axes _point_ in the
+    direction but won't scale the units to _match_ the direction.
 
     """
 
-    raise NotImplementedError()
+    eye = np.asarray(eye, dtype=float)
+    target = np.asarray(target, dtype=float)
+    up = np.asarray(up, dtype=float)
+
+    result_shape = np.broadcast_shapes(eye.shape, target.shape, up.shape)
+    if out is None:
+        out = np.zeros((*result_shape[:-1], 4, 4), dtype=dtype)
+    else:
+        out[:] = 0
+
+    # Note: The below is equivalent to np.fill_diagonal(out, 1, axes=(-2, -1)),
+    # i.e., treat the last two axes as a matrix and fill its diagonal with 1.
+    # Currently numpy doesn't support axes on fill_diagonal, so we do it
+    # ourselves to support input batches and mimic the `np.linalg` API.
+    n_matrices = np.prod(result_shape[:-1], dtype=int)
+    itemsize = out.itemsize
+    view = as_strided(out, shape=(n_matrices, 4), strides=(16 * itemsize, 5 * itemsize))
+    view[:] = 1
+
+    out[..., :-1, 2] = (target - eye) / np.linalg.norm(target - eye, axis=-1)
+    out[..., :-1, 1] = up / np.linalg.norm(up, axis=-1)
+
+    # Note: order is important to obtain a right-hand frame
+    out[..., :-1, 0] = np.cross(
+        out[..., :-1, 2], out[..., :-1, 1], axisa=-1, axisb=-1, axisc=-1
+    )
+
+    return out
