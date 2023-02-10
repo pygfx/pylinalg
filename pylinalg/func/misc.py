@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def aabb_to_sphere(aabb, /, *, out=None, dtype=None):
     """A sphere that envelops an Axis-Aligned Bounding Box.
 
@@ -20,7 +23,15 @@ def aabb_to_sphere(aabb, /, *, out=None, dtype=None):
 
     """
 
-    raise NotImplementedError()
+    aabb = np.asarray(aabb, dtype=float)
+
+    if out is None:
+        out = np.empty((*aabb.shape[:-2], 4), dtype=dtype)
+
+    out[..., :3] = np.sum(aabb, axis=-2) / 2
+    out[..., 3] = np.linalg.norm(np.diff(aabb, axis=-2), axis=-1) / 2
+
+    return out
 
 
 def aabb_transform(aabb, matrix, /, *, out=None, dtype=None):
@@ -54,4 +65,15 @@ def aabb_transform(aabb, matrix, /, *, out=None, dtype=None):
     alignment axis stay the same.
 
     """
-    raise NotImplementedError()
+
+    aabb = np.asarray(aabb, dtype=float)
+    matrix = np.asarray(matrix, dtype=float).transpose((-2, -1))
+
+    if out is None:
+        np.empty_like(aabb, dtype=dtype)
+
+    projected = aabb @ matrix
+    out[..., 0, :] = np.min(projected, axis=-2)
+    out[..., 1, :] = np.max(projected, axis=-2)
+
+    return out
