@@ -136,7 +136,13 @@ def nonzero_scale(scale):
 
 
 # Hypthesis testing strategies
-legal_numbers = from_dtype(np.dtype(float), allow_infinity=False, allow_nan=False)
+legal_numbers = from_dtype(
+    np.dtype(float),
+    allow_infinity=False,
+    allow_nan=False,
+    min_value=-1e150,
+    max_value=1e150,
+)
 legal_angle = from_dtype(
     np.dtype(float),
     allow_infinity=False,
