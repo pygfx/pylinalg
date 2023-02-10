@@ -33,3 +33,19 @@ def test_aabb_to_sphere(point, offset, scale):
 
     assert np.allclose(sphere[:3], offset, atol=1e-10)
     assert np.allclose(sphere[-1], abs(scale), rtol=1e-10)
+
+
+@given(ct.test_unit_vector, ct.test_vector, ct.test_scaling)
+def test_aabb_transform(point, translation, scale):
+    candidate = np.stack((point, -point))
+    aabb = np.empty_like(candidate)
+    aabb[0, :] = np.min(candidate, axis=0)
+    aabb[1, :] = np.max(candidate, axis=0)
+
+    translation_matrix = pla.matrix_make_translation(translation)
+    result = pla.aabb_transform(aabb, translation_matrix)
+    assert np.allclose(result, aabb + translation, atol=1e-10)
+
+    scale_matrix = pla.matrix_make_scaling(scale)
+    result = pla.aabb_transform(aabb, scale_matrix)
+    assert np.allclose(result, np.sort(aabb * scale, axis=0), atol=1e-10)

@@ -1,5 +1,7 @@
 import numpy as np
 
+from .vector import vector_make_homogeneous
+
 
 def aabb_to_sphere(aabb, /, *, out=None, dtype=None):
     """A sphere that envelops an Axis-Aligned Bounding Box.
@@ -67,13 +69,12 @@ def aabb_transform(aabb, matrix, /, *, out=None, dtype=None):
     """
 
     aabb = np.asarray(aabb, dtype=float)
-    matrix = np.asarray(matrix, dtype=float).transpose((-2, -1))
+    matrix = np.asarray(matrix, dtype=float).transpose((-1, -2))
 
     if out is None:
-        np.empty_like(aabb, dtype=dtype)
+        out = np.empty_like(aabb, dtype=dtype)
 
-    projected = aabb @ matrix
-    out[..., 0, :] = np.min(projected, axis=-2)
-    out[..., 1, :] = np.max(projected, axis=-2)
+    out[:] = (vector_make_homogeneous(aabb) @ matrix)[..., :-1]
+    out.sort(axis=-2)
 
     return out
