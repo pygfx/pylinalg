@@ -234,12 +234,19 @@ def test_matrix_make_orthographic():
     )
 
 
-@given(ct.test_unit_vector, ct.test_unit_vector, ct.test_unit_vector)
-def test_matrix_make_look_at(eye, target, up):
-    # Note: we need to find 3 independent vectors to run this test. I am doing
-    # this on a 3-sphere, because scale doesn't matter for us.
-    independence_matrix = np.stack((eye, target, up), axis=0)
-    assume(np.linalg.matrix_rank(independence_matrix) == 3)
+@given(ct.test_unit_vector, ct.test_unit_vector, ct.legal_numbers)
+def test_matrix_make_look_at(eye, target, up_scale):
+    # Note: to run this test, we need to choose 2 independent vectors (eye,
+    # target). Scale doesn't matter, so doing this on the unit-sphere will
+    # always succeed.
+    independence_matrix = np.stack((eye, target), axis=0)
+    assume(np.linalg.matrix_rank(independence_matrix) == 2)
+
+    # the up vector needs to have a 90° angle to the eye-target plane. If not,
+    # the result will not be a pure rotation, but rather a combination of
+    # rotation and skew. Scale doesn't matter again, so we can effectively only
+    # choose the direction of up.
+    up = np.sign(up_scale) * np.cross(eye, target)
 
     rotation = pla.matrix_make_look_at(eye, target, up)
 
@@ -248,15 +255,15 @@ def test_matrix_make_look_at(eye, target, up):
 
     # ensure matrix is inverted by its transpose
     identity = rotation @ inverse_rotation
-    assert np.allclose(identity, np.eye(4), rtol=1e-16, atol=np.inf)
+    assert np.allclose(identity, np.eye(4), rtol=1e-10)
 
     target_pointer = target - eye
     target_pointer = target_pointer / np.linalg.norm(target_pointer)
     target_pointer = pla.vector_make_homogeneous(target_pointer)
     result = inverse_rotation @ target_pointer
-    assert np.allclose(result[:3], (0, 0, 1), rtol=1e-16, atol=np.inf)
+    assert np.allclose(result[:3], (0, 0, 1), rtol=1e-16)
 
     up_pointer = up / np.linalg.norm(up)
     up_pointer = pla.vector_make_homogeneous(up_pointer)
     result = inverse_rotation @ up_pointer
-    assert np.allclose(result[:3], (0, 1, 0), rtol=1e-16, atol=np.inf)
+    assert np.allclose(result[:3], (0, 1, 0), rtol=1e-16)
