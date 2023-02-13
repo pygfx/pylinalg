@@ -466,13 +466,28 @@ def matrix_make_orthographic(
     return out
 
 
-def matrix_make_look_at(eye, target, up, /, *, out=None, dtype=None):
+def matrix_make_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     """
     Rotation that aligns two vectors.
 
-    Computes a rotation matrix that rotates the input frame's z-axis (forward)
-    to point in direction ``target - eye`` and the input frame's y-axis (up) to
-    point in direction ``up``.
+    Given an entity at position `eye` looking in direction `target`, this
+    function computes a rotation matrix that makes the local frame "look at" the
+    same direction, i.e., the matrix will rotate the local frame's z-axes
+    (forward) to point in direction ``target - eye``.
+
+    This rotation matrix is not unique (yet), as the above doesn't specify the
+    desired rotation around the new z-axis. The rotation around this axis is
+    controlled by ``up_reference``, which indicates the direction of the y-axis
+    (up) of a reference frame of choice expressed in local coordinates. The
+    rotation around the new z-axis will then align `up_reference`, the new
+    y-axis, and the new z-axis in the same plane.
+    
+    In many cases, a natural choice for ``up_reference`` is the world frame's
+    y-axis, i.e., ``up_reference`` would be the world's y-axis expressed in
+    local coordinates. This can be thought of as "gravity pulling on the
+    rotation" (opposite direction of world frame's up) and creates a result with
+    a level attitude.
+    
 
     Parameters
     ----------
@@ -498,17 +513,19 @@ def matrix_make_look_at(eye, target, up, /, *, out=None, dtype=None):
 
     Notes
     -----
-    The implementation ignores the scale of ``target - eye`` and ``up``, meaning
-    that the resulting rotation makes the coordinate frame axes _point_ in the
-    direction but won't scale the units to _match_ the direction.
+    If the new z-axis (``target - eye``) aligns with the chosen ``up_reference``
+    then we can't compute the angle of rotation around the new z-axis. In this
+    case, we will default to a rotation of 0, which may result in surprising
+    behavior for some use-cases. It is the user's responsibility to ensure that
+    these two directions don't align.
 
     """
 
     eye = np.asarray(eye, dtype=float)
     target = np.asarray(target, dtype=float)
-    up = np.asarray(up, dtype=float)
+    up_reference = np.asarray(up_reference, dtype=float)
 
-    result_shape = np.broadcast_shapes(eye.shape, target.shape, up.shape)
+    result_shape = np.broadcast_shapes(eye.shape, target.shape, up_reference.shape)
     if out is None:
         out = np.zeros((*result_shape[:-1], 4, 4), dtype=dtype)
     else:
@@ -524,7 +541,7 @@ def matrix_make_look_at(eye, target, up, /, *, out=None, dtype=None):
     view[:] = 1
 
     out[..., :-1, 2] = (target - eye) / np.linalg.norm(target - eye, axis=-1)
-    out[..., :-1, 1] = up / np.linalg.norm(up, axis=-1)
+    out[..., :-1, 1] = up_reference / np.linalg.norm(up_reference, axis=-1)
 
     # Note: order is important to obtain a right-hand frame
     out[..., :-1, 0] = np.cross(
