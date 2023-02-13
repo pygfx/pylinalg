@@ -485,8 +485,8 @@ def matrix_make_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     In many cases, a natural choice for ``up_reference`` is the world frame's
     y-axis, i.e., ``up_reference`` would be the world's y-axis expressed in
     local coordinates. This can be thought of as "gravity pulling on the
-    rotation" (opposite direction of world frame's up) and creates a result with
-    a level attitude.
+    rotation" (opposite direction of world frame's up) and will create a result
+    with a level attitude.
     
 
     Parameters
