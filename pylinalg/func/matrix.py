@@ -409,30 +409,38 @@ def matrix_make_perspective(
 
 
 def matrix_make_orthographic(
-    left, right, top, bottom, near, far, /, *, out=None, dtype=None
+    left, right, top, bottom, near, far, /, *, depth_range=(-1, 1), out=None, dtype=None
 ):
-    """
-    Create an orthographic projection matrix.
+    """Create an orthographic projection matrix.
+
+    The result projects points from local space into NDC (normalized device
+    coordinates). Elements inside the viewing frustum defind by left, right,
+    top, bottom, near, far, are projected into the unit cube centered at the
+    origin (default) or a cuboid (custom `depth_range`). The frustum is centered
+    around the local frame's origin.
 
     Parameters
     ----------
-    left : number
-        distance between the left frustum plane and the origin
-    right : number
-        distance between the right frustum plane and the origin
-    top : number
-        distance between the top frustum plane and the origin
-    bottom : number
-        distance between the bottom frustum plane and the origin
-    near : number
-        distance between the near frustum plane and the origin
-    far : number
-        distance between the far frustum plane and the origin
+    left : ndarray, [1]
+        Distance between the left frustum plane and the origin
+    right : ndarray, [1]
+        Distance between the right frustum plane and the origin
+    top : ndarray, [1]
+        Distance between the top frustum plane and the origin
+    bottom : ndarray, [1]
+        Distance between the bottom frustum plane and the origin
+    near : ndarray, [1]
+        Distance between the near frustum plane and the origin
+    far : ndarray, [1]
+        Distance between the far frustum plane and the origin
+    depth_range : ndarray, [2]
+        The interval along the z-axis in NDC that shall correspond to the region
+        inside the viewing frustum.
     out : ndarray, optional
-        A location into which the result is stored. If provided, it
-        must have a shape that the inputs broadcast to. If not provided or
-        None, a freshly-allocated array is returned. A tuple must have
-        length equal to the number of outputs.
+        A location into which the result is stored. If provided, it must have a
+        shape that the inputs broadcast to. If not provided or None, a
+        freshly-allocated array is returned. A tuple must have length equal to
+        the number of outputs.
     dtype : data-type, optional
         Overrides the data type of the result.
 
@@ -441,26 +449,44 @@ def matrix_make_orthographic(
     matrix : ndarray, [4, 4]
         orthographic projection matrix
     """
+
+    left = np.asarray(left, dtype=float)
+    right = np.asarray(right, dtype=float)
+    top = np.asarray(top, dtype=float)
+    bottom = np.asarray(bottom, dtype=float)
+    far = np.asarray(far, dtype=float)
+    near = np.asarray(near, dtype=float)
+    depth_range = np.asarray(depth_range, dtype=float)
+
     if out is None:
-        out = np.zeros((4, 4), dtype=dtype)
+        batch_shape = np.broadcast_shapes(
+            left.shape[:-1],
+            right.shape[:-1],
+            top.shape[:-1],
+            bottom.shape[:-1],
+            far.shape[:-1],
+            near.shape[:-1],
+            depth_range.shape[:-1],
+        )
+        out = np.zeros((*batch_shape, 4, 4), dtype=dtype)
     else:
-        out[:] = 0.0
+        out[:] = 0
 
-    w = 1.0 / (right - left)
-    h = 1.0 / (top - bottom)
-    p = 1.0 / (far - near)
+    # desired cuboid dimensions
+    out[..., 0, 0] = 2
+    out[..., 1, 1] = 2
+    out[..., 2, 2] = -np.diff(depth_range, axis=-1)
+    out[..., 3, 3] = 1
 
-    x = (right + left) * w
-    y = (top + bottom) * h
-    z = (far + near) * p
+    # translation to cuboid origin
+    out[..., 0, 3] = -(right + left)
+    out[..., 1, 3] = -(top + bottom)
+    out[..., 2, 3] = far * depth_range[..., 0] - near * depth_range[..., 1]
 
-    out[0, 0] = 2 * w
-    out[0, 3] = -x
-    out[1, 1] = 2 * h
-    out[1, 3] = -y
-    out[2, 2] = -2 * p
-    out[2, 3] = -z
-    out[3, 3] = 1
+    # frustum-based scaling
+    out[..., 0, :] /= right - left
+    out[..., 1, :] /= top - bottom
+    out[..., 2, :] /= far - near
 
     return out
 
