@@ -481,13 +481,13 @@ def matrix_make_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     (up) of a reference frame of choice expressed in local coordinates. The
     rotation around the new z-axis will then align `up_reference`, the new
     y-axis, and the new z-axis in the same plane.
-    
+
     In many cases, a natural choice for ``up_reference`` is the world frame's
     y-axis, i.e., ``up_reference`` would be the world's y-axis expressed in
     local coordinates. This can be thought of as "gravity pulling on the
     rotation" (opposite direction of world frame's up) and will create a result
     with a level attitude.
-    
+
 
     Parameters
     ----------
@@ -525,6 +525,9 @@ def matrix_make_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     target = np.asarray(target, dtype=float)
     up_reference = np.asarray(up_reference, dtype=float)
 
+    new_z = target - eye
+    up_reference = up_reference / np.linalg.norm(up_reference, axis=-1)
+
     result_shape = np.broadcast_shapes(eye.shape, target.shape, up_reference.shape)
     if out is None:
         out = np.zeros((*result_shape[:-1], 4, 4), dtype=dtype)
@@ -540,12 +543,14 @@ def matrix_make_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     view = as_strided(out, shape=(n_matrices, 4), strides=(16 * itemsize, 5 * itemsize))
     view[:] = 1
 
-    out[..., :-1, 2] = (target - eye) / np.linalg.norm(target - eye, axis=-1)
-    out[..., :-1, 1] = up_reference / np.linalg.norm(up_reference, axis=-1)
-
-    # Note: order is important to obtain a right-hand frame
-    out[..., :-1, 0] = np.cross(
-        out[..., :-1, 2], out[..., :-1, 1], axisa=-1, axisb=-1, axisc=-1
+    # Note: building the inverse/transpose directly
+    out[..., 2, :-1] = new_z / np.linalg.norm(new_z, axis=-1)
+    out[..., 0, :-1] = np.cross(
+        up_reference, out[..., 2, :-1], axisa=-1, axisb=-1, axisc=-1
     )
+    out[..., 1, :-1] = np.cross(
+        out[..., 2, :-1], out[..., 0, :-1], axisa=-1, axisb=-1, axisc=-1
+    )
+    out /= np.linalg.norm(out, axis=-1)[..., :, None]
 
     return out
