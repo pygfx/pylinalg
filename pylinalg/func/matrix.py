@@ -1,6 +1,7 @@
 from math import cos, sin
 
 import numpy as np
+from numpy.lib.stride_tricks import as_strided
 
 
 def matrix_combine(matrices, /, *, out=None, dtype=None):
@@ -491,13 +492,28 @@ def matrix_make_orthographic(
     return out
 
 
-def matrix_make_look_at(eye, target, up, /, *, out=None, dtype=None):
+def matrix_make_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     """
     Rotation that aligns two vectors.
 
-    Computes a rotation matrix that rotates the input frame's z-axis (forward)
-    to point in direction ``target - eye`` and the input frame's y-axis (up) to
-    point in direction ``up``.
+    Given an entity at position `eye` looking at position `target`, this
+    function computes a rotation matrix that makes the local frame "look at" the
+    same direction, i.e., the matrix will rotate the local frame's z-axes
+    (forward) to point in direction ``target - eye``.
+
+    This rotation matrix is not unique (yet), as the above doesn't specify the
+    desired rotation around the new z-axis. The rotation around this axis is
+    controlled by ``up_reference``, which indicates the direction of the y-axis
+    (up) of a reference frame of choice expressed in local coordinates. The
+    rotation around the new z-axis will then align `up_reference`, the new
+    y-axis, and the new z-axis in the same plane.
+
+    In many cases, a natural choice for ``up_reference`` is the world frame's
+    y-axis, i.e., ``up_reference`` would be the world's y-axis expressed in
+    local coordinates. This can be thought of as "gravity pulling on the
+    rotation" (opposite direction of world frame's up) and will create a result
+    with a level attitude.
+
 
     Parameters
     ----------
@@ -519,8 +535,48 @@ def matrix_make_look_at(eye, target, up, /, *, out=None, dtype=None):
     Returns
     -------
     rotation_matrix : ndarray, [4, 4]
-        A matrix describing the rotation.
+        A homogeneous matrix describing the rotation.
+
+    Notes
+    -----
+    If the new z-axis (``target - eye``) aligns with the chosen ``up_reference``
+    then we can't compute the angle of rotation around the new z-axis. In this
+    case, we will default to a rotation of 0, which may result in surprising
+    behavior for some use-cases. It is the user's responsibility to ensure that
+    these two directions don't align.
 
     """
 
-    raise NotImplementedError()
+    eye = np.asarray(eye, dtype=float)
+    target = np.asarray(target, dtype=float)
+    up_reference = np.asarray(up_reference, dtype=float)
+
+    new_z = target - eye
+    up_reference = up_reference / np.linalg.norm(up_reference, axis=-1)
+
+    result_shape = np.broadcast_shapes(eye.shape, target.shape, up_reference.shape)
+    if out is None:
+        out = np.zeros((*result_shape[:-1], 4, 4), dtype=dtype)
+    else:
+        out[:] = 0
+
+    # Note: The below is equivalent to np.fill_diagonal(out, 1, axes=(-2, -1)),
+    # i.e., treat the last two axes as a matrix and fill its diagonal with 1.
+    # Currently numpy doesn't support axes on fill_diagonal, so we do it
+    # ourselves to support input batches and mimic the `np.linalg` API.
+    n_matrices = np.prod(result_shape[:-1], dtype=int)
+    itemsize = out.itemsize
+    view = as_strided(out, shape=(n_matrices, 4), strides=(16 * itemsize, 5 * itemsize))
+    view[:] = 1
+
+    # Note: building the inverse/transpose directly
+    out[..., 2, :-1] = new_z / np.linalg.norm(new_z, axis=-1)
+    out[..., 0, :-1] = np.cross(
+        up_reference, out[..., 2, :-1], axisa=-1, axisb=-1, axisc=-1
+    )
+    out[..., 1, :-1] = np.cross(
+        out[..., 2, :-1], out[..., 0, :-1], axisa=-1, axisb=-1, axisc=-1
+    )
+    out /= np.linalg.norm(out, axis=-1)[..., :, None]
+
+    return out
