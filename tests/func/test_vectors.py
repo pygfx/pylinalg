@@ -138,3 +138,34 @@ def test_vector_apply_rotation_ordered():
         result,
         expected,
     )
+
+
+@given(ct.test_vector, ct.test_quaternion)
+def test_vector_apply_quaternion_rotation(vector, quaternion):
+    scale = np.linalg.norm(vector)
+    if scale > 1e100:
+        vector = vector / scale * 1e100
+
+    actual = pla.vector_apply_quaternion_rotation(vector, quaternion)
+
+    # reference implementation
+    matrix = pla.quaternion_to_matrix(quaternion)
+    vector = pla.vector_make_homogeneous(vector)
+    expected = (matrix @ vector)[..., :-1]
+
+    # assert relative proximity only
+    assert np.allclose(actual, expected, rtol=1e-10, atol=np.inf)
+
+
+@given(ct.test_vector, ct.test_quaternion)
+def test_vector_apply_quaternion_rotation_identity(vector, quaternion):
+    scale = np.linalg.norm(vector)
+    if scale > 1e100:
+        vector = vector / scale * 1e100
+
+    inv_quaternion = pla.quaternion_inverse(quaternion)
+    tmp = pla.vector_apply_quaternion_rotation(vector, quaternion)
+    actual = pla.vector_apply_quaternion_rotation(tmp, inv_quaternion)
+
+    # assert relative proximity only
+    assert np.allclose(actual, vector, rtol=1e-10, atol=np.inf)
