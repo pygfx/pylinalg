@@ -46,6 +46,14 @@ def test_vector_make_homogeneous(vectors, value, expected):
     npt.assert_array_equal(result, expected)
 
 
+@given(ct.test_vector)
+def test_vector_from_matrix_position(translation):
+    matrix = pla.matrix_make_translation(translation)
+    result = pla.vector_from_matrix_position(matrix)
+
+    npt.assert_equal(result, translation)
+
+
 def test_vector_apply_translation():
     vectors = np.array([[1, 0, 0]])
     expected = np.array([[0, 2, 2]])
