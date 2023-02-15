@@ -470,7 +470,7 @@ def matrix_make_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     """
     Rotation that aligns two vectors.
 
-    Given an entity at position `eye` looking in direction `target`, this
+    Given an entity at position `eye` looking at position `target`, this
     function computes a rotation matrix that makes the local frame "look at" the
     same direction, i.e., the matrix will rotate the local frame's z-axes
     (forward) to point in direction ``target - eye``.
