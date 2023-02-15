@@ -308,8 +308,8 @@ def vector_euclidean_to_spherical(euclidean, /, *, out=None, dtype=None):
 def vector_make_spherical_safe(vector, /, *, out=None, dtype=None):
     """Normalize sperhical coordinates.
 
-    Normalizes a vector of spherical coordinates to restrict phi to (eps, pi-eps) and
-    theta to (0, 2pi).
+    Normalizes a vector of spherical coordinates to restrict phi to [0, pi) and
+    theta to [0, 2pi).
 
     Parameters
     ----------
@@ -330,4 +330,19 @@ def vector_make_spherical_safe(vector, /, *, out=None, dtype=None):
 
     """
 
-    raise NotImplementedError()
+    vector = np.asarray(vector, dtype=float)
+
+    if out is None:
+        out = np.zeros_like(vector, dtype=dtype)
+
+    is_flipped = vector[..., 1] % (2 * np.pi) >= np.pi
+    out[..., 2] = np.where(is_flipped, -vector[..., 2], vector[..., 2])
+
+    out[..., 0] = vector[..., 0]
+    out[..., 1] = vector[..., 1] % np.pi
+    out[..., 2] = vector[..., 1] % (2 * np.pi)
+
+    out[..., 1] = np.where(out[..., 1] == np.pi, 0, out[..., 1])
+    out[..., 2] = np.where(out[..., 2] == 2 * np.pi, 0, out[..., 2])
+
+    return out
