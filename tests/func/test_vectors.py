@@ -58,6 +58,14 @@ def test_vector_apply_translation():
     )
 
 
+@given(ct.test_vector)
+def test_vector_make_spherical_safe(vector):
+    result = pla.vector_make_spherical_safe(vector)
+
+    assert np.all((0 <= result[..., 1]) & (result[..., 1] < np.pi))
+    assert np.all((0 <= result[..., 2]) & (result[..., 2] < 2 * np.pi))
+
+
 def test_vector_apply_matrix_out():
     vectors = np.array([[1, 0, 0]], dtype="f4")
     out = np.empty_like(vectors, dtype="i4")
