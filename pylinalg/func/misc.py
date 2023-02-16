@@ -1,3 +1,7 @@
+import numpy as np
+from numpy.lib.stride_tricks import as_strided
+
+
 def aabb_to_sphere(aabb, /, *, out=None, dtype=None):
     """A sphere that envelops an Axis-Aligned Bounding Box.
 
@@ -20,7 +24,15 @@ def aabb_to_sphere(aabb, /, *, out=None, dtype=None):
 
     """
 
-    raise NotImplementedError()
+    aabb = np.asarray(aabb, dtype=float)
+
+    if out is None:
+        out = np.empty((*aabb.shape[:-2], 4), dtype=dtype)
+
+    out[..., :3] = np.sum(aabb, axis=-2) / 2
+    out[..., 3] = np.linalg.norm(np.diff(aabb, axis=-2), axis=-1) / 2
+
+    return out
 
 
 def aabb_transform(aabb, matrix, /, *, out=None, dtype=None):
@@ -54,4 +66,42 @@ def aabb_transform(aabb, matrix, /, *, out=None, dtype=None):
     alignment axis stay the same.
 
     """
-    raise NotImplementedError()
+
+    aabb = np.asarray(aabb, dtype=float)
+    matrix = np.asarray(matrix, dtype=float).transpose((-1, -2))
+
+    if out is None:
+        out = np.empty_like(aabb, dtype=dtype)
+
+    corners = np.empty((*aabb.shape[:-2], 8, 4), dtype=float)
+    corners[...] = [1, 2, 3, 4]
+    size = corners.itemsize
+
+    corners_x = as_strided(
+        corners[..., 0],
+        shape=(*corners.shape[:-2], 4, 2),
+        strides=(*corners.strides[:-2], 8 * size, 4 * size),
+    )
+    corners_x[:] = aabb[..., :, 0]
+
+    corners_y = as_strided(
+        corners[..., 1],
+        shape=(*corners.shape[:-2], 2, 2, 2),
+        strides=(*corners.strides[:-2], 16 * size, 4 * size, 8 * size),
+    )
+    corners_y[:] = aabb[..., :, 1]
+
+    corners_z = as_strided(
+        corners[..., 2],
+        shape=(*corners.shape[:-2], 4, 2),
+        strides=(*corners.strides[:-2], 4 * size, 16 * size),
+    )
+    corners_z[:] = aabb[..., :, 2]
+
+    corners[..., 3] = 1
+
+    corners = corners @ matrix
+    out[..., 0, :] = np.min(corners[..., :-1], axis=-2)
+    out[..., 1, :] = np.max(corners[..., :-1], axis=-2)
+
+    return out
