@@ -149,7 +149,26 @@ def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
         The unprojected vector in 3D space
     """
 
-    raise NotImplementedError()
+    vector = np.asarray(vector, dtype=float)
+    matrix = np.asarray(matrix, dtype=float)
+    depth = np.asarray(depth, dtype=float)
+
+    if out is None:
+        out = np.empty((*vector.shape[:-1], 3), dtype=dtype)
+
+    try:
+        inverse_projection = np.linalg.inv(matrix)
+    except np.linalg.LinAlgError:
+        raise ValueError("The provided matrix is not invertible.")
+
+    vector_hom = np.empty((*vector.shape[:-1], 4), dtype=dtype)
+    vector_hom[..., 0] = depth
+    vector_hom[..., [1, 2]] = vector
+    vector_hom[..., 3] = 0
+
+    out[:] = (inverse_projection @ vector_hom)[..., :-1]
+
+    return out
 
 
 def vector_apply_quaternion_rotation(vector, quaternion, /, *, out=None, dtype=None):

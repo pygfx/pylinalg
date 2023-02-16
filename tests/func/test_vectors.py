@@ -170,6 +170,30 @@ def test_vector_apply_rotation_about_z_matrix():
     )
 
 
+@given(ct.test_vector, ct.test_projection)
+def test_vector_unproject(expected, projection_matrix):
+    expected_hom = pla.vector_make_homogeneous(expected)
+    expected_2d = projection_matrix @ expected_hom
+
+    depth = expected_2d[..., 0]
+    vector = expected_2d[..., [1, 2]]
+
+    actual = pla.vector_unproject(vector, projection_matrix, depth=depth)
+
+    # only test stable results
+    assume(not np.any(np.isnan(actual) | np.isinf(actual)))
+    assert np.allclose(actual, expected, rtol=1e-16, atol=np.inf)
+
+
+def test_vector_unproject_exceptions():
+    vector = np.ones(2)
+    matrix = np.eye(4)
+    matrix[1, 1] = 0
+
+    with pytest.raises(ValueError):
+        pla.vector_unproject(vector, matrix)
+
+
 def test_vector_apply_rotation_ordered():
     """Test that a positive pi/2 rotation about the z-axis and then the y-axis
     results in a different output then in standard rotation ordering."""
