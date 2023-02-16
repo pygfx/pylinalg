@@ -118,6 +118,20 @@ def test_vector_apply_matrix_dtype():
     assert result.dtype == "i2"
 
 
+@given(ct.test_vector, ct.test_vector)
+def test_vector_distance_between(vector_a, vector_b):
+    expected = np.linalg.norm(vector_a - vector_b)
+    result = pla.vector_distance_between(vector_a, vector_b)
+
+    assert np.allclose(result, expected, rtol=1e-10)
+
+
+def test_vector_distance_between_exceptions():
+    tmp = np.array(0)
+    with pytest.raises(IndexError):
+        pla.vector_distance_between((0, 0, 0), (0, 1, 0), out=tmp)
+
+
 def test_vector_apply_matrix_out_dtype():
     vectors = np.array([[1, 0, 0]], dtype="f4")
     matrix = pla.matrix_make_translation([-1, 2, 2])
