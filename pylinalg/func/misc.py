@@ -1,6 +1,5 @@
 import numpy as np
-
-from .vector import vector_make_homogeneous
+from numpy.lib.stride_tricks import as_strided
 
 
 def aabb_to_sphere(aabb, /, *, out=None, dtype=None):
@@ -74,7 +73,35 @@ def aabb_transform(aabb, matrix, /, *, out=None, dtype=None):
     if out is None:
         out = np.empty_like(aabb, dtype=dtype)
 
-    out[:] = (vector_make_homogeneous(aabb) @ matrix)[..., :-1]
-    out.sort(axis=-2)
+    corners = np.empty((*aabb.shape[:-2], 8, 4), dtype=float)
+    corners[...] = [1, 2, 3, 4]
+    size = corners.itemsize
+
+    corners_x = as_strided(
+        corners[..., 0],
+        shape=(*corners.shape[:-2], 4, 2),
+        strides=(*corners.strides[:-2], 8 * size, 4 * size),
+    )
+    corners_x[:] = aabb[..., :, 0]
+
+    corners_y = as_strided(
+        corners[..., 1],
+        shape=(*corners.shape[:-2], 2, 2, 2),
+        strides=(*corners.strides[:-2], 16 * size, 4 * size, 8 * size),
+    )
+    corners_y[:] = aabb[..., :, 1]
+
+    corners_z = as_strided(
+        corners[..., 2],
+        shape=(*corners.shape[:-2], 4, 2),
+        strides=(*corners.strides[:-2], 4 * size, 16 * size),
+    )
+    corners_z[:] = aabb[..., :, 2]
+
+    corners[..., 3] = 1
+
+    corners = corners @ matrix
+    out[..., 0, :] = np.min(corners[..., :-1], axis=-2)
+    out[..., 1, :] = np.max(corners[..., :-1], axis=-2)
 
     return out
