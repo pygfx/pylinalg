@@ -1,7 +1,8 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hypothesis import assume, given
+from hypothesis import assume, example, given
+from hypothesis.strategies import none
 
 import pylinalg as pla
 
@@ -81,6 +82,23 @@ def test_vector_apply_matrix_out():
     result = pla.vector_apply_matrix(vectors, matrix, out=out)
 
     assert result is out
+
+
+@given(ct.test_spherical, none())
+@example((1, 0, np.pi / 2), (0, 0, 1))
+@example((1, np.pi / 2, np.pi / 2), (1, 0, 0))
+@example((1, 0, 0), (0, 1, 0))
+def test_vector_euclidean_to_spherical(expected, vector):
+    if vector is None:
+        assume(abs(expected[0]) > 1e-10)
+        vector = pla.vector_spherical_to_euclidean(expected)
+    else:
+        expected = np.asarray(expected)
+        vector = np.asarray(vector)
+
+    actual = pla.vector_euclidean_to_spherical(vector)
+
+    assert np.allclose(actual, expected, rtol=1e-10)
 
 
 def test_vector_apply_matrix_out_performant():
