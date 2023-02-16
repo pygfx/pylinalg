@@ -1,3 +1,5 @@
+import platform
+import subprocess
 from math import cos, sin
 
 import hypothesis as hp
@@ -6,6 +8,32 @@ import numpy as np
 from hypothesis.extra.numpy import arrays, from_dtype
 
 import pylinalg as pla
+
+
+def pytest_report_header(config, start_path, startdir):
+    # report the CPU model to allow detecting platform-specific problems
+    if platform.system() == "Windows":
+        name = (
+            subprocess.check_output(["wmic", "cpu", "get", "name"])
+            .decode()
+            .strip()
+            .split("\n")[1]
+        )
+        cpu_info = " ".join([name])
+    elif platform.system() == "Linux":
+        info_string = subprocess.check_output(["lscpu"]).decode()
+        for line in info_string.split("\n"):
+            if line.startswith("Model name"):
+                cpu_info = line[33:]
+                break
+    else:
+        cpu_info = platform.processor()
+
+    return "CPU: " + cpu_info
+
+
+# Hypothesis related logic
+# ------------------------
 
 # upper bound on approximation error
 EPS = 1e-6

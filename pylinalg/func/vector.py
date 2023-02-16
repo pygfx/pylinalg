@@ -280,7 +280,18 @@ def vector_distance_between(vector_a, vector_b, /, *, out=None, dtype=None):
 
     """
 
-    raise NotImplementedError()
+    vector_a = np.asarray(vector_a, dtype=float)
+    vector_b = np.asarray(vector_b, dtype=float)
+
+    shape = vector_a.shape[:-1]
+    if out is None:
+        out = np.linalg.norm(vector_a - vector_b, axis=-1)
+    elif len(shape) >= 0:
+        out[:] = np.linalg.norm(vector_a - vector_b, axis=-1)
+    else:
+        raise ValueError("Can't use `out` with scalar output.")
+
+    return out
 
 
 def vector_from_matrix_position(homogeneous_matrix, /, *, out=None, dtype=None):
