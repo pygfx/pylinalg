@@ -1,7 +1,6 @@
 import platform
 import subprocess
 
-
 if platform.system() == "Windows":
     family = platform.processor()
     name = (

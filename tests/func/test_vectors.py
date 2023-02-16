@@ -105,7 +105,7 @@ def test_vector_distance_between(vector_a, vector_b):
     expected = np.linalg.norm(vector_a - vector_b)
     result = pla.vector_distance_between(vector_a, vector_b)
 
-    npt.assert_array_almost_equal(result, expected)
+    assert np.allclose(result, expected, rtol=1e-10)
 
 
 def test_vector_distance_between_exceptions():
