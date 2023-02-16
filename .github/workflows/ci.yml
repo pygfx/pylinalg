@@ -10,6 +10,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: CI-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     name: Lint
