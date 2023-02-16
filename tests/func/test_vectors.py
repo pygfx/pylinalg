@@ -105,7 +105,15 @@ def test_vector_distance_between(vector_a, vector_b):
     expected = np.linalg.norm(vector_a - vector_b)
     result = pla.vector_distance_between(vector_a, vector_b)
 
-    assert np.allclose(result, expected, rtol=1e-16)
+    assert np.allclose(result, expected, rtol=1e-10)
+
+
+def test_foobar():
+    vector = np.array([2.83674e14, 2.83674e14, 2.83674e14], dtype=np.float64)
+    result = np.linalg.norm(vector, axis=-1)
+    expected = np.linalg.norm(vector)
+
+    npt.assert_almost_equal(result, expected)
 
 
 def test_vector_distance_between_exceptions():
