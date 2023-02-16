@@ -347,16 +347,21 @@ def vector_euclidean_to_spherical(euclidean, /, *, out=None, dtype=None):
 
     out[..., 0] = np.sqrt(np.sum(euclidean**2, axis=-1))
 
-    # choose phi = 0 if vector runs along y-axis
+    # flags to handle all cases
+    needs_flip = np.sign(euclidean[..., 0]) < 0
     len_xz = np.sum(euclidean[..., [0, 2]] ** 2, axis=-1)
     xz_nonzero = ~np.all(len_xz == 0, axis=-1)
-    out[..., 1] = np.divide(euclidean[..., 2], np.sqrt(len_xz), where=xz_nonzero)
-    out[..., 1] = np.sign(euclidean[..., 0]) * np.arccos(out[..., 1], where=xz_nonzero)
+    r_nonzero = ~np.all(out[..., [0]] == 0, axis=-1)
 
-    # choose psi = 0 at the origin (0, 0, 0)
-    r_nonzero = np.all(out[..., [0]] == 0, axis=-1)
-    out[..., 2] = np.divide(euclidean[..., 2], out[..., 0], where=r_nonzero)
+    # chooses phi = 0 if vector runs along y-axis
+    out[..., 1] = np.divide(euclidean[..., 2], np.sqrt(len_xz), where=xz_nonzero)
+    out[..., 1] = np.arccos(out[..., 1], where=xz_nonzero)
+    out[..., 1] = np.where(needs_flip, np.abs(out[..., 1] - np.pi), out[..., 1])
+
+    # chooses theta = 0 at the origin (0, 0, 0)
+    out[..., 2] = np.divide(euclidean[..., 1], out[..., 0], where=r_nonzero)
     out[..., 2] = np.arccos(out[..., 2], where=r_nonzero)
+    out[..., 2] = np.where(needs_flip, 2 * np.pi - out[..., 2], out[..., 2])
 
     return out
 
