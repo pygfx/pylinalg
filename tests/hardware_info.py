@@ -16,4 +16,4 @@ elif platform.system() == "Linux":
 else:
     cpu_info = platform.processor()
 
-print(f"CPU: {cpu_info}")
+print(cpu_info)
