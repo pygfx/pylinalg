@@ -16,10 +16,10 @@ def generate_spherical_vector(
     draw,
     radius=st.floats(min_value=0, max_value=360, allow_infinity=False, allow_nan=False),
     theta=st.floats(
-        min_value=0, max_value=np.pi, allow_infinity=False, allow_nan=False
+        min_value=EPS, max_value=np.pi - EPS, allow_infinity=False, allow_nan=False
     ),
     phi=st.floats(
-        min_value=0, max_value=2 * np.pi, allow_infinity=False, allow_nan=False
+        min_value=EPS, max_value=2 * np.pi - EPS, allow_infinity=False, allow_nan=False
     ),
 ):
     return np.array((draw(radius), draw(theta), draw(phi)))

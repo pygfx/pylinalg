@@ -1,7 +1,8 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hypothesis import assume, given
+from hypothesis import assume, example, given
+from hypothesis.strategies import none
 
 import pylinalg as pla
 
@@ -83,11 +84,22 @@ def test_vector_apply_matrix_out():
     assert result is out
 
 
-@given(ct.test_vector)
-def test_vector_euclidean_to_spherical(vector):
-    # result = pla.vector_euclidean_to_spherical(vector)
+@given(ct.test_spherical, none())
+@example((1, 0, np.pi / 2), (0, 0, 1))
+@example((1, np.pi / 2, np.pi / 2), (1, 0, 0))
+@example((1, 0, 0), (0, 1, 0))
+def test_vector_euclidean_to_spherical(expected, vector):
+    if vector is None:
+        assume(abs(expected[0]) > 1e-6)
+        vector = pla.vector_spherical_to_euclidean(expected)
+    else:
+        expected = np.asarray(expected)
+        vector = np.asarray(vector)
 
-    raise NotImplementedError("Waiting for upstream PR.")
+    actual = pla.vector_euclidean_to_spherical(vector)
+
+    eps = max(3 * np.spacing(max(abs(expected))), 1e-6)
+    assert np.allclose(actual, expected, rtol=eps, atol=1e-6)
 
 
 def test_vector_apply_matrix_out_performant():
