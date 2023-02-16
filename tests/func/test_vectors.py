@@ -90,7 +90,7 @@ def test_vector_apply_matrix_out():
 @example((1, 0, 0), (0, 1, 0))
 def test_vector_euclidean_to_spherical(expected, vector):
     if vector is None:
-        assume(abs(expected[0]) > 1e-6)
+        assume(abs(expected[0]) > 1e-10)
         vector = pla.vector_spherical_to_euclidean(expected)
     else:
         expected = np.asarray(expected)
@@ -98,8 +98,7 @@ def test_vector_euclidean_to_spherical(expected, vector):
 
     actual = pla.vector_euclidean_to_spherical(vector)
 
-    eps = max(3 * np.spacing(max(abs(expected))), 1e-6)
-    assert np.allclose(actual, expected, rtol=eps, atol=1e-6)
+    assert np.allclose(actual, expected, rtol=1e-10)
 
 
 def test_vector_apply_matrix_out_performant():
