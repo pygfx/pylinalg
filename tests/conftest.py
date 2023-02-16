@@ -7,6 +7,8 @@ import hypothesis.strategies as st
 import numpy as np
 from hypothesis.extra.numpy import arrays, from_dtype
 
+import pylinalg as pla
+
 
 def pytest_report_header(config, start_path, startdir):
     # report the CPU model to allow detecting platform-specific problems
@@ -37,6 +39,20 @@ np.set_printoptions(floatmode="maxprec")
 
 # upper bound on approximation error
 EPS = 1e-6
+
+
+@st.composite
+def generate_spherical_vector(
+    draw,
+    radius=st.floats(min_value=0, max_value=360, allow_infinity=False, allow_nan=False),
+    theta=st.floats(
+        min_value=0, max_value=np.pi, allow_infinity=False, allow_nan=False
+    ),
+    phi=st.floats(
+        min_value=0, max_value=2 * np.pi, allow_infinity=False, allow_nan=False
+    ),
+):
+    return np.array((draw(radius), draw(theta), draw(phi)))
 
 
 @st.composite
@@ -161,6 +177,60 @@ def unit_vector(
     return np.array((x, y, z))
 
 
+@st.composite
+def perspecitve_matrix(
+    draw, elements=st.floats(allow_infinity=False, allow_nan=False, min_value=1e-16)
+):
+    top, bottom = draw(elements), draw(elements)
+    hp.assume(top != bottom)
+
+    left, right = draw(elements), draw(elements)
+    hp.assume(left != right)
+
+    near, far = draw(elements), draw(elements)
+    hp.assume(near != far)
+    hp.assume(0 < near)
+    hp.assume(near < far)
+
+    matrix = pla.matrix_make_perspective(left, right, top, bottom, near, far)
+    hp.assume(not (np.any(np.isinf(matrix) | np.isnan(matrix))))
+
+    try:
+        np.linalg.inv(matrix)
+    except np.linalg.LinAlgError:
+        # only stable/invertible matrices
+        hp.assume(False)
+
+    return matrix
+
+
+@st.composite
+def orthographic_matrix(
+    draw, elements=st.floats(allow_infinity=False, allow_nan=False)
+):
+    top, bottom = draw(elements), draw(elements)
+    hp.assume(top != bottom)
+
+    left, right = draw(elements), draw(elements)
+    hp.assume(left != right)
+
+    near, far = draw(elements), draw(elements)
+    hp.assume(near != far)
+    hp.assume(0 < near)
+    hp.assume(near < far)
+
+    matrix = pla.matrix_make_orthographic(left, right, top, bottom, near, far)
+    hp.assume(not (np.any(np.isinf(matrix) | np.isnan(matrix))))
+
+    try:
+        np.linalg.inv(matrix)
+    except np.linalg.LinAlgError:
+        # only stable/invertible matrices
+        hp.assume(False)
+
+    return matrix
+
+
 def nonzero_scale(scale):
     return np.where(np.abs(scale) < EPS, 1, scale)
 
@@ -188,4 +258,6 @@ test_matrix_affine = arrays(float, (4, 4), elements=legal_numbers)
 test_scaling = arrays(float, (3,), elements=legal_numbers).map(nonzero_scale)
 test_dtype = dtype_string()
 test_angles_rad = arrays(float, (3,), elements=legal_angle)
+test_spherical = generate_spherical_vector()
 test_unit_vector = unit_vector()
+test_projection = perspecitve_matrix() | orthographic_matrix()

@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hypothesis import given
+from hypothesis import assume, given
 
 import pylinalg as pla
 
@@ -105,7 +105,7 @@ def test_vector_distance_between(vector_a, vector_b):
     expected = np.linalg.norm(vector_a - vector_b)
     result = pla.vector_distance_between(vector_a, vector_b)
 
-    assert np.allclose(result, expected, rtol=1e-10)
+    assert np.allclose(result, expected, rtol=1e-16)
 
 
 def test_foobar():
@@ -132,6 +132,48 @@ def test_vector_apply_matrix_out_dtype():
     assert result.dtype == "i4"
 
 
+@given(ct.test_spherical)
+def test_vector_spherical_to_euclidean(spherical):
+    # accuracy of trigonometric ops close to 0, 90, 180, 270, 360 deg dependes a
+    # lot on the underlying hardware. Let's avoid it here.
+    angles = spherical[..., [1, 2]]
+    assume(np.all(np.abs(angles - 0) > 1e-100))
+    assume(np.all(np.abs(angles - np.pi / 2) > 1e-100))
+    assume(np.all(np.abs(angles - np.pi) > 1e-100))
+    assume(np.all(np.abs(angles - 2 * np.pi) > 1e-100))
+
+    # same for really short vectors (can produce 0)
+    assume(np.all(np.abs(spherical[0] - 0) > 1e-200))
+
+    # we can't do a simple round trip test. Instead we ensure that we are
+    # rotating in the right direction and that the radius/length match
+    result = pla.vector_spherical_to_euclidean(spherical)
+
+    # ensure azimuth rotates CCW
+    expected_sign = np.where(spherical[1] < np.pi / 2, 1, -1)
+    actual_sign = np.prod(np.sign(result[..., [0, 2]]))
+    assert np.all(expected_sign == actual_sign)
+
+    # ensure inclination is measured from positive y
+    expected_sign = np.where(spherical[2] < np.pi / 2, 1, -1)
+    expected_sign = np.where(spherical[2] > 3 / 2 * np.pi, 1, expected_sign)
+    actual_sign = np.sign(result[..., 1])
+    assert np.all(expected_sign == actual_sign)
+
+    # ensure length is what we expect
+    length = np.linalg.norm(result)
+    assert np.allclose(length, spherical[0], rtol=1e-16, atol=np.inf)
+
+
+def test_vector_spherical_to_euclidean_refs():
+    # ensure that the reference axes get transformed as expected
+    result = pla.vector_spherical_to_euclidean((1, 0, 0))
+    assert np.allclose(result, (0, 1, 0))
+
+    result = pla.vector_spherical_to_euclidean((1, 0, np.pi / 2))
+    assert np.allclose(result, (0, 0, 1))
+
+
 def test_vector_apply_rotation_about_z_matrix():
     """Test that a positive pi/2 rotation about the z-axis results
     in counter clockwise rotation, in accordance with the unit circle."""
@@ -148,6 +190,30 @@ def test_vector_apply_rotation_about_z_matrix():
         result,
         expected,
     )
+
+
+@given(ct.test_vector, ct.test_projection)
+def test_vector_unproject(expected, projection_matrix):
+    expected_hom = pla.vector_make_homogeneous(expected)
+    expected_2d = projection_matrix @ expected_hom
+
+    depth = expected_2d[..., 0]
+    vector = expected_2d[..., [1, 2]]
+
+    actual = pla.vector_unproject(vector, projection_matrix, depth=depth)
+
+    # only test stable results
+    assume(not np.any(np.isnan(actual) | np.isinf(actual)))
+    assert np.allclose(actual, expected, rtol=1e-16, atol=np.inf)
+
+
+def test_vector_unproject_exceptions():
+    vector = np.ones(2)
+    matrix = np.eye(4)
+    matrix[1, 1] = 0
+
+    with pytest.raises(ValueError):
+        pla.vector_unproject(vector, matrix)
 
 
 def test_vector_apply_rotation_ordered():
