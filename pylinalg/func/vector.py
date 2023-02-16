@@ -201,7 +201,8 @@ def vector_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
     Parameters
     ----------
     spherical : ndarray, [3]
-        A vector in spherical coordinates (r, phi, theta).
+        A vector in spherical coordinates (r, phi, theta). Phi and theta are
+        measured in radians.
     out : ndarray, optional
         A location into which the result is stored. If provided, it
         must have a shape that the inputs broadcast to. If not provided or
@@ -215,9 +216,25 @@ def vector_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
     euclidean : ndarray, [3]
         A vector in euclidian coordinates.
 
+    Notes
+    -----
+    This implementation follows pygfx's coordinate conventions. This means that
+    the positive y-axis is the zenith reference and the positive z-axis is the
+    azimuth reference. Angles are measured counter-clockwise.
+
     """
 
-    raise NotImplementedError()
+    spherical = np.asarray(spherical, dtype=float)
+
+    if out is None:
+        out = np.empty_like(spherical, dtype=dtype)
+
+    r, theta, phi = np.split(spherical, 3, axis=-1)
+    out[..., 0] = r * np.sin(phi) * np.sin(theta)
+    out[..., 1] = r * np.cos(phi)
+    out[..., 2] = r * np.sin(phi) * np.cos(theta)
+
+    return out
 
 
 def vector_distance_between(vector_a, vector_b, /, *, out=None, dtype=None):

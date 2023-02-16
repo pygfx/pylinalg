@@ -10,6 +10,20 @@ EPS = 1e-6
 
 
 @st.composite
+def generate_spherical_vector(
+    draw,
+    radius=st.floats(min_value=0, max_value=360, allow_infinity=False, allow_nan=False),
+    theta=st.floats(
+        min_value=0, max_value=np.pi, allow_infinity=False, allow_nan=False
+    ),
+    phi=st.floats(
+        min_value=0, max_value=2 * np.pi, allow_infinity=False, allow_nan=False
+    ),
+):
+    return np.array((draw(radius), draw(theta), draw(phi)))
+
+
+@st.composite
 def generate_quaternion(
     draw,
     elements=st.floats(
@@ -158,4 +172,5 @@ test_matrix_affine = arrays(float, (4, 4), elements=legal_numbers)
 test_scaling = arrays(float, (3,), elements=legal_numbers).map(nonzero_scale)
 test_dtype = dtype_string()
 test_angles_rad = arrays(float, (3,), elements=legal_angle)
+test_spherical = generate_spherical_vector()
 test_unit_vector = unit_vector()
