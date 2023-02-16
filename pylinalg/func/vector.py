@@ -195,7 +195,23 @@ def vector_apply_quaternion_rotation(vector, quaternion, /, *, out=None, dtype=N
 
     """
 
-    raise NotImplementedError()
+    vector = np.asarray(vector, dtype=float)
+    quaternion = np.asarray(quaternion, dtype=float)
+
+    if out is None:
+        out = np.zeros_like(vector, dtype=dtype)
+
+    # based on https://gamedev.stackexchange.com/a/50545
+    # (more readable than my attempt at doing the same)
+
+    quat_vector = quaternion[..., :-1]
+    quat_scalar = quaternion[..., -1]
+
+    out += 2 * np.sum(quat_vector * vector, axis=-1) * quat_vector
+    out += (quat_scalar**2 - np.sum(quat_vector * quat_vector, axis=-1)) * vector
+    out += 2 * quat_scalar * np.cross(quat_vector, vector)
+
+    return out
 
 
 def vector_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
@@ -204,7 +220,8 @@ def vector_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
     Parameters
     ----------
     spherical : ndarray, [3]
-        A vector in spherical coordinates (r, phi, theta).
+        A vector in spherical coordinates (r, phi, theta). Phi and theta are
+        measured in radians.
     out : ndarray, optional
         A location into which the result is stored. If provided, it
         must have a shape that the inputs broadcast to. If not provided or
@@ -218,9 +235,25 @@ def vector_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
     euclidean : ndarray, [3]
         A vector in euclidian coordinates.
 
+    Notes
+    -----
+    This implementation follows pygfx's coordinate conventions. This means that
+    the positive y-axis is the zenith reference and the positive z-axis is the
+    azimuth reference. Angles are measured counter-clockwise.
+
     """
 
-    raise NotImplementedError()
+    spherical = np.asarray(spherical, dtype=float)
+
+    if out is None:
+        out = np.empty_like(spherical, dtype=dtype)
+
+    r, theta, phi = np.split(spherical, 3, axis=-1)
+    out[..., 0] = r * np.sin(phi) * np.sin(theta)
+    out[..., 1] = r * np.cos(phi)
+    out[..., 2] = r * np.sin(phi) * np.cos(theta)
+
+    return out
 
 
 def vector_distance_between(vector_a, vector_b, /, *, out=None, dtype=None):
@@ -273,7 +306,14 @@ def vector_from_matrix_position(homogeneous_matrix, /, *, out=None, dtype=None):
 
     """
 
-    raise NotImplementedError()
+    homogeneous_matrix = np.asarray(homogeneous_matrix, dtype=float)
+
+    if out is None:
+        out = np.empty((*homogeneous_matrix.shape[:-2], 3), dtype=dtype)
+
+    out[:] = homogeneous_matrix[..., :-1, -1]
+
+    return out
 
 
 def vector_euclidean_to_spherical(euclidean, /, *, out=None, dtype=None):
@@ -304,8 +344,8 @@ def vector_euclidean_to_spherical(euclidean, /, *, out=None, dtype=None):
 def vector_make_spherical_safe(vector, /, *, out=None, dtype=None):
     """Normalize sperhical coordinates.
 
-    Normalizes a vector of spherical coordinates to restrict phi to (eps, pi-eps) and
-    theta to (0, 2pi).
+    Normalizes a vector of spherical coordinates to restrict phi to [0, pi) and
+    theta to [0, 2pi).
 
     Parameters
     ----------
@@ -326,4 +366,19 @@ def vector_make_spherical_safe(vector, /, *, out=None, dtype=None):
 
     """
 
-    raise NotImplementedError()
+    vector = np.asarray(vector, dtype=float)
+
+    if out is None:
+        out = np.zeros_like(vector, dtype=dtype)
+
+    is_flipped = vector[..., 1] % (2 * np.pi) >= np.pi
+    out[..., 2] = np.where(is_flipped, -vector[..., 2], vector[..., 2])
+
+    out[..., 0] = vector[..., 0]
+    out[..., 1] = vector[..., 1] % np.pi
+    out[..., 2] = vector[..., 1] % (2 * np.pi)
+
+    out[..., 1] = np.where(out[..., 1] == np.pi, 0, out[..., 1])
+    out[..., 2] = np.where(out[..., 2] == 2 * np.pi, 0, out[..., 2])
+
+    return out
