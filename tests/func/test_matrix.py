@@ -2,7 +2,7 @@ import hypothesis.strategies as st
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hypothesis import example, given
+from hypothesis import assume, example, given
 
 import pylinalg as pla
 
@@ -232,3 +232,33 @@ def test_matrix_make_orthographic():
             [0, 0, 0, 1],
         ],
     )
+
+
+@given(ct.test_unit_vector, ct.test_unit_vector, ct.test_unit_vector)
+def test_matrix_make_look_at(eye, target, up_reference):
+    # Note: to run this test, we need to choose 2 independent vectors (eye,
+    # target) and one arbitrary vector. Scale doesn't matter, so doing this on
+    # the unit-sphere will (almost) always succeed.
+    independence_matrix = np.stack((eye, target), axis=0)
+    assume(np.linalg.matrix_rank(independence_matrix) == 2)
+    assume(np.linalg.norm(up_reference - (target - eye)) > 1e-10)
+
+    rotation = pla.matrix_make_look_at(eye, target, up_reference)
+
+    inverse_rotation = np.eye(4)
+    inverse_rotation[:3, :3] = rotation[:3, :3].T
+
+    # ensure matrix is inverted by its transpose
+    identity = rotation @ inverse_rotation
+    assert np.allclose(identity, np.eye(4), rtol=1e-10)
+
+    # ensure z_new is along target - eye
+    target_pointer = target - eye
+    target_pointer = target_pointer / np.linalg.norm(target_pointer)
+    target_pointer = pla.vector_make_homogeneous(target_pointer)
+    result = rotation @ target_pointer
+    assert np.allclose(result[:3], (0, 0, 1), rtol=1e-16)
+
+    # ensure y_new, z_new, and up_reference roughly align
+    new_reference = rotation @ pla.vector_make_homogeneous(up_reference)
+    assert np.abs(new_reference[0]) < 1e-10
