@@ -109,6 +109,7 @@ def test_vector_distance_between(vector_a, vector_b):
 
 
 def test_foobar():
+    # trigger CI again to roll dice on CPUs
     vector = np.array(
         [11107866628593.0, 11107866628593.0, 11107866628593.0], dtype=np.float64
     )
