@@ -109,7 +109,9 @@ def test_vector_distance_between(vector_a, vector_b):
 
 
 def test_foobar():
-    vector = np.array([2.83674e14, 2.83674e14, 2.83674e14], dtype=np.float64)
+    vector = np.array(
+        [11107866628593.0, 11107866628593.0, 11107866628593.0], dtype=np.float64
+    )
     result = np.linalg.norm(vector, axis=-1)
     expected = np.linalg.norm(vector)
 

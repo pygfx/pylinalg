@@ -32,8 +32,6 @@ def pytest_report_header(config, start_path, startdir):
     return "CPU: " + cpu_info
 
 
-np.set_printoptions(floatmode="maxprec")
-
 # Hypothesis related logic
 # ------------------------
 
