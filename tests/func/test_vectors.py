@@ -108,17 +108,6 @@ def test_vector_distance_between(vector_a, vector_b):
     assert np.allclose(result, expected, rtol=1e-16)
 
 
-def test_foobar():
-    # trigger CI again to roll dice on CPUs
-    vector = np.array(
-        [11107866628593.0, 11107866628593.0, 11107866628593.0], dtype=np.float64
-    )
-    result = np.linalg.norm(vector, axis=-1)
-    expected = np.linalg.norm(vector)
-
-    npt.assert_almost_equal(result, expected)
-
-
 def test_vector_distance_between_exceptions():
     tmp = np.array(0)
     with pytest.raises(IndexError):
