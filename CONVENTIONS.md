@@ -29,6 +29,25 @@ Black is left at defaults, flake8 and isort are configured to adhere to black.
 
 All functions need to be covered by unit tests.
 
+# Coordinate frame conventions
+
+As the purpose of pylinalg as a library primarily is to support linear algebra
+operations in pygfx and applications based on pygfx, we adhere to a number of
+standard coordinate frame conventions to align with expectations from pygfx.
+
+* The positive Z axis is the viewing direction
+* The positive Y axis is the up direction.
+* The positive X axis is the right direction
+
+# Memory layout conventions
+
+Row-major can mean two things:
+
+* Memory layout; are rows or columns contiguous in memory
+* Are vectors columns or rows
+
+Numpy is row-major in both cases, and so we adhere to the same
+convention here in pylinalg.
 
 # Functional API conventions
 
@@ -144,40 +163,6 @@ it is not necessary to add them to pylinalg.
 This API is for external use and for novice-users that want to
 perform linear algebra operations on conceptually familiar primitives.
 
-In this API each "thing" is represented as one object. 
-This API should make any linalg work much easier and safer, partly
-because semantics matters here: a point is not the same as a vector.
-
-These objects are backed by an array-like structure and are thus easy to
-convert to native Python/Numpy objects. The objects support native python
-operators such as `__mul__` where applicable, and have methods
-specific to the type of object.
-
 Extensive input validation and ease of use is prioritized over performance.
 
-The source for this API resides in the `pylinalg.obj` subpackage and is organized
-by type.
-
-## Imports cycles
-
-Since the classes here will regularly need to instantiate other types,
-circular import dependencies exist. To work around this, only the `LinalgBase`
-type can be imported at module level, and other types will have to be imported
-at runtime in methods.
-
-## Function naming
-
-* Names should be concise and short.
-* For every method, there is an alternative in-place method, signified
-  with the prefix `i`. This is not the prettiest option, but it is
-  concise and short.
-
-## Copying and mutability
-
-* By default, methods return new objects, and do not mutate self. Such
-  methods shall be referred to as "copying methods".
-* In-place methods return `self` to enable function chaining.
-
-## Function signatures
-
-* Copying functions accept a `dtype` keyword argument, in-place methods do not.
+The source for this API resides in the `pylinalg.obj` subpackage.
