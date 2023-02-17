@@ -35,9 +35,38 @@ As the purpose of pylinalg as a library primarily is to support linear algebra
 operations in pygfx and applications based on pygfx, we adhere to a number of
 standard coordinate frame conventions to align with expectations from pygfx.
 
-* The positive Z axis is the viewing direction
+Generally there are four transform steps when going from an object's local space,
+all the way to screen space:
+
+* Local space to world space: world matrix
+* World space to view space: view matrix
+* View space to NDC/clip space: projection matrix
+* NDC/clip space to screen space: screen matrix
+
+In pygfx, every world object has its own model matrix, which
+encapsulates scale, rotation and translation components. World objects
+are additionally organized hierarchically using parent/child relationships.
+The world matrix is then recursively defined for every world object; it is the
+result of multiplying an object's model matrix with its parent's world matrix.
+For the root world object, the world matrix is equal to its model matrix. 
+
+The view, projection and screen matrices are owned by camera objects. The view
+matrix can be acquired by inverting the camera's world matrix. The projection
+and screen matrices are configured independently on the camera and depend on its
+type (perspective, orthographic).
+
+Pylinalg provides methods in its functional API to produce all of these matrices.
+Since world matrices are of key interest to users and developers working with pygfx
+there need to be some conventions in place regarding its axes.
+
+* The positive Z axis is the forward direction.
 * The positive Y axis is the up direction.
-* The positive X axis is the right direction
+* The positive X axis is the right direction.
+
+This means that if, for example, you add a car object to a scene, by default
+it is assumed that the car is facing towards positive Z. Due to the above axis
+conventions, you can then use `matrix_make_look_at` to easily create a new rotation
+matrix that makes the car look in another direction.
 
 # Memory layout conventions
 
