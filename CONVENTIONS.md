@@ -35,6 +35,36 @@ As the purpose of pylinalg as a library primarily is to support linear algebra
 operations in pygfx and applications based on pygfx, we adhere to a number of
 standard coordinate frame conventions to align with expectations from pygfx.
 
+To start with, we identify three important coordinate frames that we use as
+references:
+
+1. **world**: The world frame is the (global) inertial reference frame. All
+    other coordinate frames are positioned relative to *world*; either
+    explicitly or implicitly by being placed relative to a sequence of frames
+    that were previously placed relative to *world*. This creates a graph of
+    coordinate frames (called the scene graph), whith *world* at its root and it
+    allows finding a transformation matrix between pairs of coordinate frames.
+2. **local**: The local frame is the coordinate frame in which an object's
+    vertices are expressed. For example, when inspecting the position of a
+    cube's corners, then the numerical values of the corners are given in the
+    cube's *local frame*.
+3. **parent**: The parent frame is the coordinate frame in which an object's
+   pose (position + orientation) are expressed. *Parent* can either be the
+   inertial reference frame (world) or it can be another object's local frame.
+   An object's position is always relative to its parent; for example, if a
+   lightbulb has a lamp's local frame as it's parent, then the lightbulb's
+   position expressed in world coordinates will change whenever the position of
+   lamp changes, i.e., if the lamp moves, so does the lightbulb.
+
+Further, when talking about transformation matrices and coordinate transforms,
+we use two additional frames to avoid confusion:
+
+* **source**: The source frame is the coordinate frame in which
+to-be-transformed vectors are expressed, i.e., it is the reference frame of the
+input vectors.
+* **target**: The target frame is the coordinate frame in which transformed
+  vectors are expressed, i.e., it is the reference frame of the output vectors.
+
 Generally there are four transform steps when going from an object's local space,
 all the way to screen space:
 
@@ -42,37 +72,24 @@ all the way to screen space:
 * World space to view space: view matrix
 * View space to NDC/clip space: projection matrix
 
-In pygfx, every world object has its own model matrix, which
-encapsulates scale, rotation and translation components. World objects
-are additionally organized hierarchically using parent/child relationships.
-The world matrix is then defined for every world object as follows:
-* If the object has no parent, the world matrix is equal to the model matrix.
-* Otherwise, the world matrix is equal to the multiplication of the model matrix
-  with that of its parent.
-
 The view and projection matrices are owned by camera objects. The view
 matrix can be acquired by inverting the camera's world matrix. The projection matrix
 is configured independently on the camera and depends on its
 type (perspective, orthographic).
 
-Pylinalg provides methods in its functional API to produce all of these matrices.
-Since world matrices are of key interest to users and developers working with pygfx
-there need to be some conventions in place regarding its axes.
+In addition to the above-mentioned reference frames, pylinalg uses a
+standardized naming scheme for the axes of a reference frame. The convention
+matches the convention chosen in pygfx:
 
-* The positive Z axis is the forward direction.
-* The positive Y axis is the up direction.
-* The positive X axis is the right direction.
+* The positive Z axis indicates the forward direction.
+* The positive Y axis indicates the up direction.
+* The positive X axis indicates the right direction.
 
-This means that if, for example, you add a car object to a scene, by default
-it is assumed that the car is facing towards positive Z. Due to the above axis
-conventions, you can then use `matrix_make_look_at` to easily create a new rotation
-matrix that makes the car look in another direction.
-
-For the view matrix:
-
-* The positive Z axis is the viewing direction.
-* The positive Y axis is the up direction.
-* The positive X axis is the right direction.
+This means that gravity is assumed to act along *world*'s negative y-axis.
+Further, a space shuttle will launch forward in its *local* frame, meaning that
+it will advance in the direction of the local frame's positive z-axis. At the
+same time a launching space shuttle will move up in *world* coordinates, meaning
+that it's *world* position will change along the positive y-axis.
 
 For NDC/clip space:
 
@@ -87,8 +104,10 @@ Row-major can mean two things:
 * Memory layout; are rows or columns contiguous in memory
 * Are vectors columns or rows
 
-Numpy is row-major in both cases, and so we adhere to the same
-convention here in pylinalg.
+Pylinalg's kernels are written assuming a row-major (C-contigous) layout. If a
+kernel supports batch processing of vetors, it assumes that the last dimension
+contains the relevant vector data and that all other dimensions are batch
+dimensions. As such, you can think of vectors being row vectors.
 
 # Functional API conventions
 
