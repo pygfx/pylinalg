@@ -45,9 +45,10 @@ all the way to screen space:
 In pygfx, every world object has its own model matrix, which
 encapsulates scale, rotation and translation components. World objects
 are additionally organized hierarchically using parent/child relationships.
-The world matrix is then recursively defined for every world object; it is the
-result of multiplying an object's model matrix with its parent's world matrix.
-For the root world object, the world matrix is equal to its model matrix. 
+The world matrix is then defined for every world object as follows:
+* If the object has no parent, the world matrix is equal to the model matrix.
+* Otherwise, the world matrix is equal to the multiplication of the model matrix
+  with that of its parent.
 
 The view and projection matrices are owned by camera objects. The view
 matrix can be acquired by inverting the camera's world matrix. The projection matrix
