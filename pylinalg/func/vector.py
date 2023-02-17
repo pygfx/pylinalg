@@ -149,7 +149,26 @@ def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
         The unprojected vector in 3D space
     """
 
-    raise NotImplementedError()
+    vector = np.asarray(vector, dtype=float)
+    matrix = np.asarray(matrix, dtype=float)
+    depth = np.asarray(depth, dtype=float)
+
+    if out is None:
+        out = np.empty((*vector.shape[:-1], 3), dtype=dtype)
+
+    try:
+        inverse_projection = np.linalg.inv(matrix)
+    except np.linalg.LinAlgError:
+        raise ValueError("The provided matrix is not invertible.")
+
+    vector_hom = np.empty((*vector.shape[:-1], 4), dtype=dtype)
+    vector_hom[..., 0] = depth
+    vector_hom[..., [1, 2]] = vector
+    vector_hom[..., 3] = 0
+
+    out[:] = (inverse_projection @ vector_hom)[..., :-1]
+
+    return out
 
 
 def vector_apply_quaternion_rotation(vector, quaternion, /, *, out=None, dtype=None):
@@ -176,7 +195,23 @@ def vector_apply_quaternion_rotation(vector, quaternion, /, *, out=None, dtype=N
 
     """
 
-    raise NotImplementedError()
+    vector = np.asarray(vector, dtype=float)
+    quaternion = np.asarray(quaternion, dtype=float)
+
+    if out is None:
+        out = np.zeros_like(vector, dtype=dtype)
+
+    # based on https://gamedev.stackexchange.com/a/50545
+    # (more readable than my attempt at doing the same)
+
+    quat_vector = quaternion[..., :-1]
+    quat_scalar = quaternion[..., -1]
+
+    out += 2 * np.sum(quat_vector * vector, axis=-1) * quat_vector
+    out += (quat_scalar**2 - np.sum(quat_vector * quat_vector, axis=-1)) * vector
+    out += 2 * quat_scalar * np.cross(quat_vector, vector)
+
+    return out
 
 
 def vector_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
@@ -185,7 +220,8 @@ def vector_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
     Parameters
     ----------
     spherical : ndarray, [3]
-        A vector in spherical coordinates (r, phi, theta).
+        A vector in spherical coordinates (r, phi, theta). Phi and theta are
+        measured in radians.
     out : ndarray, optional
         A location into which the result is stored. If provided, it
         must have a shape that the inputs broadcast to. If not provided or
@@ -199,9 +235,25 @@ def vector_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
     euclidean : ndarray, [3]
         A vector in euclidian coordinates.
 
+    Notes
+    -----
+    This implementation follows pygfx's coordinate conventions. This means that
+    the positive y-axis is the zenith reference and the positive z-axis is the
+    azimuth reference. Angles are measured counter-clockwise.
+
     """
 
-    raise NotImplementedError()
+    spherical = np.asarray(spherical, dtype=float)
+
+    if out is None:
+        out = np.empty_like(spherical, dtype=dtype)
+
+    r, theta, phi = np.split(spherical, 3, axis=-1)
+    out[..., 0] = r * np.sin(phi) * np.sin(theta)
+    out[..., 1] = r * np.cos(phi)
+    out[..., 2] = r * np.sin(phi) * np.cos(theta)
+
+    return out
 
 
 def vector_distance_between(vector_a, vector_b, /, *, out=None, dtype=None):
@@ -228,7 +280,18 @@ def vector_distance_between(vector_a, vector_b, /, *, out=None, dtype=None):
 
     """
 
-    raise NotImplementedError()
+    vector_a = np.asarray(vector_a, dtype=float)
+    vector_b = np.asarray(vector_b, dtype=float)
+
+    shape = vector_a.shape[:-1]
+    if out is None:
+        out = np.linalg.norm(vector_a - vector_b, axis=-1)
+    elif len(shape) >= 0:
+        out[:] = np.linalg.norm(vector_a - vector_b, axis=-1)
+    else:
+        raise ValueError("Can't use `out` with scalar output.")
+
+    return out
 
 
 def vector_from_matrix_position(homogeneous_matrix, /, *, out=None, dtype=None):
@@ -254,7 +317,14 @@ def vector_from_matrix_position(homogeneous_matrix, /, *, out=None, dtype=None):
 
     """
 
-    raise NotImplementedError()
+    homogeneous_matrix = np.asarray(homogeneous_matrix, dtype=float)
+
+    if out is None:
+        out = np.empty((*homogeneous_matrix.shape[:-2], 3), dtype=dtype)
+
+    out[:] = homogeneous_matrix[..., :-1, -1]
+
+    return out
 
 
 def vector_euclidean_to_spherical(euclidean, /, *, out=None, dtype=None):
@@ -279,14 +349,39 @@ def vector_euclidean_to_spherical(euclidean, /, *, out=None, dtype=None):
 
     """
 
-    raise NotImplementedError()
+    euclidean = np.asarray(euclidean, dtype=float)
+
+    if out is None:
+        out = np.zeros_like(euclidean, dtype=dtype)
+    else:
+        out[:] = 0
+
+    out[..., 0] = np.sqrt(np.sum(euclidean**2, axis=-1))
+
+    # flags to handle all cases
+    needs_flip = np.sign(euclidean[..., 0]) < 0
+    len_xz = np.sum(euclidean[..., [0, 2]] ** 2, axis=-1)
+    xz_nonzero = ~np.all(len_xz == 0, axis=-1)
+    r_nonzero = ~np.all(out[..., [0]] == 0, axis=-1)
+
+    # chooses phi = 0 if vector runs along y-axis
+    out[..., 1] = np.divide(euclidean[..., 2], np.sqrt(len_xz), where=xz_nonzero)
+    out[..., 1] = np.arccos(out[..., 1], where=xz_nonzero)
+    out[..., 1] = np.where(needs_flip, np.abs(out[..., 1] - np.pi), out[..., 1])
+
+    # chooses theta = 0 at the origin (0, 0, 0)
+    out[..., 2] = np.divide(euclidean[..., 1], out[..., 0], where=r_nonzero)
+    out[..., 2] = np.arccos(out[..., 2], where=r_nonzero)
+    out[..., 2] = np.where(needs_flip, 2 * np.pi - out[..., 2], out[..., 2])
+
+    return out
 
 
 def vector_make_spherical_safe(vector, /, *, out=None, dtype=None):
     """Normalize sperhical coordinates.
 
-    Normalizes a vector of spherical coordinates to restrict phi to (eps, pi-eps) and
-    theta to (0, 2pi).
+    Normalizes a vector of spherical coordinates to restrict phi to [0, pi) and
+    theta to [0, 2pi).
 
     Parameters
     ----------
@@ -307,4 +402,19 @@ def vector_make_spherical_safe(vector, /, *, out=None, dtype=None):
 
     """
 
-    raise NotImplementedError()
+    vector = np.asarray(vector, dtype=float)
+
+    if out is None:
+        out = np.zeros_like(vector, dtype=dtype)
+
+    is_flipped = vector[..., 1] % (2 * np.pi) >= np.pi
+    out[..., 2] = np.where(is_flipped, -vector[..., 2], vector[..., 2])
+
+    out[..., 0] = vector[..., 0]
+    out[..., 1] = vector[..., 1] % np.pi
+    out[..., 2] = vector[..., 1] % (2 * np.pi)
+
+    out[..., 1] = np.where(out[..., 1] == np.pi, 0, out[..., 1])
+    out[..., 2] = np.where(out[..., 2] == 2 * np.pi, 0, out[..., 2])
+
+    return out

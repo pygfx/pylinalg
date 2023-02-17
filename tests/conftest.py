@@ -1,3 +1,5 @@
+import platform
+import subprocess
 from math import cos, sin
 
 import hypothesis as hp
@@ -5,8 +7,50 @@ import hypothesis.strategies as st
 import numpy as np
 from hypothesis.extra.numpy import arrays, from_dtype
 
+import pylinalg as pla
+
+
+def pytest_report_header(config, start_path, startdir):
+    # report the CPU model to allow detecting platform-specific problems
+    if platform.system() == "Windows":
+        name = (
+            subprocess.check_output(["wmic", "cpu", "get", "name"])
+            .decode()
+            .strip()
+            .split("\n")[1]
+        )
+        cpu_info = " ".join([name])
+    elif platform.system() == "Linux":
+        info_string = subprocess.check_output(["lscpu"]).decode()
+        for line in info_string.split("\n"):
+            if line.startswith("Model name"):
+                cpu_info = line[33:]
+                break
+    else:
+        cpu_info = platform.processor()
+
+    return "CPU: " + cpu_info
+
+
+# Hypothesis related logic
+# ------------------------
+
 # upper bound on approximation error
 EPS = 1e-6
+
+
+@st.composite
+def generate_spherical_vector(
+    draw,
+    radius=st.floats(min_value=0, max_value=360, allow_infinity=False, allow_nan=False),
+    theta=st.floats(
+        min_value=EPS, max_value=np.pi - EPS, allow_infinity=False, allow_nan=False
+    ),
+    phi=st.floats(
+        min_value=EPS, max_value=2 * np.pi - EPS, allow_infinity=False, allow_nan=False
+    ),
+):
+    return np.array((draw(radius), draw(theta), draw(phi)))
 
 
 @st.composite
@@ -131,12 +175,74 @@ def unit_vector(
     return np.array((x, y, z))
 
 
+@st.composite
+def perspecitve_matrix(
+    draw, elements=st.floats(allow_infinity=False, allow_nan=False, min_value=1e-16)
+):
+    top, bottom = draw(elements), draw(elements)
+    hp.assume(top != bottom)
+
+    left, right = draw(elements), draw(elements)
+    hp.assume(left != right)
+
+    near, far = draw(elements), draw(elements)
+    hp.assume(near != far)
+    hp.assume(0 < near)
+    hp.assume(near < far)
+
+    matrix = pla.matrix_make_perspective(left, right, top, bottom, near, far)
+    hp.assume(not (np.any(np.isinf(matrix) | np.isnan(matrix))))
+
+    try:
+        np.linalg.inv(matrix)
+    except np.linalg.LinAlgError:
+        # only stable/invertible matrices
+        hp.assume(False)
+
+    return matrix
+
+
+@st.composite
+def orthographic_matrix(
+    draw, elements=st.floats(allow_infinity=False, allow_nan=False)
+):
+    top, bottom = draw(elements), draw(elements)
+    hp.assume(top != bottom)
+
+    left, right = draw(elements), draw(elements)
+    hp.assume(left != right)
+
+    near, far = draw(elements), draw(elements)
+    hp.assume(near != far)
+    hp.assume(0 < near)
+    hp.assume(near < far)
+
+    matrix = pla.matrix_make_orthographic(left, right, top, bottom, near, far)
+    hp.assume(not (np.any(np.isinf(matrix) | np.isnan(matrix))))
+
+    try:
+        np.linalg.inv(matrix)
+    except np.linalg.LinAlgError:
+        # only stable/invertible matrices
+        hp.assume(False)
+
+    return matrix
+
+
 def nonzero_scale(scale):
     return np.where(np.abs(scale) < EPS, 1, scale)
 
 
 # Hypthesis testing strategies
-legal_numbers = from_dtype(np.dtype(float), allow_infinity=False, allow_nan=False)
+# Note: components where abs(x[i]) > 1e150 can cause overflow (inf) when
+# squared, which affects kernels using np.linalg.norm
+legal_numbers = from_dtype(
+    np.dtype(float),
+    allow_infinity=False,
+    allow_nan=False,
+    min_value=-1e150,
+    max_value=1e150,
+)
 legal_angle = from_dtype(
     np.dtype(float),
     allow_infinity=False,
@@ -150,4 +256,6 @@ test_matrix_affine = arrays(float, (4, 4), elements=legal_numbers)
 test_scaling = arrays(float, (3,), elements=legal_numbers).map(nonzero_scale)
 test_dtype = dtype_string()
 test_angles_rad = arrays(float, (3,), elements=legal_angle)
+test_spherical = generate_spherical_vector()
 test_unit_vector = unit_vector()
+test_projection = perspecitve_matrix() | orthographic_matrix()
