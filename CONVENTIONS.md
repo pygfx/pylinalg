@@ -70,7 +70,7 @@ matrix that makes the car look in another direction.
 
 For the view matrix:
 
-* The _negative_ Z axis is the viewing direction.
+* The positive Z axis is the viewing direction.
 * The positive Y axis is the up direction.
 * The positive X axis is the right direction.
 
