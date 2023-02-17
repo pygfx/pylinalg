@@ -68,6 +68,18 @@ it is assumed that the car is facing towards positive Z. Due to the above axis
 conventions, you can then use `matrix_make_look_at` to easily create a new rotation
 matrix that makes the car look in another direction.
 
+For the view matrix:
+
+* The _negative_ Z axis is the viewing direction.
+* The positive Y axis is the up direction.
+* The positive X axis is the right direction.
+
+For NDC/clip space:
+
+* The positive Z axis is the viewing direction and ranges from [0, 1].
+* The positive Y axis is the up direction and ranges from [-1, 1].
+* The positive X axis is the right direction and ranges from [-1, 1].
+
 # Memory layout conventions
 
 Row-major can mean two things:
