@@ -73,7 +73,7 @@ matches the convention chosen in pygfx:
 * The positive Y axis indicates the up direction.
 * The Z axis is interpreted differently depending on the type of object:
   * For cameras and lights, the _negative_ Z axis is the forward/viewing direction.
-  * For all other objects, the positive Z axis is the forward/viewing direction.
+  * For all other objects, the positive Z axis is the forward direction.
 
 This means that gravity is assumed to act along *world*'s negative y-axis.
 Further, a space shuttle will launch forward in its *local* frame, meaning that
