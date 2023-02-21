@@ -42,7 +42,7 @@ references:
     other coordinate frames are positioned relative to *world*; either
     explicitly or implicitly by being placed relative to a sequence of frames
     that were previously placed relative to *world*. This creates a graph of
-    coordinate frames (called the scene graph), whith *world* at its root and it
+    coordinate frames (called the scene graph), with *world* at its root and it
     allows finding a transformation matrix between pairs of coordinate frames.
 2. **local**: The local frame is the coordinate frame in which an object's
     vertices are expressed. For example, when inspecting the position of a
@@ -60,30 +60,20 @@ Further, when talking about transformation matrices and coordinate transforms,
 we use two additional frames to avoid confusion:
 
 * **source**: The source frame is the coordinate frame in which
-to-be-transformed vectors are expressed, i.e., it is the reference frame of the
-input vectors.
+  to-be-transformed vectors are expressed, i.e., it is the reference frame of the
+  input vectors.
 * **target**: The target frame is the coordinate frame in which transformed
   vectors are expressed, i.e., it is the reference frame of the output vectors.
-
-Generally there are four transform steps when going from an object's local space,
-all the way to screen space:
-
-* Local space to world space: world matrix
-* World space to view space: view matrix
-* View space to NDC/clip space: projection matrix
-
-The view and projection matrices are owned by camera objects. The view
-matrix can be acquired by inverting the camera's world matrix. The projection matrix
-is configured independently on the camera and depends on its
-type (perspective, orthographic).
 
 In addition to the above-mentioned reference frames, pylinalg uses a
 standardized naming scheme for the axes of a reference frame. The convention
 matches the convention chosen in pygfx:
 
-* The positive Z axis indicates the forward direction.
-* The positive Y axis indicates the up direction.
 * The positive X axis indicates the right direction.
+* The positive Y axis indicates the up direction.
+* The Z axis is interpreted differently depending on the type of object:
+  * For cameras and lights, the _negative_ Z axis is the forward/viewing direction.
+  * For all other objects, the positive Z axis is the forward/viewing direction.
 
 This means that gravity is assumed to act along *world*'s negative y-axis.
 Further, a space shuttle will launch forward in its *local* frame, meaning that
@@ -91,7 +81,20 @@ it will advance in the direction of the local frame's positive z-axis. At the
 same time a launching space shuttle will move up in *world* coordinates, meaning
 that it's *world* position will change along the positive y-axis.
 
-For NDC/clip space:
+To render an object we have to express its vertices in a camera's so-called NDC
+coordinates, which stands for normalized device coordinates. Recall that
+vertices are expressed in the object's *local* frame, which means we need to
+work out the transformation from object *local* to NDC. We can do this by
+following the chain of transformations in the scene graph from object *local*
+via *world* to camera *local* and from camera *local* into NDC. Since this chain
+is very important for rendering, it's parts have special names:
+
+* **World Matrix**: The transformation from object's *local* into *world*.
+* **View Matrix**: The transformation from *world* to camera's *local*. This is
+  the inverse of the camera's world matrix.
+* **Projection Matrix**: The transformation from camera's *local* into NDC.
+
+The axes of NDC/clip space are defined as follows:
 
 * The positive Z axis is the viewing direction and ranges from [0, 1].
 * The positive Y axis is the up direction and ranges from [-1, 1].
