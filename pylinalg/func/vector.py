@@ -285,9 +285,60 @@ def vector_distance_between(vector_a, vector_b, /, *, out=None, dtype=None):
 
     shape = vector_a.shape[:-1]
     if out is None:
-        out = np.linalg.norm(vector_a - vector_b, axis=-1)
+        out = np.linalg.norm(vector_a - vector_b, axis=-1).astype(dtype)
     elif len(shape) >= 0:
         out[:] = np.linalg.norm(vector_a - vector_b, axis=-1)
+    else:
+        raise ValueError("Can't use `out` with scalar output.")
+
+    return out
+
+
+def vector_angle_between(vector_a, vector_b, /, *, out=None, dtype=None):
+    """The angle between two vectors
+
+    Parameters
+    ----------
+    vector_a : ndarray, [3]
+        The first vector.
+    vector_b : ndarray, [3]
+        The second vector.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    angle : float
+        The angle between both vectors.
+
+    """
+
+    vector_a = np.asarray(vector_a, dtype=float)
+    vector_b = np.asarray(vector_b, dtype=float)
+
+    shape = vector_a.shape[:-1]
+
+    # Cannot broadcast np.dot(), so just write it out
+    dot_prod = sum(
+        [
+            vector_a[..., 0] * vector_b[..., 0],
+            vector_a[..., 1] * vector_b[..., 1],
+            vector_a[..., 2] * vector_b[..., 2],
+        ]
+    )
+    the_cos = (
+        dot_prod / np.linalg.norm(vector_a, axis=-1) / np.linalg.norm(vector_b, axis=-1)
+    )
+
+    if out is None:
+        out = np.arccos(the_cos).astype(dtype)
+    elif len(shape) >= 0:
+        out[:] = np.arccos(the_cos)
     else:
         raise ValueError("Can't use `out` with scalar output.")
 
