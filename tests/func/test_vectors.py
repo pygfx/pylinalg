@@ -132,6 +132,32 @@ def test_vector_distance_between_exceptions():
         pla.vector_distance_between((0, 0, 0), (0, 1, 0), out=tmp)
 
 
+def test_vector_angle_between():
+    cases = [
+        ((0, 0, 1), (0, 1, 0), 90),
+        ((0, 0, 1), (0, 2, 0), 90),
+        ((1, 0, 0), (0, 3, 0), 90),
+        ((2, 0, 0), (3, 0, 0), 0),
+        ((2, 2, 0), (3, 3, 0), 0),
+        ((2, 2, 2), (3, 3, 3), 0),
+        ((1, 0, 0), (-2, 0, 0), 180),
+        ((0, 1, 2), (0, -3, -6), 180),
+        ((1, 0, 0), (2, 2, 0), 45),
+        ((1, 0, 1), (0, 0, 80), 45),
+    ]
+    for v1, v2, deg in cases:
+        rad = deg * np.pi / 180
+        result = pla.vector_angle_between(v1, v2)
+        assert np.abs(result - rad) < 0.0001
+
+    v1 = np.array([case[0] for case in cases])
+    v2 = np.array([case[1] for case in cases])
+    expected = np.array([case[2] for case in cases]) * np.pi / 180
+    result = pla.vector_angle_between(v1, v2)
+
+    assert np.allclose(result, expected, rtol=1e-8)
+
+
 def test_vector_apply_matrix_out_dtype():
     vectors = np.array([[1, 0, 0]], dtype="f4")
     matrix = pla.matrix_make_translation([-1, 2, 2])

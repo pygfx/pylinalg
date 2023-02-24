@@ -81,6 +81,9 @@ def quaternion_multiply(a, b, /, *, out=None, dtype=None):
     ndarray, [4]
         Quaternion.
     """
+    a = np.asarray(a)
+    b = np.asarray(b)
+
     if out is None:
         out = np.empty(4, dtype=dtype)
 
