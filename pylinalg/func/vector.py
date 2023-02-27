@@ -101,21 +101,17 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
     # therefore it is necessary to transpose the transformation matrix
     # additionally we slice off the last row of the matrix, since we are not interested
     # in the resulting w coordinate
-    transform = matrix[:-1, :].T
+    transform = matrix.T
+    result = np.dot(vectors, transform)
+    rem_shape = result.shape[:-1]
     if out is not None:
-        try:
-            # if `out` is exactly compatible, that is the most performant
-            return np.dot(vectors, transform, out=out)
-        except ValueError:
-            # otherwise we need a temporary array and cast
-            out[:] = np.dot(vectors, transform)
-            return out
-    # otherwise just return whatever dot computes
-    out = np.dot(vectors, transform)
-    # cast if requested
-    if dtype is not None:
-        out = out.astype(dtype, copy=False)
-    return out
+        out[:] = result[..., :3]
+        corr = 1.0 / result[..., 3].reshape(rem_shape + (1,))
+        out *= corr.astype(out.dtype, copy=False)
+        return out
+    else:
+        out = result[..., :3] / result[..., 3].reshape(rem_shape + (1,))
+        return out.astype(dtype, copy=False)
 
 
 def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):

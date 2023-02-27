@@ -353,7 +353,7 @@ def matrix_decompose(matrix, /, *, dtype=None, out=None):
 
 
 def matrix_make_perspective(
-    left, right, top, bottom, near, far, /, *, out=None, dtype=None
+    left, right, top, bottom, near, far, /, *, depth_range=(-1, 1), out=None, dtype=None
 ):
     """
     Create a perspective projection matrix.
@@ -372,6 +372,9 @@ def matrix_make_perspective(
         distance between the near frustum plane and the origin
     far : number
         distance between the far frustum plane and the origin
+    depth_range : Tuple[float, float]
+        The interval along the z-axis in NDC that shall correspond to the region
+        inside the viewing frustum.
     out : ndarray, optional
         A location into which the result is stored. If provided, it
         must have a shape that the inputs broadcast to. If not provided or
@@ -393,10 +396,14 @@ def matrix_make_perspective(
     x = 2 * near / (right - left)
     y = 2 * near / (top - bottom)
 
+    near_d = near * depth_range[0]
+    far_d = far * depth_range[1]
+    depth_diff = depth_range[1] - depth_range[0]
+
     a = (right + left) / (right - left)
     b = (top + bottom) / (top - bottom)
-    c = -(far + near) / (far - near)
-    d = -2 * far * near / (far - near)
+    c = -(far_d - near_d) / (far - near)
+    d = -(far * near * depth_diff) / (far - near)
 
     out[0, 0] = x
     out[0, 2] = a
