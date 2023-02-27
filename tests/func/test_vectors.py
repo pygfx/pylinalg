@@ -301,3 +301,68 @@ def test_vector_apply_quaternion_rotation_identity(vector, quaternion):
 
     # assert relative proximity only
     assert np.allclose(actual, vector, rtol=1e-10, atol=np.inf)
+
+
+def test_vector_apply_matrix__perspective():
+    # Test for OpenGL, wgpu, and arbitrary depth ranges
+    depth_ranges = (-1, 1), (0, 1), (-2, 9)
+
+    for depth_range in depth_ranges:
+        m = pla.matrix_make_perspective(-1, 1, -1, 1, 1, 17, depth_range=depth_range)
+
+        # Check the depth range
+        vec2 = pla.vector_apply_matrix((0, 0, -1), m)
+        assert vec2[2] == depth_range[0]
+        vec2 = pla.vector_apply_matrix((0, 0, -17), m)
+        assert vec2[2] == depth_range[1]
+        # vec2 = pla.vector_apply_matrix((0, 0, -9), m) -> skip: halfway is not 0.5 ndc
+
+        cases = [
+            [(1, 0, -2), 0.5],
+            [(1, 0, -4), 0.25],
+            [(0, 0, -4), 0.0],
+            [(-1, 0, -4), -0.25],
+            [(-1, 0, -2), -0.5],
+        ]
+
+        # Check cases one by one
+        for vec1, expected in cases:
+            vec2 = pla.vector_apply_matrix(vec1, m)
+            assert vec2[0] == expected
+
+        # Check cases batched
+        vectors1 = np.row_stack([v for v, _ in cases])
+        vectors2 = pla.vector_apply_matrix(vectors1, m)
+        assert vectors2[0][0] == cases[0][1]
+        assert vectors2[1][0] == cases[1][1]
+        assert vectors2[2][0] == cases[2][1]
+
+        # Check cases batched, via out
+        vectors2 = pla.vector_apply_matrix(vectors1, m, out=vectors2)
+        assert vectors2[0][0] == cases[0][1]
+        assert vectors2[1][0] == cases[1][1]
+        assert vectors2[2][0] == cases[2][1]
+
+
+def test_vector_apply_matrix__orthographic():
+    # Test for OpenGL, wgpu, and arbitrary depth ranges
+    depth_ranges = (-1, 1), (0, 1), (-2, 9)
+
+    for depth_range in depth_ranges:
+        m = pla.matrix_make_orthographic(-1, 1, -1, 1, 1, 17, depth_range=depth_range)
+
+        # Check the depth range
+        vec2 = pla.vector_apply_matrix((0, 0, -1), m)
+        assert vec2[2] == depth_range[0]
+        vec2 = pla.vector_apply_matrix((0, 0, -17), m)
+        assert vec2[2] == depth_range[1]
+        vec2 = pla.vector_apply_matrix((0, 0, -9), m)
+        assert vec2[2] == (depth_range[0] + depth_range[1]) / 2
+
+        # This point would be at the edge of NDC
+        vec2 = pla.vector_apply_matrix((1, 0, -2), m)
+        assert vec2[0] == 1
+
+        # This point would be at the egde of NDC
+        vec2 = pla.vector_apply_matrix((1, 0, -4), m)
+        assert vec2[0] == 1
