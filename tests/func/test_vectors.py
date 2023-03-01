@@ -132,6 +132,32 @@ def test_vector_distance_between_exceptions():
         pla.vector_distance_between((0, 0, 0), (0, 1, 0), out=tmp)
 
 
+def test_vector_angle_between():
+    cases = [
+        ((0, 0, 1), (0, 1, 0), 90),
+        ((0, 0, 1), (0, 2, 0), 90),
+        ((1, 0, 0), (0, 3, 0), 90),
+        ((2, 0, 0), (3, 0, 0), 0),
+        ((2, 2, 0), (3, 3, 0), 0),
+        ((2, 2, 2), (3, 3, 3), 0),
+        ((1, 0, 0), (-2, 0, 0), 180),
+        ((0, 1, 2), (0, -3, -6), 180),
+        ((1, 0, 0), (2, 2, 0), 45),
+        ((1, 0, 1), (0, 0, 80), 45),
+    ]
+    for v1, v2, deg in cases:
+        rad = deg * np.pi / 180
+        result = pla.vector_angle_between(v1, v2)
+        assert np.abs(result - rad) < 0.0001
+
+    v1 = np.array([case[0] for case in cases])
+    v2 = np.array([case[1] for case in cases])
+    expected = np.array([case[2] for case in cases]) * np.pi / 180
+    result = pla.vector_angle_between(v1, v2)
+
+    assert np.allclose(result, expected, rtol=1e-8)
+
+
 def test_vector_apply_matrix_out_dtype():
     vectors = np.array([[1, 0, 0]], dtype="f4")
     matrix = pla.matrix_make_translation([-1, 2, 2])
@@ -275,3 +301,68 @@ def test_vector_apply_quaternion_rotation_identity(vector, quaternion):
 
     # assert relative proximity only
     assert np.allclose(actual, vector, rtol=1e-10, atol=np.inf)
+
+
+def test_vector_apply_matrix__perspective():
+    # Test for OpenGL, wgpu, and arbitrary depth ranges
+    depth_ranges = (-1, 1), (0, 1), (-2, 9)
+
+    for depth_range in depth_ranges:
+        m = pla.matrix_make_perspective(-1, 1, -1, 1, 1, 17, depth_range=depth_range)
+
+        # Check the depth range
+        vec2 = pla.vector_apply_matrix((0, 0, -1), m)
+        assert vec2[2] == depth_range[0]
+        vec2 = pla.vector_apply_matrix((0, 0, -17), m)
+        assert vec2[2] == depth_range[1]
+        # vec2 = pla.vector_apply_matrix((0, 0, -9), m) -> skip: halfway is not 0.5 ndc
+
+        cases = [
+            [(1, 0, -2), 0.5],
+            [(1, 0, -4), 0.25],
+            [(0, 0, -4), 0.0],
+            [(-1, 0, -4), -0.25],
+            [(-1, 0, -2), -0.5],
+        ]
+
+        # Check cases one by one
+        for vec1, expected in cases:
+            vec2 = pla.vector_apply_matrix(vec1, m)
+            assert vec2[0] == expected
+
+        # Check cases batched
+        vectors1 = np.row_stack([v for v, _ in cases])
+        vectors2 = pla.vector_apply_matrix(vectors1, m)
+        assert vectors2[0][0] == cases[0][1]
+        assert vectors2[1][0] == cases[1][1]
+        assert vectors2[2][0] == cases[2][1]
+
+        # Check cases batched, via out
+        vectors2 = pla.vector_apply_matrix(vectors1, m, out=vectors2)
+        assert vectors2[0][0] == cases[0][1]
+        assert vectors2[1][0] == cases[1][1]
+        assert vectors2[2][0] == cases[2][1]
+
+
+def test_vector_apply_matrix__orthographic():
+    # Test for OpenGL, wgpu, and arbitrary depth ranges
+    depth_ranges = (-1, 1), (0, 1), (-2, 9)
+
+    for depth_range in depth_ranges:
+        m = pla.matrix_make_orthographic(-1, 1, -1, 1, 1, 17, depth_range=depth_range)
+
+        # Check the depth range
+        vec2 = pla.vector_apply_matrix((0, 0, -1), m)
+        assert vec2[2] == depth_range[0]
+        vec2 = pla.vector_apply_matrix((0, 0, -17), m)
+        assert vec2[2] == depth_range[1]
+        vec2 = pla.vector_apply_matrix((0, 0, -9), m)
+        assert vec2[2] == (depth_range[0] + depth_range[1]) / 2
+
+        # This point would be at the edge of NDC
+        vec2 = pla.vector_apply_matrix((1, 0, -2), m)
+        assert vec2[0] == 1
+
+        # This point would be at the egde of NDC
+        vec2 = pla.vector_apply_matrix((1, 0, -4), m)
+        assert vec2[0] == 1
