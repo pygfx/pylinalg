@@ -1,7 +1,7 @@
 from importlib.metadata import version
 
-import pylinalg as pla
+import pylinalg as la
 
 
 def test_version_matches_metadata():
-    assert pla.__version__ == version("pylinalg")
+    assert la.__version__ == version("pylinalg")

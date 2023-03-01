@@ -2,7 +2,7 @@ import numpy as np
 from hypothesis import assume, given
 from hypothesis.strategies import floats
 
-import pylinalg as pla
+import pylinalg as la
 
 from .. import conftest as ct
 
@@ -29,7 +29,7 @@ def test_aabb_to_sphere(point, offset, scale):
     aabb[0, :] = np.min(candidate, axis=0)
     aabb[1, :] = np.max(candidate, axis=0)
 
-    sphere = pla.aabb_to_sphere(aabb)
+    sphere = la.aabb_to_sphere(aabb)
 
     assert np.allclose(sphere[:3], offset, atol=1e-10)
     assert np.allclose(sphere[-1], abs(scale), rtol=1e-10)
@@ -42,10 +42,10 @@ def test_aabb_transform(point, translation, scale):
     aabb[0, :] = np.min(candidate, axis=0)
     aabb[1, :] = np.max(candidate, axis=0)
 
-    translation_matrix = pla.matrix_make_translation(translation)
-    result = pla.aabb_transform(aabb, translation_matrix)
+    translation_matrix = la.matrix_make_translation(translation)
+    result = la.aabb_transform(aabb, translation_matrix)
     assert np.allclose(result, aabb + translation, atol=1e-10)
 
-    scale_matrix = pla.matrix_make_scaling(scale)
-    result = pla.aabb_transform(aabb, scale_matrix)
+    scale_matrix = la.matrix_make_scaling(scale)
+    result = la.aabb_transform(aabb, scale_matrix)
     assert np.allclose(result, np.sort(aabb * scale, axis=0), atol=1e-10)
