@@ -4,14 +4,14 @@ import numpy.testing as npt
 import pytest
 from hypothesis import assume, example, given
 
-import pylinalg as pla
+import pylinalg as la
 
 from .. import conftest as ct
 
 
 @given(ct.legal_numbers | ct.test_vector, st.none() | ct.test_dtype)
 def test_matrix_make_translation(position, dtype):
-    result = pla.matrix_make_translation(position, dtype=dtype)
+    result = la.matrix_make_translation(position, dtype=dtype)
 
     expected = np.eye(4, dtype=dtype)
     expected[:3, 3] = np.asarray(position)
@@ -21,7 +21,7 @@ def test_matrix_make_translation(position, dtype):
 
 @given(ct.legal_numbers | ct.test_scaling, st.none() | ct.test_dtype)
 def test_matrix_make_scaling(scale, dtype):
-    result = pla.matrix_make_scaling(scale, dtype=dtype)
+    result = la.matrix_make_scaling(scale, dtype=dtype)
 
     scaling = np.ones(4, dtype=dtype)
     scaling[:3] = np.asarray(scale, dtype=dtype)
@@ -37,7 +37,7 @@ def test_matrix_make_scaling(scale, dtype):
 @example((np.pi, -np.pi / 2, 0), "zyx", "f8")
 @example((0, np.pi / 2, 0), "xyz", "f8")
 def test_matrix_make_rotation_from_euler_angles(angles, order, dtype):
-    result = pla.matrix_make_rotation_from_euler_angles(
+    result = la.matrix_make_rotation_from_euler_angles(
         angles, order="".join(order), dtype=dtype
     )
 
@@ -54,7 +54,7 @@ def test_matrix_make_rotation_from_euler_angles(angles, order, dtype):
 def test_matrix_make_rotation_from_axis_angle_direction():
     """Test that a positive pi/2 rotation about the z-axis results
     in counter clockwise rotation, in accordance with the unit circle."""
-    result = pla.matrix_make_rotation_from_axis_angle([0, 0, 1], np.pi / 2)
+    result = la.matrix_make_rotation_from_axis_angle([0, 0, 1], np.pi / 2)
     npt.assert_array_almost_equal(
         result,
         [
@@ -71,7 +71,7 @@ def test_matrix_make_rotation_from_axis_angle_xy():
     flips the x and y coordinates, and negates the z coordinate."""
     axis = np.array([1, 1, 0], dtype="f8")
     axis /= np.linalg.norm(axis)
-    result = pla.matrix_make_rotation_from_axis_angle(axis, -np.pi)
+    result = la.matrix_make_rotation_from_axis_angle(axis, -np.pi)
     npt.assert_array_almost_equal(
         result,
         [
@@ -113,8 +113,8 @@ def test_matrix_make_rotation_from_axis_angle_xy():
     ],
 )
 def test_matrix_to_quaternion(angles, expected, dtype):
-    matrix = pla.matrix_make_rotation_from_euler_angles(angles, dtype=dtype)
-    quaternion = pla.matrix_to_quaternion(matrix, dtype=dtype)
+    matrix = la.matrix_make_rotation_from_euler_angles(angles, dtype=dtype)
+    quaternion = la.matrix_to_quaternion(matrix, dtype=dtype)
     npt.assert_array_almost_equal(
         quaternion,
         expected,
@@ -127,11 +127,11 @@ def test_matrix_combine():
     """Test that the matrices are combined in the expected order."""
     # non-uniform scaling such that the test would fail if rotation/scaling are
     # applied in the incorrect order
-    scaling = pla.matrix_make_scaling([1, 2, 1])
-    rotation = pla.matrix_make_rotation_from_euler_angles([0, -np.pi / 4, np.pi / 2])
-    translation = pla.matrix_make_translation(2)
+    scaling = la.matrix_make_scaling([1, 2, 1])
+    rotation = la.matrix_make_rotation_from_euler_angles([0, -np.pi / 4, np.pi / 2])
+    translation = la.matrix_make_translation(2)
     # apply the standard SRT ordering
-    result = pla.matrix_combine([translation, rotation, scaling])
+    result = la.matrix_combine([translation, rotation, scaling])
     # therefore translation should be unaffected in the combined matrix
     npt.assert_array_almost_equal(
         result,
@@ -144,9 +144,9 @@ def test_matrix_combine():
     )
 
     with pytest.raises(TypeError):
-        pla.matrix_combine()
+        la.matrix_combine()
 
-    result = pla.matrix_combine([translation, translation], dtype="f4")
+    result = la.matrix_combine([translation, translation], dtype="f4")
     npt.assert_array_almost_equal(
         result,
         [
@@ -159,7 +159,7 @@ def test_matrix_combine():
     assert result.dtype == "f4"
 
     temp = np.identity(4, dtype="i4")
-    result = pla.matrix_combine([translation, translation], out=temp, dtype="f4")
+    result = la.matrix_combine([translation, translation], out=temp, dtype="f4")
     assert result is temp
     npt.assert_array_almost_equal(
         result,
@@ -182,7 +182,7 @@ def test_matrix_make_transform():
     rotation = [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2]
     translation = [2, 2, 2]
     # compose the transform
-    result = pla.matrix_make_transform(translation, rotation, scaling)
+    result = la.matrix_make_transform(translation, rotation, scaling)
     npt.assert_array_almost_equal(
         result,
         [
@@ -202,14 +202,14 @@ def test_matrix_decompose():
         [0, 0, 1, 2],
         [0, 0, 0, 1],
     ]
-    translation, rotation, scaling = pla.matrix_decompose(matrix)
+    translation, rotation, scaling = la.matrix_decompose(matrix)
     npt.assert_array_equal(translation, [2, 2, 2])
     npt.assert_array_equal(scaling, [1, 2, 1])
     npt.assert_array_almost_equal(rotation, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
 
 
 def test_matrix_make_perspective():
-    a = pla.matrix_make_perspective(-1, 1, -1, 1, 1, 100)
+    a = la.matrix_make_perspective(-1, 1, -1, 1, 1, 100)
     npt.assert_array_almost_equal(
         a,
         [
@@ -222,7 +222,7 @@ def test_matrix_make_perspective():
 
 
 def test_matrix_make_orthographic():
-    a = pla.matrix_make_orthographic(-1, 1, -1, 1, 1, 100)
+    a = la.matrix_make_orthographic(-1, 1, -1, 1, 1, 100)
     npt.assert_array_almost_equal(
         a,
         [
@@ -243,7 +243,7 @@ def test_matrix_make_look_at(eye, target, up_reference):
     assume(np.linalg.matrix_rank(independence_matrix) == 2)
     assume(np.linalg.norm(up_reference - (target - eye)) > 1e-10)
 
-    rotation = pla.matrix_make_look_at(eye, target, up_reference)
+    rotation = la.matrix_make_look_at(eye, target, up_reference)
 
     inverse_rotation = np.eye(4)
     inverse_rotation[:3, :3] = rotation[:3, :3].T
@@ -255,10 +255,10 @@ def test_matrix_make_look_at(eye, target, up_reference):
     # ensure z_new is along target - eye
     target_pointer = target - eye
     target_pointer = target_pointer / np.linalg.norm(target_pointer)
-    target_pointer = pla.vector_make_homogeneous(target_pointer)
+    target_pointer = la.vector_make_homogeneous(target_pointer)
     result = rotation @ target_pointer
     assert np.allclose(result[:3], (0, 0, 1), rtol=1e-16)
 
     # ensure y_new, z_new, and up_reference roughly align
-    new_reference = rotation @ pla.vector_make_homogeneous(up_reference)
+    new_reference = rotation @ la.vector_make_homogeneous(up_reference)
     assert np.abs(new_reference[0]) < 1e-10

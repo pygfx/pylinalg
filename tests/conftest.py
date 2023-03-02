@@ -7,7 +7,7 @@ import hypothesis.strategies as st
 import numpy as np
 from hypothesis.extra.numpy import arrays, from_dtype
 
-import pylinalg as pla
+import pylinalg as la
 
 
 def pytest_report_header(config, start_path, startdir):
@@ -190,7 +190,7 @@ def perspecitve_matrix(
     hp.assume(0 < near)
     hp.assume(near < far)
 
-    matrix = pla.matrix_make_perspective(left, right, top, bottom, near, far)
+    matrix = la.matrix_make_perspective(left, right, top, bottom, near, far)
     hp.assume(not (np.any(np.isinf(matrix) | np.isnan(matrix))))
 
     try:
@@ -217,7 +217,7 @@ def orthographic_matrix(
     hp.assume(0 < near)
     hp.assume(near < far)
 
-    matrix = pla.matrix_make_orthographic(left, right, top, bottom, near, far)
+    matrix = la.matrix_make_orthographic(left, right, top, bottom, near, far)
     hp.assume(not (np.any(np.isinf(matrix) | np.isnan(matrix))))
 
     try:
