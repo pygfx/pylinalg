@@ -12,14 +12,16 @@ At least the following sections shall be provided:
 
 ## Type annotations
 
-Until Numpy version 1.22+ becomes generally adopted this library will not provide type annotations.
+Until Numpy version 1.22+ becomes generally adopted this library will not
+provide type annotations.
 
 ## Linting
 
-Linting shall be performed with flake8, flake8-isort, flake8-black and pep8-naming.
+Linting shall be performed with flake8, flake8-isort, flake8-black and
+pep8-naming.
 
-The default configurations for these linting tools shall be upheld, which includes
-pep8 style and naming conventions.
+The default configurations for these linting tools shall be upheld, which
+includes pep8 style and naming conventions.
 
 Automated formatting shall be performed with black and isort.
 
@@ -60,8 +62,8 @@ Further, when talking about transformation matrices and coordinate transforms,
 we use two additional frames to avoid confusion:
 
 * **source**: The source frame is the coordinate frame in which
-  to-be-transformed vectors are expressed, i.e., it is the reference frame of the
-  input vectors.
+  to-be-transformed vectors are expressed, i.e., it is the reference frame of
+  the input vectors.
 * **target**: The target frame is the coordinate frame in which transformed
   vectors are expressed, i.e., it is the reference frame of the output vectors.
 
@@ -72,7 +74,8 @@ matches the convention chosen in pygfx:
 * The positive X axis indicates the right direction.
 * The positive Y axis indicates the up direction.
 * The Z axis is interpreted differently depending on the type of object:
-  * For cameras and lights, the _negative_ Z axis is the forward/viewing direction.
+  * For cameras and lights, the _negative_ Z axis is the forward/viewing
+    direction.
   * For all other objects, the positive Z axis is the forward direction.
 
 This means that gravity is assumed to act along *world*'s negative y-axis.
@@ -119,8 +122,8 @@ vectorize operations on large sets of things.
 
 Performance is prioritized over extensive input validation.
 
-The source for this API resides in the `pylinalg.func` subpackage and is organized
-by type.
+The source for this API resides in the `pylinalg.func` subpackage and is
+organized by type.
 
 ## Function naming
 
@@ -141,8 +144,8 @@ a simple naming scheme is put in place:
 
 ## Function signatures
 
-We strive to align closely with numpy conventions in order to be least-surprising
-for users accustomed to numpy.
+We strive to align closely with numpy conventions in order to be
+least-surprising for users accustomed to numpy.
 
 * Data arguments feeding into computation are positional-only.
 * Optional arguments affecting the result of computation are keyword-only.
@@ -215,11 +218,11 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
 
 ## Note on linear algebra operations already provided by numpy
 
-Since the conventions align with those of numpy, in some cases, it just
-does not make sense to add the function this library and incur all the overhead
-of maintenance, documentation and testing. For example, a function to perform
-vector addition would be exactly equal to the `np.add` function, and as such,
-it is not necessary to add them to pylinalg.
+Since the conventions align with those of numpy, in some cases, it just does not
+make sense to add the function this library and incur all the overhead of
+maintenance, documentation and testing. For example, a function to perform
+vector addition would be exactly equal to the `np.add` function, and as such, it
+is not necessary to add them to pylinalg.
 
 # Object oriented API conventions
 
