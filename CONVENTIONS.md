@@ -224,8 +224,6 @@ it is not necessary to add them to pylinalg.
 # Object oriented API conventions
 
 This API is for external use and for novice-users that want to
-perform linear algebra operations on conceptually familiar primitives.
+perform linear algebra operations.
 
-Extensive input validation and ease of use is prioritized over performance.
-
-The source for this API resides in the `pylinalg.obj` subpackage.
+The source for this API resides in the `pylinalg.obj` subpackagee.
