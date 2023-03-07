@@ -143,10 +143,12 @@ def rotation_matrix(axis, angle):
         The angle to rotate by (in rad).
 
     """
+    axis_idx = {"x": 0, "y": 1, "z": 2}[axis]
 
     matrix = np.array([[cos(angle), -sin(angle)], [sin(angle), cos(angle)]])
+    if axis_idx == 1:
+        matrix = matrix.T
 
-    axis_idx = {"x": 0, "y": 1, "z": 2}[axis]
     matrix = np.insert(matrix, axis_idx, 0, axis=0)
     matrix = np.insert(matrix, axis_idx, 0, axis=1)
     matrix[axis_idx, axis_idx] = 1
