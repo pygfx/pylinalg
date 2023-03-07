@@ -190,6 +190,7 @@ def quaternion_make_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
     ndarray, [4]
         Quaternion.
     """
+
     if out is None:
         out = np.empty(4, dtype=dtype)
 
@@ -242,3 +243,55 @@ def quaternion_rotate(vector, quaternion, /, *, out=None, dtype=None):
     qxv = np.cross(q_vector, vector, axis=-1)
 
     return (2 * q_v * q_vector) + (scalar**2 - q_q) * vector + 2 * scalar * qxv
+
+
+def quaternion_make_from_euler_angles(angles, /, *, order="XYZ", out=None, dtype=None):
+    """
+    Create a quaternion from euler angles.
+
+    Parameters
+    ----------
+    angles : ndarray, [3]
+        A set of XYZ euler angles.
+    order : string, optional
+        The order in which the rotations should be applied. Default
+        is "xyz".
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    quaternion : ndarray, [4]
+        The rotation expressed as a quaternion.
+
+    """
+
+    angles = np.asarray(angles, dtype=float)
+    batch_shape = angles.shape[:-1]
+
+    if out is None:
+        out = np.empty((*batch_shape, 4), dtype=dtype)
+
+    # work out the sequence in which to apply the rotations
+    is_extrinsic = [x.isupper() for x in order]
+    order = [{"X": 0, "Y": 1, "Z": 2}[x.upper()] for x in order]
+
+    # convert each euler matrix into a quaternion
+    quaternions = np.zeros((len(order), *batch_shape, 4), dtype=float)
+    quaternions[:, ..., -1] = np.cos(angles / 2)
+    quaternions[np.arange(len(order)), ..., order] = np.sin(angles / 2)
+
+    # multiple euler-angle quaternions respecting
+    out[:] = quaternions[0]
+    for idx in range(1, len(quaternions)):
+        if is_extrinsic[idx]:
+            quaternion_multiply(out, quaternions[idx], out=out)
+        else:
+            quaternion_multiply(quaternions[idx], out, out=out)
+
+    return out
