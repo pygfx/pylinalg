@@ -65,11 +65,14 @@ and angles in `rad` (radians) unless stated otherwise.
   * The positive Z axis is the viewing direction and the box extent is `[0, 1]`.
 * **Spherical Coordinates** are represented using `(radius, theta, phi)` vectors
   and use the following semantics:
-  * The *radius* measures the distance between a point and the origin.
+  * The *radius* measures the distance between a point and the origin and lies
+    between `[0, inf)`.
   * The *phi* angle measures the counter-clockwise (CCW) rotation around the
-    positive y-axis and lies between `[0, pi)`.
+    positive y-axis. It is measured from the positive Z-axis and lies between
+    `[0, pi)`.
   * The *theta* angle measures the counter-clockwise (CCW) rotation around the
-    negative X-axis and lies between `[0, 2*pi)`.
+    negative X-axis. It is measured from the positive Y-axis and lies between
+    `[0, 2*pi)`.
 * **Homogeneous Coordinates** are represented using `(x, y, z, 1)` vectors and
   use the same semantics as their cartesian dual, i.e., if they represent an
   object, they use the semantics of object coordinates and when they represent a
