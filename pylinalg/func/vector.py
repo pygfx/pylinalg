@@ -22,10 +22,13 @@ def vector_normalize(vectors, /, *, out=None, dtype=None):
     ndarray, [..., 3]
         array of normalized vectors.
     """
-    vectors = np.asarray(vectors)
+    vectors = np.asarray(vectors, dtype=np.float64)
     if out is None:
         out = np.empty_like(vectors, dtype=dtype)
-    return np.divide(vectors, np.linalg.norm(vectors, axis=-1)[:, None], out=out)
+
+    lengths_shape = vectors.shape[:-1] + (1,)
+    lengths = np.linalg.norm(vectors, axis=-1).reshape(lengths_shape)
+    return np.divide(vectors, lengths, out=out)
 
 
 def vector_make_homogeneous(vectors, /, *, w=1, out=None, dtype=None):

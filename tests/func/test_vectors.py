@@ -10,26 +10,34 @@ from .. import conftest as ct
 
 
 def test_vector_normalize():
-    vectors = np.array(
-        [
-            [2, 0, 0],
-            [1, 1, 1],
-            [-1, -1, -1],
-            [1, 0, 0],
-        ],
-        dtype="f8",
-    )
+    vectors = [
+        [2, 0, 0],
+        [1, 1, 1],
+        [-1.0, -1.0, -1.0],
+        [1., 0.0, 0.0],
+    ]
+    expected = [
+        [1, 0, 0],
+        [1 / np.sqrt(3), 1 / np.sqrt(3), 1 / np.sqrt(3)],
+        [-1 / np.sqrt(3), -1 / np.sqrt(3), -1 / np.sqrt(3)],
+        [1, 0, 0],
+    ]
+
+    # Test individuals
+    for vec, e_vec in zip(vectors, expected):
+        npt.assert_array_almost_equal(
+            la.vector_normalize(vec),
+            e_vec,
+        )
+
+    # Test the batch
     npt.assert_array_almost_equal(
         la.vector_normalize(vectors),
-        [
-            [1, 0, 0],
-            [1 / np.sqrt(3), 1 / np.sqrt(3), 1 / np.sqrt(3)],
-            [-1 / np.sqrt(3), -1 / np.sqrt(3), -1 / np.sqrt(3)],
-            [1, 0, 0],
-        ],
+        expected,
     )
 
 
+##
 @pytest.mark.parametrize(
     "vectors,value,expected",
     [
