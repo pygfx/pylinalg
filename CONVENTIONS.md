@@ -52,7 +52,7 @@ and angles in `rad` (radians) unless stated otherwise.
   * The positive Y axis is called *up*.
   * The positive Z axis is called *forward*.
 * **Camera Coordinates** are represented using `(x, y, z)` vectors and are used
-  to describe cameras. They use the following semantics:
+  to describe cameras and lights. They use the following semantics:
   * The positive X axis is called *right*.
   * The positive Y axis is called *up*.
   * The *negative* Z axis is called *forward*.
