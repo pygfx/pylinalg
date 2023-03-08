@@ -56,12 +56,13 @@ and angles in `rad` (radians) unless stated otherwise.
   * The positive X axis is called *right*.
   * The positive Y axis is called *up*.
   * The *negative* Z axis is called *forward*.
-* **Normalized Device Coordinates (NDC)** are represented using `(x, y, z)`
-  vectors and are used to describe points to render/plot. Points inside the unit
-  (half) box are rendered, others are not. NDC uses the following semantics:
+* **Normalized Device Coordinates (NDC)** are left-handed and represented using
+  `(x, y, z)` vectors. They are used to describe points to render/plot. Points
+  inside the unit (half) box are rendered, others are not. NDC uses the
+  following semantics:
   * The positive X axis is called *right* and the box extent is `[-1, 1]`.
   * The positive Y axis is called *up* and the box extent is `[-1, 1]`.
-  * The *negative* Z axis is the viewing direction and the box extent is `[0, 1]`.
+  * The positive Z axis is the viewing direction and the box extent is `[0, 1]`.
 * **Spherical Coordinates** are represented using `(radius, theta, phi)` vectors
   and use the following semantics:
   * The *radius* measures the distance between a point and the origin.
