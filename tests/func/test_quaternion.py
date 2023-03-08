@@ -2,10 +2,11 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 from hypothesis import given
+from hypothesis.strategies import text
 
 import pylinalg as la
 
-from ..conftest import test_quaternion, test_unit_vector
+from .. import conftest as ct
 
 
 @pytest.mark.parametrize(
@@ -14,24 +15,24 @@ from ..conftest import test_quaternion, test_unit_vector
         # case a
         ([0, 0, np.pi / 2], [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2], "f8"),
         # case a, two ordered rotations
-        ([0, np.pi / 2, np.pi / 2], [0.5, -0.5, 0.5, 0.5], "f8"),
+        ([0, -np.pi / 2, np.pi / 2], [0.5, -0.5, 0.5, 0.5], "f8"),
         # non-default dtype
-        ([0, np.pi / 2, np.pi / 2], [0.5, -0.5, 0.5, 0.5], "f4"),
+        ([0, -np.pi / 2, np.pi / 2], [0.5, -0.5, 0.5, 0.5], "f4"),
         # case b (contrived example for code coverage)
         (
-            [0, -np.pi * 0.51, np.pi * 0.51],
+            [0, np.pi * 0.51, np.pi * 0.51],
             [0.515705, -0.499753, -0.499753, -0.484295],
             "f8",
         ),
         # case c (contrived example for code coverage)
         (
-            [np.pi * 1.2, -np.pi * 1.8, np.pi],
+            [np.pi * 1.2, np.pi * 1.8, np.pi],
             [-0.095492, 0.904508, -0.293893, -0.293893],
             "f8",
         ),
         # case d (contrived example for code coverage)
         (
-            [np.pi * 0.45, -np.pi * 1.8, np.pi],
+            [np.pi * 0.45, np.pi * 1.8, np.pi],
             [0.234978, 0.617662, 0.723189, -0.20069],
             "f8",
         ),
@@ -112,7 +113,7 @@ def test_quaternion_from_axis_angle():
     npt.assert_array_almost_equal(q, [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2])
 
 
-@given(test_unit_vector, test_quaternion)
+@given(ct.test_unit_vector, ct.test_quaternion)
 def test_quaternion_vs_matrix_rotate(vector, quaternion):
     matrix = la.quaternion_to_matrix(quaternion)
     hom_vector = np.ones(4, dtype=vector.dtype)
@@ -124,7 +125,7 @@ def test_quaternion_vs_matrix_rotate(vector, quaternion):
     npt.assert_array_almost_equal(actual, expected)
 
 
-@given(test_unit_vector, test_quaternion)
+@given(ct.test_unit_vector, ct.test_quaternion)
 def test_quaternion_rotate_inversion(vector, quaternion):
     inverse = la.quaternion_inverse(quaternion)
 
@@ -135,3 +136,13 @@ def test_quaternion_rotate_inversion(vector, quaternion):
     tmp = la.quaternion_rotate(vector, inverse)
     result = la.quaternion_rotate(tmp, quaternion)
     npt.assert_array_almost_equal(result, vector)
+
+
+@given(ct.test_angles_rad, text("xyz", min_size=1, max_size=3))
+def test_quaternion_make_from_euler_angles(angles, order):
+    angles = angles[: len(order)]
+    result = la.quaternion_make_from_euler_angles(angles, order=order)
+    actual = la.quaternion_to_matrix(result)
+
+    expected = la.matrix_make_rotation_from_euler_angles(angles, order=order)
+    assert np.allclose(actual, expected)

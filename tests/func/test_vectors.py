@@ -262,7 +262,7 @@ def test_vector_apply_rotation_ordered():
         [0, 1, 0],
     )
     matrix = la.matrix_make_rotation_from_euler_angles(
-        [0, -np.pi / 2, np.pi / 2], order="zyx"
+        [0, np.pi / 2, np.pi / 2], order="zyx"
     )
     result = la.vector_apply_matrix(vectors, matrix)
 
