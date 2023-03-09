@@ -468,3 +468,6 @@ def vector_make_spherical_safe(vector, /, *, out=None, dtype=None):
     out[..., 2] = np.where(out[..., 2] == 2 * np.pi, 0, out[..., 2])
 
     return out
+
+
+__all__ = [name for name in globals() if name.startswith("vector_")]
