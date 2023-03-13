@@ -295,3 +295,6 @@ def quaternion_make_from_euler_angles(angles, /, *, order="XYZ", out=None, dtype
             quaternion_multiply(quaternions[idx], out, out=out)
 
     return out
+
+
+__all__ = [name for name in globals() if name.startswith("quaternion_")]

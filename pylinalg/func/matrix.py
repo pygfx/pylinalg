@@ -589,3 +589,6 @@ def matrix_make_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     out /= np.linalg.norm(out, axis=-1)[..., :, None]
 
     return out
+
+
+__all__ = [name for name in globals() if name.startswith("matrix_")]
