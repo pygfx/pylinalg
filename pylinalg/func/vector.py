@@ -99,7 +99,8 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
     matrix = np.asarray(matrix, dtype=float)
     
     if out is None:
-        out = np.empty(vectors.shape, dtype=dtype)
+        out_shape = np.broadcast_shapes(vectors.shape[:-1], matrix.shape[:-2])
+        out = np.empty((*out_shape, 3), dtype=dtype)
 
     vectors = vector_make_homogeneous(vectors, w=w)
     result = matrix @ vectors[..., None]
