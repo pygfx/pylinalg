@@ -69,53 +69,44 @@ def vector_make_homogeneous(vectors, /, *, w=1, out=None, dtype=None):
 
 def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
     """
-    Transform vectors by a transformation matrix.
+    Apply a transformation matrix to a vector.
 
     Parameters
     ----------
-    vectors : ndarray, [..., 3]
+    vectors : ndarray, [3]
         Array of vectors
     matrix : ndarray, [4, 4]
         Transformation matrix
-    w : number, optional, default 1
-        The value for the homogeneous dimensionality.
-        this affects the result of translation transforms. use 0 (vectors)
-        if the translation component should not be applied, 1 (positions)
-        otherwise.
+    w : ndarray, [1], optional
+        The value of the scale component of the homogeneous coordinate. This
+        affects the result of translation transforms. use 0 (vectors) if the
+        translation component should not be applied, 1 (positions) otherwise.
     out : ndarray, optional
-        A location into which the result is stored. If provided, it
-        must have a shape that the inputs broadcast to. If not provided or
-        None, a freshly-allocated array is returned. A tuple must have
-        length equal to the number of outputs.
+        A location into which the result is stored. If provided, it must have a
+        shape that the inputs broadcast to. If not provided or None, a
+        freshly-allocated array is returned. A tuple must have length equal to
+        the number of outputs.
     dtype : data-type, optional
         Overrides the data type of the result.
 
     Returns
     -------
-    ndarray, [..., 3]
+    ndarray, [3]
         transformed vectors
     """
-    vectors = vector_make_homogeneous(vectors, w=w)
-    # usually when applying a transformation matrix to a vector
-    # the vector is a column, so if you were to have an array of vectors
-    # it would have shape (ndim, nvectors).
-    # however, we instead have the convention (nvectors, ndim) where
-    # vectors are rows.
-    # therefore it is necessary to transpose the transformation matrix
-    # additionally we slice off the last row of the matrix, since we are not interested
-    # in the resulting w coordinate
-    transform = matrix.T
-    result = np.dot(vectors, transform)
-    rem_shape = result.shape[:-1]
-    if out is not None:
-        out[:] = result[..., :3]
-        corr = 1.0 / result[..., 3].reshape(rem_shape + (1,))
-        out *= corr.astype(out.dtype, copy=False)
-        return out
-    else:
-        out = result[..., :3] / result[..., 3].reshape(rem_shape + (1,))
-        return out.astype(dtype, copy=False)
 
+    vectors = np.asarray(vectors, dtype=float)    
+    matrix = np.asarray(matrix, dtype=float)
+    
+    if out is None:
+        out = np.empty(vectors.shape, dtype=dtype)
+
+    vectors = vector_make_homogeneous(vectors, w=w)
+    result = matrix @ vectors[..., None]
+    result /= result[..., -1, :][..., None, :]
+    out[:] = result[..., :-1, 0]
+
+    return out
 
 def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
     """
