@@ -1,6 +1,10 @@
 """Note that we assume unit quaternions for faster implementations"""
 
+import warnings
+
 import numpy as np
+
+from .vector import vector_apply_quaternion_rotation
 
 
 def quaternion_to_matrix(quaternion, /, *, out=None, dtype=None):
@@ -231,18 +235,11 @@ def quaternion_rotate(vector, quaternion, /, *, out=None, dtype=None):
 
     """
 
-    vector = np.asarray(vector, dtype=dtype)
-    quaternion = np.asarray(quaternion, dtype=dtype)
-
-    scalar = quaternion[..., -1]
-    q_vector = quaternion[..., :3]
-
-    # the required linalg products
-    q_v = np.tensordot(q_vector, vector, axes=(-1, -1))
-    q_q = np.tensordot(q_vector, q_vector, axes=(-1, -1))
-    qxv = np.cross(q_vector, vector, axis=-1)
-
-    return (2 * q_v * q_vector) + (scalar**2 - q_q) * vector + 2 * scalar * qxv
+    warnings.warn(
+        "`quaternion_rotate` is deprecated. "
+        "Use `vector_apply_quaternion_rotation` instead."
+    )
+    return vector_apply_quaternion_rotation(vector, quaternion, out=out, dtype=dtype)
 
 
 def quaternion_make_from_euler_angles(angles, /, *, order="XYZ", out=None, dtype=None):
