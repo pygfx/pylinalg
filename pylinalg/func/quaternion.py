@@ -1,10 +1,6 @@
 """Note that we assume unit quaternions for faster implementations"""
 
-import warnings
-
 import numpy as np
-
-from .vector import vector_apply_quaternion_rotation
 
 
 def quaternion_to_matrix(quaternion, /, *, out=None, dtype=None):
@@ -203,43 +199,6 @@ def quaternion_make_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
     out[3] = np.cos(angle_half)
 
     return out
-
-
-def quaternion_rotate(vector, quaternion, /, *, out=None, dtype=None):
-    """
-    Rotate a vector using a quaternion.
-
-    Parameters
-    ----------
-    vector : ndarray, [3]
-        The vector to rotate in local space.
-    quaternion : ndarray, [4]
-        The quaternion to rotate by in ``(x, y, z, w)`` format.
-    out : ndarray, optional
-        A location into which the result is stored. If provided, it
-        must have a shape that the inputs broadcast to. If not provided or
-        None, a freshly-allocated array is returned. A tuple must have
-        length equal to the number of outputs.
-    dtype : data-type, optional
-        Overrides the data type of the result.
-
-    Returns
-    -------
-    rotated_vector : ndarray, [3]
-        The input vector rotated by the given quaternion.
-
-    Notes
-    -----
-    For improved accuracy consider normalizing the vector before applying the
-    rotation and then re-apply the original scale afterwards.
-
-    """
-
-    warnings.warn(
-        "`quaternion_rotate` is deprecated. "
-        "Use `vector_apply_quaternion_rotation` instead."
-    )
-    return vector_apply_quaternion_rotation(vector, quaternion, out=out, dtype=dtype)
 
 
 def quaternion_make_from_euler_angles(angles, /, *, order="XYZ", out=None, dtype=None):
