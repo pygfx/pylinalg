@@ -170,7 +170,7 @@ def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
     return out
 
 
-def vector_apply_quaternion_rotation(vector, quaternion, /, *, out=None, dtype=None):
+def vector_apply_quaternion(vector, quaternion, /, *, out=None, dtype=None):
     """Rotate a vector using a quaternion.
 
     Parameters
