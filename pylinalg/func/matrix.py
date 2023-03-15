@@ -31,14 +31,17 @@ def matrix_combine(matrices, /, *, out=None, dtype=None):
     ndarray, [4, 4]
         Combined transformation matrix.
     """
+
+    matrices = [np.asarray(matrix) for matrix in matrices]
+    result_shape = np.broadcast_shapes(*[matrix.shape for matrix in matrices])
+
     if out is None:
-        out = np.empty((4, 4), dtype=dtype)
-    out[:] = np.identity(4, dtype=dtype)
-    for matrix in matrices:
-        try:
-            np.dot(out, matrix, out=out)
-        except ValueError:
-            out[:] = np.dot(out, matrix)
+        out = np.empty(result_shape, dtype=dtype)
+
+    out[:] = matrices[0]
+    for matrix in matrices[1:]:
+        np.matmul(out, matrix, out=out)
+
     return out
 
 
@@ -64,15 +67,23 @@ def matrix_make_translation(vector, /, *, out=None, dtype=None):
         Translation matrix.
     """
     vector = np.asarray(vector)
+    result_shape = (*vector.shape[:-1], 4, 4)
 
-    matrix = np.identity(4, dtype=dtype)
-    matrix[:-1, -1] = vector
+    if out is None:
+        out = np.empty(result_shape, dtype=dtype)
 
-    if out is not None:
-        out[:] = matrix
-        return out
+    # view into the diagonal of the result
+    n_matrices = np.prod(result_shape[:-2], dtype=int)
+    itemsize = out.itemsize
+    diagonal = as_strided(
+        out, shape=(n_matrices, 4), strides=(16 * itemsize, 5 * itemsize)
+    )
 
-    return matrix
+    out[:] = 0
+    diagonal[:] = 1
+    out[..., :-1, -1] = vector
+
+    return out
 
 
 def matrix_make_scaling(factors, /, *, out=None, dtype=None):
