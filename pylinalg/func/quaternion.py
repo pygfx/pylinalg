@@ -228,7 +228,7 @@ def quaternion_make_from_euler_angles(angles, /, *, order="XYZ", out=None, dtype
     """
 
     angles = np.asarray(angles, dtype=float)
-    batch_shape = angles.shape[:-1]
+    batch_shape = angles.shape[:-1] if len(order) > 1 else angles.shape
 
     if out is None:
         out = np.empty((*batch_shape, 4), dtype=dtype)
