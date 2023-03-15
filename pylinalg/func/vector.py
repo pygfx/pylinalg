@@ -95,9 +95,9 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
         transformed vectors
     """
 
-    vectors = np.asarray(vectors, dtype=float)    
+    vectors = np.asarray(vectors, dtype=float)
     matrix = np.asarray(matrix, dtype=float)
-    
+
     if out is None:
         out_shape = np.broadcast_shapes(vectors.shape[:-1], matrix.shape[:-2])
         out = np.empty((*out_shape, 3), dtype=dtype)
@@ -108,6 +108,7 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
     out[:] = result[..., :-1, 0]
 
     return out
+
 
 def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
     """
