@@ -115,7 +115,7 @@ def test_quaternion_from_axis_angle():
 
 @given(ct.test_angles_rad, text("xyz", min_size=1, max_size=3))
 def test_quaternion_make_from_euler_angles(angles, order):
-    angles = angles[: len(order)]
+    angles = np.squeeze(angles[: len(order)])
     result = la.quaternion_make_from_euler_angles(angles, order=order)
     actual = la.quaternion_to_matrix(result)
 
