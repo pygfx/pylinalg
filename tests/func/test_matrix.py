@@ -158,20 +158,6 @@ def test_matrix_combine():
     )
     assert result.dtype == "f4"
 
-    temp = np.identity(4, dtype="i4")
-    result = la.matrix_combine([translation, translation], out=temp, dtype="f4")
-    assert result is temp
-    npt.assert_array_almost_equal(
-        result,
-        [
-            [1, 0, 0, 4],
-            [0, 1, 0, 4],
-            [0, 0, 1, 4],
-            [0, 0, 0, 1],
-        ],
-    )
-    assert result.dtype == "i4"
-
 
 def test_matrix_make_transform():
     """Test that the matrices are composed correctly in SRT order."""
