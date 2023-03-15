@@ -146,7 +146,12 @@ def matrix_make_rotation_from_euler_angles(
     ccw around the y-axis, and finally 0° around the x axis.
 
     """
+    angles = np.asarray(angles, dtype=float)
     order = order.lower()
+
+    if angles.ndim == 0:
+        # add dimension to allow zip
+        angles = angles[None]
 
     matrices = []
     for angle, axis in zip(angles, order):
