@@ -1,6 +1,7 @@
 """Note that we assume unit quaternions for faster implementations"""
 
 import numpy as np
+from numpy.lib.stride_tricks import as_strided
 
 
 def quaternion_to_matrix(quaternion, /, *, out=None, dtype=None):
@@ -25,7 +26,27 @@ def quaternion_to_matrix(quaternion, /, *, out=None, dtype=None):
         rotation matrix.
     """
     quaternion = np.asarray(quaternion)
-    x, y, z, w = quaternion
+    result_shape = (*quaternion.shape[:-1], 4, 4)
+
+    if out is None:
+        out = np.empty(result_shape, dtype=dtype)
+
+    # view into the diagonal of the result
+    n_matrices = np.prod(result_shape[:-2], dtype=int)
+    itemsize = out.itemsize
+    diagonal = as_strided(
+        out, shape=(n_matrices, 4), strides=(16 * itemsize, 5 * itemsize)
+    )
+
+    out[:] = 0
+    diagonal[:] = 1
+
+    x, y, z, w = (
+        quaternion[..., 0],
+        quaternion[..., 1],
+        quaternion[..., 2],
+        quaternion[..., 3],
+    )
 
     x2 = x * 2
     y2 = y * 2
@@ -40,20 +61,15 @@ def quaternion_to_matrix(quaternion, /, *, out=None, dtype=None):
     wy = w * y2
     wz = w * z2
 
-    if out is None:
-        out = np.identity(4, dtype=dtype)
-    else:
-        out[:] = np.identity(4)
-
-    out[0, 0] = 1 - (yy + zz)
-    out[1, 0] = xy + wz
-    out[2, 0] = xz - wy
-    out[0, 1] = xy - wz
-    out[1, 1] = 1 - (xx + zz)
-    out[2, 1] = yz + wx
-    out[0, 2] = xz + wy
-    out[1, 2] = yz - wx
-    out[2, 2] = 1 - (xx + yy)
+    out[..., 0, 0] = 1 - (yy + zz)
+    out[..., 1, 0] = xy + wz
+    out[..., 2, 0] = xz - wy
+    out[..., 0, 1] = xy - wz
+    out[..., 1, 1] = 1 - (xx + zz)
+    out[..., 2, 1] = yz + wx
+    out[..., 0, 2] = xz + wy
+    out[..., 1, 2] = yz - wx
+    out[..., 2, 2] = 1 - (xx + yy)
 
     return out
 
@@ -228,7 +244,7 @@ def quaternion_make_from_euler_angles(angles, /, *, order="XYZ", out=None, dtype
     """
 
     angles = np.asarray(angles, dtype=float)
-    batch_shape = angles.shape[:-1]
+    batch_shape = angles.shape[:-1] if len(order) > 1 else angles.shape
 
     if out is None:
         out = np.empty((*batch_shape, 4), dtype=dtype)
