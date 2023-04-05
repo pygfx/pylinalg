@@ -241,8 +241,8 @@ def test_vector_unproject(expected, projection_matrix):
     expected_hom = la.vector_make_homogeneous(expected)
     expected_2d = projection_matrix @ expected_hom
 
-    depth = expected_2d[..., 0]
-    vector = expected_2d[..., [1, 2]]
+    depth = expected_2d[..., 2]
+    vector = expected_2d[..., [0, 1]]
 
     actual = la.vector_unproject(vector, projection_matrix, depth=depth)
 

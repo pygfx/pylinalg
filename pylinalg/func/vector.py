@@ -139,6 +139,11 @@ def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
     -------
     projected_vector : ndarray, [3]
         The unprojected vector in 3D space
+
+    Notes
+    -----
+    The source frame of this operation is the camera's local XY-plane and the target frame
+    is the camera's local frame.
     """
 
     vector = np.asarray(vector, dtype=float)
@@ -154,8 +159,8 @@ def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
         raise ValueError("The provided matrix is not invertible.")
 
     vector_hom = np.empty((*vector.shape[:-1], 4), dtype=dtype)
-    vector_hom[..., 0] = depth
-    vector_hom[..., [1, 2]] = vector
+    vector_hom[..., 2] = depth
+    vector_hom[..., [0, 1]] = vector
     vector_hom[..., 3] = 0
 
     out[:] = (inverse_projection @ vector_hom)[..., :-1]
