@@ -237,9 +237,12 @@ def test_vector_apply_rotation_about_z_matrix():
 
 
 @given(ct.test_vector, ct.test_projection)
+@example(
+    ((250, 250, 0), (-250, -250, 0)),
+    la.matrix_make_orthographic(250, -250, 250, -250, -100, 100, depth_range=(0, 1)),
+)
 def test_vector_unproject(expected, projection_matrix):
-    expected_hom = la.vector_make_homogeneous(expected)
-    expected_2d = projection_matrix @ expected_hom
+    expected_2d = la.vector_apply_matrix(expected, projection_matrix)
 
     depth = expected_2d[..., 2]
     vector = expected_2d[..., [0, 1]]
