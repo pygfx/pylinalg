@@ -251,10 +251,12 @@ def test_vector_unproject(expected, projection_matrix):
 
 
 def test_unproject_explicitly():
-    matrix = la.matrix_make_orthographic(250, -250, 250, -250, -100, 100, depth_range=(0, 1))
+    matrix = la.matrix_make_orthographic(
+        250, -250, 250, -250, -100, 100, depth_range=(0, 1)
+    )
     expected = np.array(((250, 250, 0), (-250, -250, 0)))
     projected = np.array(((1, 1), (-1, -1)))
-                         
+
     actual = la.vector_unproject(projected, matrix)
     assert np.allclose(actual, expected, rtol=1e-16, atol=np.inf)
 
