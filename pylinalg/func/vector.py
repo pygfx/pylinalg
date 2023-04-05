@@ -142,8 +142,8 @@ def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
 
     Notes
     -----
-    The source frame of this operation is the camera's local XY-plane and the target frame
-    is the camera's local frame.
+    The source frame of this operation is the camera's local XY-plane and the
+    target frame is the camera's local frame.
     """
 
     vector = np.asarray(vector, dtype=float)
