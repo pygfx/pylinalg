@@ -142,8 +142,8 @@ def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
 
     Notes
     -----
-    The source frame of this operation is the camera's local XY-plane and the
-    target frame is the camera's local frame.
+    The source frame of this operation is the XY-plane of the camera's NDC frame
+    and the target frame is the camera's local frame.
     """
 
     vector = np.asarray(vector, dtype=float)
@@ -161,7 +161,7 @@ def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
     vector_hom = np.empty((*vector.shape[:-1], 4), dtype=dtype)
     vector_hom[..., 2] = depth
     vector_hom[..., [0, 1]] = vector
-    vector_hom[..., 3] = 0
+    vector_hom[..., 3] = 1
 
     out[:] = (vector_hom @ inverse_projection.T)[..., :-1]
 

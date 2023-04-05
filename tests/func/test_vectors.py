@@ -251,14 +251,25 @@ def test_vector_unproject(expected, projection_matrix):
 
 
 def test_unproject_explicitly():
+    # orthographic camera for a 100-unit block around origin
     matrix = la.matrix_make_orthographic(
-        250, -250, 250, -250, -100, 100, depth_range=(0, 1)
+        -100,  # left
+        100,  # right
+        100,  # top
+        -100,  # bottom
+        100,  # near (positive because camera faces along _negative_ z)
+        -100,  # far  (negative because camera faces along _negative_ z)
+        depth_range=(0, 1),
     )
-    expected = np.array(((250, 250, 0), (-250, -250, 0)))
+
+    # @almarklein: Is this really what we want? We set near=100 and far=-100, so
+    # shouldn't a value of local.z=100 correspond to NDC.z=0 (since it lives on
+    # the near plane) and local.z=-100 be NDC.z=1?
+    expected = np.array(((100, 100, -100), (-100, -100, 100)))
     projected = np.array(((1, 1), (-1, -1)))
 
-    actual = la.vector_unproject(projected, matrix)
-    assert np.allclose(actual, expected, rtol=1e-16, atol=np.inf)
+    actual = la.vector_unproject(projected, matrix, depth=(0, 1))
+    assert np.allclose(actual, expected)
 
 
 def test_vector_unproject_exceptions():
@@ -362,7 +373,7 @@ def test_vector_apply_matrix__perspective():
         assert vectors2[2][0] == cases[2][1]
 
 
-def test_vector_apply_matrix__orthographic():
+def test_vector_apply_matrix_orthographic():
     # Test for OpenGL, wgpu, and arbitrary depth ranges
     depth_ranges = (-1, 1), (0, 1), (-2, 9)
 
