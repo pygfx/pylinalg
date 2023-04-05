@@ -163,7 +163,9 @@ def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
     vector_hom[..., [0, 1]] = vector
     vector_hom[..., 3] = 1
 
-    out[:] = (vector_hom @ inverse_projection.T)[..., :-1]
+    out_hom = vector_hom @ inverse_projection.T
+    scale = out_hom[..., -1][..., None]
+    out[:] = (out_hom / scale)[..., :-1]
 
     return out
 
