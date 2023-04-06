@@ -474,6 +474,16 @@ def matrix_make_orthographic(
     -------
     matrix : ndarray, [4, 4]
         orthographic projection matrix
+
+    Notes
+    -----
+    The parameters to this function are given in a left-handed frame that is
+    obtained by mirroring source's Z-axis at the origin. In other words, if the
+    returned matrix represents a camera's projection matrix then this function's
+    parameters are given in a frame that is like the camera's local frame except
+    that it's Z-axis is inverted. This means that positive values for `near` and
+    `far` refer to a negative Z values in camera local.
+
     """
 
     left = np.asarray(left, dtype=float)
