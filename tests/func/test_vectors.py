@@ -251,25 +251,50 @@ def test_vector_unproject(expected, projection_matrix):
 
 
 def test_unproject_explicitly():
-    # orthographic camera for a 100-unit block around origin
-    matrix = la.matrix_make_orthographic(
-        -100,  # left
-        100,  # right
-        100,  # top
-        -100,  # bottom
-        100,  # near (positive because camera faces along _negative_ z)
-        -100,  # far  (negative because camera faces along _negative_ z)
-        depth_range=(0, 1),
+    # see https://github.com/pygfx/pylinalg/pull/60#discussion_r1159522602
+    # and the following comments
+
+    # cube at origin with side length 10
+    cube_corners = np.array(
+        [
+            [-5, -5, -5],
+            [5, -5, -5],
+            [5, 5, -5],
+            [-5, 5, -5],
+            [-5, -5, 5],
+            [5, -5, 5],
+            [5, 5, 5],
+            [-5, 5, 5],
+        ]
     )
+    cube_world_matrix = np.eye(4)
 
-    # @almarklein: Is this really what we want? We set near=100 and far=-100, so
-    # shouldn't a value of local.z=100 correspond to NDC.z=0 (since it lives on
-    # the near plane) and local.z=-100 be NDC.z=1?
-    expected = np.array(((100, 100, -100), (-100, -100, 100)))
-    projected = np.array(((1, 1), (-1, -1)))
+    # camera 10 units away from cube origin
+    camera_pos = (0, 0, 10)
+    cam_world_matrix = la.matrix_make_translation(camera_pos)
+    view_matrix = np.linalg.inv(cam_world_matrix)
 
-    actual = la.vector_unproject(projected, matrix, depth=(0, 1))
-    assert np.allclose(actual, expected)
+    # Scenario 1: near=4, far=16
+    projection_matrix = la.matrix_make_orthographic(
+        -10, 10, 10, -10, 4, 16, depth_range=(0, 1)
+    )
+    cube_local_to_cam_ndc = projection_matrix @ view_matrix @ cube_world_matrix
+    corners_ndc = la.vector_apply_matrix(cube_corners, cube_local_to_cam_ndc)
+    corner_in_view = np.all(
+        ((-1, -1, 0) < corners_ndc) & (corners_ndc < (1, 1, 1)), axis=-1
+    )
+    assert np.sum(corner_in_view) == 8
+
+    # Scenario 2: near=6, far=14
+    projection_matrix = la.matrix_make_orthographic(
+        -10, 10, 10, -10, 6, 14, depth_range=(0, 1)
+    )
+    cube_local_to_cam_ndc = projection_matrix @ view_matrix @ cube_world_matrix
+    corners_ndc = la.vector_apply_matrix(cube_corners, cube_local_to_cam_ndc)
+    corner_in_view = np.all(
+        ((-1, -1, 0) < corners_ndc) & (corners_ndc < (1, 1, 1)), axis=-1
+    )
+    assert np.sum(corner_in_view) == 0
 
 
 def test_vector_unproject_exceptions():
