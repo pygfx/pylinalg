@@ -242,9 +242,10 @@ def test_matrix_make_look_at(eye, target, up_reference):
     target_pointer = target - eye
     target_pointer = target_pointer / np.linalg.norm(target_pointer)
     target_pointer = la.vector_make_homogeneous(target_pointer)
-    result = rotation @ target_pointer
-    assert np.allclose(result[:3], (0, 0, 1), rtol=1e-16)
+    result = rotation @ (0, 0, 1, 1)
+    assert np.allclose(result, target_pointer, rtol=1e-16)
 
     # ensure y_new, z_new, and up_reference roughly align
-    new_reference = rotation @ la.vector_make_homogeneous(up_reference)
+    # (map up_reference from target to source space and check if it's in the YZ-plane)
+    new_reference = rotation.T @ la.vector_make_homogeneous(up_reference)
     assert np.abs(new_reference[0]) < 1e-10
