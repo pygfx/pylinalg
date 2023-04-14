@@ -604,15 +604,14 @@ def matrix_make_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     view = as_strided(out, shape=(n_matrices, 4), strides=(16 * itemsize, 5 * itemsize))
     view[:] = 1
 
-    # Note: building the inverse/transpose directly
-    out[..., 2, :-1] = new_z / np.linalg.norm(new_z, axis=-1)
-    out[..., 0, :-1] = np.cross(
-        up_reference, out[..., 2, :-1], axisa=-1, axisb=-1, axisc=-1
+    out[..., :-1, 2] = new_z / np.linalg.norm(new_z, axis=-1)
+    out[..., :-1, 0] = np.cross(
+        up_reference, out[..., :-1, 2], axisa=-1, axisb=-1, axisc=-1
     )
-    out[..., 1, :-1] = np.cross(
-        out[..., 2, :-1], out[..., 0, :-1], axisa=-1, axisb=-1, axisc=-1
+    out[..., :-1, 1] = np.cross(
+        out[..., :-1, 2], out[..., :-1, 0], axisa=-1, axisb=-1, axisc=-1
     )
-    out /= np.linalg.norm(out, axis=-1)[..., :, None]
+    out /= np.linalg.norm(out, axis=-2)[..., None, :]
 
     return out
 
