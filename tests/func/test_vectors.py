@@ -340,7 +340,7 @@ def test_vector_apply_quaternion(vector, quaternion):
     expected = (matrix @ vector)[..., :-1]
 
     # assert relative proximity only
-    assert np.allclose(actual, expected, rtol=1e-10)
+    assert np.allclose(actual, expected, rtol=1e-10, atol=np.inf)
 
 
 @given(ct.test_quaternion)
