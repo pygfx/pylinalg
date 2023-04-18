@@ -474,6 +474,16 @@ def matrix_make_orthographic(
     -------
     matrix : ndarray, [4, 4]
         orthographic projection matrix
+
+    Notes
+    -----
+    The parameters to this function are given in a left-handed frame that is
+    obtained by mirroring source's Z-axis at the origin. In other words, if the
+    returned matrix represents a camera's projection matrix then this function's
+    parameters are given in a frame that is like the camera's local frame except
+    that it's Z-axis is inverted. This means that positive values for `near` and
+    `far` refer to a negative Z values in camera local.
+
     """
 
     left = np.asarray(left, dtype=float)
@@ -594,15 +604,14 @@ def matrix_make_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     view = as_strided(out, shape=(n_matrices, 4), strides=(16 * itemsize, 5 * itemsize))
     view[:] = 1
 
-    # Note: building the inverse/transpose directly
-    out[..., 2, :-1] = new_z / np.linalg.norm(new_z, axis=-1)
-    out[..., 0, :-1] = np.cross(
-        up_reference, out[..., 2, :-1], axisa=-1, axisb=-1, axisc=-1
+    out[..., :-1, 2] = new_z / np.linalg.norm(new_z, axis=-1)
+    out[..., :-1, 0] = np.cross(
+        up_reference, out[..., :-1, 2], axisa=-1, axisb=-1, axisc=-1
     )
-    out[..., 1, :-1] = np.cross(
-        out[..., 2, :-1], out[..., 0, :-1], axisa=-1, axisb=-1, axisc=-1
+    out[..., :-1, 1] = np.cross(
+        out[..., :-1, 2], out[..., :-1, 0], axisa=-1, axisb=-1, axisc=-1
     )
-    out /= np.linalg.norm(out, axis=-1)[..., :, None]
+    out /= np.linalg.norm(out, axis=-2)[..., None, :]
 
     return out
 

@@ -251,14 +251,50 @@ def test_vector_unproject(expected, projection_matrix):
 
 
 def test_unproject_explicitly():
-    matrix = la.matrix_make_orthographic(
-        250, -250, 250, -250, -100, 100, depth_range=(0, 1)
-    )
-    expected = np.array(((250, 250, 0), (-250, -250, 0)))
-    projected = np.array(((1, 1), (-1, -1)))
+    # see https://github.com/pygfx/pylinalg/pull/60#discussion_r1159522602
+    # and the following comments
 
-    actual = la.vector_unproject(projected, matrix)
-    assert np.allclose(actual, expected, rtol=1e-16, atol=np.inf)
+    # cube at origin with side length 10
+    cube_corners = np.array(
+        [
+            [-5, -5, -5],
+            [5, -5, -5],
+            [5, 5, -5],
+            [-5, 5, -5],
+            [-5, -5, 5],
+            [5, -5, 5],
+            [5, 5, 5],
+            [-5, 5, 5],
+        ]
+    )
+    cube_world_matrix = np.eye(4)
+
+    # camera 10 units away from cube origin
+    camera_pos = (0, 0, 10)
+    cam_world_matrix = la.matrix_make_translation(camera_pos)
+    view_matrix = np.linalg.inv(cam_world_matrix)
+
+    # Scenario 1: near=4, far=16
+    projection_matrix = la.matrix_make_orthographic(
+        -10, 10, 10, -10, 4, 16, depth_range=(0, 1)
+    )
+    cube_local_to_cam_ndc = projection_matrix @ view_matrix @ cube_world_matrix
+    corners_ndc = la.vector_apply_matrix(cube_corners, cube_local_to_cam_ndc)
+    corner_in_view = np.all(
+        ((-1, -1, 0) < corners_ndc) & (corners_ndc < (1, 1, 1)), axis=-1
+    )
+    assert np.sum(corner_in_view) == 8
+
+    # Scenario 2: near=6, far=14
+    projection_matrix = la.matrix_make_orthographic(
+        -10, 10, 10, -10, 6, 14, depth_range=(0, 1)
+    )
+    cube_local_to_cam_ndc = projection_matrix @ view_matrix @ cube_world_matrix
+    corners_ndc = la.vector_apply_matrix(cube_corners, cube_local_to_cam_ndc)
+    corner_in_view = np.all(
+        ((-1, -1, 0) < corners_ndc) & (corners_ndc < (1, 1, 1)), axis=-1
+    )
+    assert np.sum(corner_in_view) == 0
 
 
 def test_vector_unproject_exceptions():
@@ -373,7 +409,7 @@ def test_vector_apply_matrix__perspective():
         assert vectors2[2][0] == cases[2][1]
 
 
-def test_vector_apply_matrix__orthographic():
+def test_vector_apply_matrix_orthographic():
     # Test for OpenGL, wgpu, and arbitrary depth ranges
     depth_ranges = (-1, 1), (0, 1), (-2, 9)
 
