@@ -105,18 +105,20 @@ def test_quaternion_inverse():
     npt.assert_array_equal(b[..., 3], bi[..., 3])
 
 
-def test_quaternion_from_axis_angle():
+@given(ct.legal_positive_numbers)
+def test_quaternion_from_axis_angle(length):
+    assume(abs(length) > 1e-10)
+
     axis = np.array([1, 0, 0], dtype="f4")
     angle = np.pi / 2
-    q = la.quaternion_make_from_axis_angle(axis, angle)
+    q = la.quaternion_make_from_axis_angle(length * axis, angle)
 
     npt.assert_array_almost_equal(q, [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2])
 
 
 @given(ct.test_vector, ct.legal_angle)
-def test_quaternion_from_axis_angle2(true_axis, true_angle):
+def test_quaternion_from_axis_angle_roundtrip(true_axis, true_angle):
     assume(np.linalg.norm(true_axis) > 1e-10)
-    assume(np.linalg.norm(true_axis) < 1e300)
 
     assume(abs(true_angle) > 1e-8)
     assume(abs(true_angle) < 2 * np.pi - 1e-8)
