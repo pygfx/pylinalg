@@ -105,7 +105,7 @@ def test_quaternion_inverse():
     npt.assert_array_equal(b[..., 3], bi[..., 3])
 
 
-@given(ct.legal_positive_numbers)
+@given(ct.legal_positive_number)
 def test_quaternion_from_axis_angle(length):
     assume(abs(length) > 1e-10)
 
@@ -116,22 +116,24 @@ def test_quaternion_from_axis_angle(length):
     npt.assert_array_almost_equal(q, [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2])
 
 
-@given(ct.test_vector, ct.legal_angle)
-def test_quaternion_from_axis_angle_roundtrip(true_axis, true_angle):
-    assume(np.linalg.norm(true_axis) > 1e-10)
+@given(ct.test_unit_vector, ct.legal_angle, ct.legal_positive_number)
+def test_quaternion_from_axis_angle_roundtrip(true_axis, true_angle, axis_scaling):
+    assume(abs(axis_scaling) > 1e-6)
 
-    assume(abs(true_angle) > 1e-8)
-    assume(abs(true_angle) < 2 * np.pi - 1e-8)
+    assume(abs(true_angle) > 1e-6)
+    assume(abs(true_angle) < 2 * np.pi - 1e-6)
 
-    quaternion = la.quaternion_make_from_axis_angle(true_axis, true_angle)
+    quaternion = la.quaternion_make_from_axis_angle(
+        axis_scaling * true_axis, true_angle
+    )
     axis, angle = la.axis_angle_from_quaternion(quaternion)
 
     assert np.allclose(angle, true_angle)
 
-    # axis should (roughly) align
-    expected_dot = np.sum(true_axis**2)
+    # Note: We loose the scaling of the axis, but can (roughly) reconstruct the
+    # direction
     actual_dot = np.dot(axis, true_axis)
-    assert np.allclose(actual_dot, expected_dot)
+    assert np.allclose(actual_dot, 1)
 
 
 @given(ct.test_angles_rad, text("xyz", min_size=1, max_size=3))
