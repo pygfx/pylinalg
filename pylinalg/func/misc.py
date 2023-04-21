@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 
-__all__ = ["aabb_to_sphere", "aabb_transform"]
+__all__ = ["aabb_to_sphere", "aabb_transform", "axis_angle_from_quaternion"]
 
 
 def aabb_to_sphere(aabb, /, *, out=None, dtype=None):
@@ -105,5 +105,50 @@ def aabb_transform(aabb, matrix, /, *, out=None, dtype=None):
     corners = corners @ matrix
     out[..., 0, :] = np.min(corners[..., :-1], axis=-2)
     out[..., 1, :] = np.max(corners[..., :-1], axis=-2)
+
+    return out
+
+
+def axis_angle_from_quaternion(quaternion, /, *, out=None, dtype=None):
+    """Convert a quaternion to axis-angle representation.
+
+    Parameters
+    ----------
+    quaternion : ndarray, [4]
+        A quaternion describing the rotation.
+    out : Tuple[ndarray, ...], optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    axis : ndarray, [3]
+        The axis around which the quaternion rotates in euclidean coordinates.
+    angle : ndarray, [1]
+        The angle (in rad) by which the quaternion rotates.
+
+    Notes
+    -----
+    To use `out` with a single quaternion you need to provide a ndarray of shape
+    ``(1,)`` for angle.
+
+    """
+
+    quaternion = np.asarray(quaternion)
+
+    if out is None:
+        quaternion = quaternion.astype(dtype)
+        out = (
+            quaternion[..., :3] / np.sqrt(1 - quaternion[..., 3] ** 2),
+            2 * np.arccos(quaternion[..., 3]),
+        )
+    else:
+        # Note: the elements of out must allow mutation, i.e., you can
+        out[0][:] = quaternion[..., :3] / np.sqrt(1 - quaternion[..., 3] ** 2)
+        out[1][:] = 2 * np.arccos(quaternion[..., 3])
 
     return out

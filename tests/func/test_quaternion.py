@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hypothesis import given
+from hypothesis import given, assume
 from hypothesis.strategies import text
 
 import pylinalg as la
@@ -111,6 +111,25 @@ def test_quaternion_from_axis_angle():
     q = la.quaternion_make_from_axis_angle(axis, angle)
 
     npt.assert_array_almost_equal(q, [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2])
+
+
+@given(ct.test_vector, ct.legal_angle)
+def test_quaternion_from_axis_angle2(true_axis, true_angle):
+    assume(np.linalg.norm(true_axis) > 1e-10)
+    assume(np.linalg.norm(true_axis) < 1e300)
+
+    assume(abs(true_angle) > 1e-8)
+    assume(abs(true_angle) < 2 * np.pi - 1e-8)
+
+    quaternion = la.quaternion_make_from_axis_angle(true_axis, true_angle)
+    axis, angle = la.axis_angle_from_quaternion(quaternion)
+
+    assert np.allclose(angle, true_angle)
+
+    # axis should (roughly) align
+    expected_dot = np.sum(true_axis**2)
+    actual_dot = np.dot(axis, true_axis)
+    assert np.allclose(actual_dot, expected_dot)
 
 
 @given(ct.test_angles_rad, text("xyz", min_size=1, max_size=3))
