@@ -147,7 +147,6 @@ def axis_angle_from_quaternion(quaternion, /, *, out=None, dtype=None):
             2 * np.arccos(quaternion[..., 3]),
         )
     else:
-        # Note: the elements of out must allow mutation, i.e., you can
         out[0][:] = quaternion[..., :3] / np.sqrt(1 - quaternion[..., 3] ** 2)
         out[1][:] = 2 * np.arccos(quaternion[..., 3])
 
