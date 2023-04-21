@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hypothesis import given, assume
+from hypothesis import assume, given
 from hypothesis.strategies import text
 
 import pylinalg as la
