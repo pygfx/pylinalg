@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hypothesis import given
+from hypothesis import assume, given
 from hypothesis.strategies import text
 
 import pylinalg as la
@@ -105,12 +105,35 @@ def test_quaternion_inverse():
     npt.assert_array_equal(b[..., 3], bi[..., 3])
 
 
-def test_quaternion_from_axis_angle():
+@given(ct.legal_positive_number)
+def test_quaternion_from_axis_angle(length):
+    assume(abs(length) > 1e-10)
+
     axis = np.array([1, 0, 0], dtype="f4")
     angle = np.pi / 2
-    q = la.quaternion_make_from_axis_angle(axis, angle)
+    q = la.quaternion_make_from_axis_angle(length * axis, angle)
 
     npt.assert_array_almost_equal(q, [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2])
+
+
+@given(ct.test_unit_vector, ct.legal_angle, ct.legal_positive_number)
+def test_quaternion_from_axis_angle_roundtrip(true_axis, true_angle, axis_scaling):
+    assume(abs(axis_scaling) > 1e-6)
+
+    assume(abs(true_angle) > 1e-6)
+    assume(abs(true_angle) < 2 * np.pi - 1e-6)
+
+    quaternion = la.quaternion_make_from_axis_angle(
+        axis_scaling * true_axis, true_angle
+    )
+    axis, angle = la.axis_angle_from_quaternion(quaternion)
+
+    assert np.allclose(angle, true_angle)
+
+    # Note: We loose the scaling of the axis, but can (roughly) reconstruct the
+    # direction
+    actual_dot = np.dot(axis, true_axis)
+    assert np.allclose(actual_dot, 1)
 
 
 @given(ct.test_angles_rad, text("xyz", min_size=1, max_size=3))

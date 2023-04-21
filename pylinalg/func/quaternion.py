@@ -207,12 +207,19 @@ def quaternion_make_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
         Quaternion.
     """
 
-    if out is None:
-        out = np.empty(4, dtype=dtype)
+    axis = np.asarray(axis, dtype=float)
+    angle = np.asarray(angle, dtype=float)
 
-    angle_half = angle / 2
-    out[:3] = np.asarray(axis) * np.sin(angle_half)
-    out[3] = np.cos(angle_half)
+    out_shape = np.broadcast_shapes(axis.shape[:-1], angle.shape)
+
+    if out is None:
+        out = np.empty((*out_shape, 4), dtype=dtype)
+
+    # result should be independent of the length of the given axis
+    axis /= np.linalg.norm(axis, axis=-1)
+
+    out[..., :3] = np.asarray(axis) * np.sin(angle / 2)
+    out[..., 3] = np.cos(angle / 2)
 
     return out
 
