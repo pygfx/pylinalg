@@ -343,6 +343,17 @@ def test_vector_apply_quaternion(vector, quaternion):
     assert np.allclose(actual, expected, rtol=1e-10, atol=np.inf)
 
 
+@given(ct.test_quaternion)
+def test_matrix_vs_quaternion_apply(quaternion):
+    basis = np.eye(3)
+    matrix = la.quaternion_to_matrix(quaternion)
+
+    expected = la.vector_apply_matrix(basis, matrix)
+    actual = la.vector_apply_quaternion(basis, quaternion)
+
+    assert np.allclose(actual, expected)
+
+
 @given(ct.test_vector, ct.test_quaternion)
 def test_vector_apply_quaternion_identity(vector, quaternion):
     scale = np.linalg.norm(vector)

@@ -210,8 +210,10 @@ def vector_apply_quaternion(vector, quaternion, /, *, out=None, dtype=None):
     quat_vector = quaternion[..., :-1]
     quat_scalar = quaternion[..., -1]
 
-    out += 2 * np.sum(quat_vector * vector, axis=-1) * quat_vector
-    out += (quat_scalar**2 - np.sum(quat_vector * quat_vector, axis=-1)) * vector
+    out += 2 * np.sum(quat_vector * vector, axis=-1, keepdims=True) * quat_vector
+    out += (
+        quat_scalar**2 - np.sum(quat_vector * quat_vector, axis=-1, keepdims=True)
+    ) * vector
     out += 2 * quat_scalar * np.cross(quat_vector, vector)
 
     return out
