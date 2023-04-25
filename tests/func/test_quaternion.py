@@ -77,11 +77,21 @@ def test_quaternion_norm_vectorized():
     npt.assert_array_equal(np.linalg.norm(a, axis=-1), [1])
 
 
-def test_quaternion_from_unit_vectors():
-    a = np.array([1, 0, 0])
-    b = np.array([0, 1, 0])
-    q = la.quaternion_make_from_unit_vectors(a, b)
-    npt.assert_almost_equal(q, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
+@given(ct.test_unit_vector, ct.test_unit_vector, ct.legal_positive_number)
+def test_quaternion_from_unit_vectors(
+    source_direction, target_direction, source_length
+):
+    assume(abs(source_length) > 1e-8)
+
+    # Note: the length of the cross product of two large vectors can overflow
+    # and become Inf. to avoid this, we only scale source.
+    source = source_length * source_direction
+    target = target_direction
+
+    rotation = la.quaternion_make_from_unit_vectors(source, target)
+    actual = la.vector_apply_quaternion(source_direction, rotation)
+
+    assert np.allclose(actual, target_direction)
 
 
 def test_quaternion_inverse():

@@ -112,17 +112,17 @@ def quaternion_multiply(a, b, /, *, out=None, dtype=None):
     return out
 
 
-def quaternion_make_from_unit_vectors(a, b, /, *, out=None, dtype=None):
-    """
-    Create a quaternion representing the rotation from one unit vectors
-    to another
+def quaternion_make_from_unit_vectors(source, target, /, *, out=None, dtype=None):
+    """Rotate one vector onto another.
+
+    Create a quaternion that rotates ``source`` onto ``target``.
 
     Parameters
     ----------
-    a : ndarray, [3]
-        First unit vector
-    b : ndarray, [3]
-        Second unit vector
+    source : ndarray, [3]
+        The vector that should be rotated.
+    target : ndarray, [3]
+        The vector that will be rotated onto.
     out : ndarray, optional
         A location into which the result is stored. If provided, it
         must have a shape that the inputs broadcast to. If not provided or
@@ -135,19 +135,54 @@ def quaternion_make_from_unit_vectors(a, b, /, *, out=None, dtype=None):
     -------
     ndarray, [4]
         Quaternion.
+
+    Notes
+    -----
+    Among all the possible rotations that send ``source`` onto ``target`` this
+    function always chooses the right-hand rotation around the origin. In cases
+    where more than one right-hand rotation around the origin exists (``source``
+    and ``target`` are parallel), an arbitrary one is returned.
+
+    While this function is intended to be used with unit vectors, it also works
+    on non-unit vectors in which case the returned rotation will point
+    ``source`` in the direction of ``target``.
+
     """
+
+    source = np.asarray(source, dtype=float)
+    target = np.asarray(target, dtype=float)
+
     if out is None:
-        out = np.empty(4, dtype=dtype)
+        result_shape = np.broadcast_shapes(source.shape, target.shape)[:-1]
+        out = np.empty((*result_shape, 4), dtype=dtype)
 
-    w = 1 + np.dot(a, b)
-    xyz = np.cross(a, b)
+    axis = np.cross(source, target)
+    angle = np.arctan2(np.linalg.norm(axis), np.dot(source, target))
 
-    out[:3] = xyz
-    out[3] = w
+    # if source and target are parallel, axis will be 0. In this case, we
+    # need to choose a replacement axis, which is any vector that is orthogonal
+    # to source (and/or target).
+    use_fallback: np.ndarray = np.all(axis == 0, axis=-1)
+    if np.any(use_fallback):
+        fallback = np.empty((*use_fallback.shape, 3), dtype=float)
+        fallback = np.atleast_2d(fallback)
 
-    out /= np.linalg.norm(out)
+        template = source[use_fallback]
+        y_zero = template[..., 1] == 0
+        z_zero = template[..., 2] == 0
+        both_nonzero = ~(y_zero | z_zero)
 
-    return out
+        # if any axis is zero, we can use that axis
+        fallback[y_zero, :] = (0, 1, 0)
+        fallback[z_zero, :] = (0, 0, 1)
+
+        # if two axes are non-zero we can use those
+        if np.any(both_nonzero):
+            fallback[both_nonzero, :] = (0, -1, 1) * template[both_nonzero, [0, 2, 1]]
+
+        axis[use_fallback] = np.squeeze(fallback)
+
+    return quaternion_make_from_axis_angle(axis, angle, out=out)
 
 
 def quaternion_inverse(quaternion, /, *, out=None, dtype=None):
@@ -183,7 +218,8 @@ def quaternion_inverse(quaternion, /, *, out=None, dtype=None):
 
 
 def quaternion_make_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
-    """
+    """Quaternion from axis-angle pair.
+
     Create a quaternion representing the rotation of an given angle
     about a given unit vector
 
@@ -210,15 +246,14 @@ def quaternion_make_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
     axis = np.asarray(axis, dtype=float)
     angle = np.asarray(angle, dtype=float)
 
-    out_shape = np.broadcast_shapes(axis.shape[:-1], angle.shape)
-
     if out is None:
+        out_shape = np.broadcast_shapes(axis.shape[:-1], angle.shape)
         out = np.empty((*out_shape, 4), dtype=dtype)
 
     # result should be independent of the length of the given axis
     axis /= np.linalg.norm(axis, axis=-1)
 
-    out[..., :3] = np.asarray(axis) * np.sin(angle / 2)
+    out[..., :3] = axis * np.sin(angle / 2)
     out[..., 3] = np.cos(angle / 2)
 
     return out
