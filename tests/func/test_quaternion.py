@@ -133,7 +133,7 @@ def test_quaternion_from_axis_angle_roundtrip(true_axis, true_angle):
 
 
 @given(ct.legal_positive_number)
-def test_quaternion_from_axis_angle_roundtrip(axis_scaling):
+def test_quaternion_from_axis_angle_scaling(axis_scaling):
     assume(abs(axis_scaling) > 1e-6)
 
     true_axis = np.array((0, 1, 0))
