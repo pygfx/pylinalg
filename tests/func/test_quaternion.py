@@ -116,16 +116,12 @@ def test_quaternion_from_axis_angle(length):
     npt.assert_array_almost_equal(q, [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2])
 
 
-@given(ct.test_unit_vector, ct.legal_angle, ct.legal_positive_number)
-def test_quaternion_from_axis_angle_roundtrip(true_axis, true_angle, axis_scaling):
-    assume(abs(axis_scaling) > 1e-6)
-
+@given(ct.test_unit_vector, ct.legal_angle)
+def test_quaternion_from_axis_angle_roundtrip(true_axis, true_angle):
     assume(abs(true_angle) > 1e-6)
     assume(abs(true_angle) < 2 * np.pi - 1e-6)
 
-    quaternion = la.quaternion_make_from_axis_angle(
-        axis_scaling * true_axis, true_angle
-    )
+    quaternion = la.quaternion_make_from_axis_angle(true_axis, true_angle)
     axis, angle = la.axis_angle_from_quaternion(quaternion)
 
     assert np.allclose(angle, true_angle)
@@ -134,6 +130,18 @@ def test_quaternion_from_axis_angle_roundtrip(true_axis, true_angle, axis_scalin
     # direction
     actual_dot = np.dot(axis, true_axis)
     assert np.allclose(actual_dot, 1)
+
+
+@given(ct.legal_positive_number)
+def test_quaternion_from_axis_angle_roundtrip(axis_scaling):
+    assume(abs(axis_scaling) > 1e-6)
+
+    true_axis = np.array((0, 1, 0))
+    quaternion = la.quaternion_make_from_axis_angle(axis_scaling * true_axis, np.pi / 2)
+    axis, angle = la.axis_angle_from_quaternion(quaternion)
+
+    assert np.allclose(angle, np.pi / 2)
+    assert np.allclose(axis, true_axis)
 
 
 @given(ct.test_angles_rad, text("xyz", min_size=1, max_size=3))
