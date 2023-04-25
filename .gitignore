@@ -5,3 +5,4 @@ __pycache__
 dist
 playground.py
 .hypothesis/
+.venv/
