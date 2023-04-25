@@ -162,7 +162,7 @@ def quaternion_make_from_unit_vectors(source, target, /, *, out=None, dtype=None
     # if source and target are parallel, axis will be 0. In this case, we
     # need to choose a replacement axis, which is any vector that is orthogonal
     # to source (and/or target).
-    use_fallback: np.ndarray = np.all(axis == 0, axis=-1)
+    use_fallback = np.linalg.norm(axis, axis=-1) == 0
     if np.any(use_fallback):
         fallback = np.empty((*use_fallback.shape, 3), dtype=float)
         fallback = np.atleast_2d(fallback)
