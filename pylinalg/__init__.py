@@ -6,7 +6,7 @@ Linear algebra utilities for Python.
 
 # flake8: noqa
 
-__version__ = "0.3.3"
+__version__ = "0.3.4"
 
 version_info = tuple(map(int, __version__.split(".")))
 
