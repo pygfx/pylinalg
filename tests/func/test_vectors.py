@@ -437,6 +437,8 @@ def test_vector_apply_matrix_orthographic():
 def test_vector_euler_angles_from_quaternion(angles):
     """
     Test that we can recover a rotation in euler angles from a given quaternion.
+
+    This test applies the recovered rotation to a vector.
     """
     order = "xyz"
     quaternion = la.quaternion_make_from_euler_angles(angles, order=order)
@@ -451,3 +453,24 @@ def test_vector_euler_angles_from_quaternion(angles):
     actual = la.vector_apply_matrix([1, 2, 3], matrix_reconstructed)
 
     assert np.allclose(actual, expected)
+
+
+@given(ct.test_angles_rad)
+def test_vector_euler_angles_from_quaternion_roundtrip(angles):
+    """
+    Test that we can recover a rotation in euler angles from a given quaternion.
+
+    This test creates another quaternion with the recovered angles and
+    test for equality.
+    """
+    order = "xyz"
+    quaternion = la.quaternion_make_from_euler_angles(angles, order=order)
+
+    angles_reconstructed = la.vector_euler_angles_from_quaternion(quaternion)
+    quaternion_reconstructed = la.quaternion_make_from_euler_angles(
+        angles_reconstructed, order=order
+    )
+
+    assert np.allclose(quaternion, quaternion_reconstructed) or np.allclose(
+        quaternion, -quaternion_reconstructed
+    )
