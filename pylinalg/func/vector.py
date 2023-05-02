@@ -477,7 +477,7 @@ def vector_make_spherical_safe(vector, /, *, out=None, dtype=None):
 
 
 def vector_euler_angles_from_quaternion(quaternion, /, *, out=None, dtype=None):
-    """Convert quaternions to euler angles.
+    """Convert quaternions to XYZ euler angles.
 
     Parameters
     ----------

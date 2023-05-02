@@ -435,7 +435,19 @@ def test_vector_apply_matrix_orthographic():
 
 @given(ct.test_angles_rad)
 def test_vector_euler_angles_from_quaternion(angles):
+    """
+    Test that we can recover a rotation in euler angles from a given quaternion.
+    """
     order = "xyz"
     quaternion = la.quaternion_make_from_euler_angles(angles, order=order)
-    actual = la.vector_euler_angles_from_quaternion(quaternion)
-    assert np.allclose(actual, angles)
+    matrix = la.matrix_make_rotation_from_euler_angles(angles, order=order)
+
+    angles_reconstructed = la.vector_euler_angles_from_quaternion(quaternion)
+    matrix_reconstructed = la.matrix_make_rotation_from_euler_angles(
+        angles_reconstructed
+    )
+
+    expected = la.vector_apply_matrix([1, 2, 3], matrix)
+    actual = la.vector_apply_matrix([1, 2, 3], matrix_reconstructed)
+
+    assert np.allclose(actual, expected)
