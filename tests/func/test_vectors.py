@@ -431,3 +431,11 @@ def test_vector_apply_matrix_orthographic():
         # This point would be at the egde of NDC
         vec2 = la.vector_apply_matrix((1, 0, -4), m)
         assert vec2[0] == 1
+
+
+@given(ct.test_angles_rad)
+def test_vector_euler_angles_from_quaternion(angles):
+    order = "xyz"
+    quaternion = la.quaternion_make_from_euler_angles(angles, order=order)
+    actual = la.vector_euler_angles_from_quaternion(quaternion)
+    assert np.allclose(actual, angles)
