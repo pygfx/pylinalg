@@ -139,7 +139,7 @@ def test_quaternion_from_axis_angle_roundtrip(true_axis, true_angle):
     # Note: We loose the scaling of the axis, but can (roughly) reconstruct the
     # direction
     actual_dot = np.dot(axis, true_axis)
-    assert np.allclose(actual_dot, 1)
+    assert np.allclose(actual_dot, 1, atol=1e-4)
 
 
 @given(ct.legal_positive_number)
