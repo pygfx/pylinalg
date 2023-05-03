@@ -474,3 +474,26 @@ def test_vector_euler_angles_from_quaternion_roundtrip(angles):
     assert np.allclose(quaternion, quaternion_reconstructed) or np.allclose(
         quaternion, -quaternion_reconstructed
     )
+
+
+def test_vector_euler_angles_from_quaternion_broadcasting():
+    """
+    Test that vector_euler_angles_from_quaternion supports broadcasting.
+    """
+    quaternions = np.asarray(
+        [
+            la.quaternion_make_from_axis_angle([1, 0, 0], np.pi),
+            la.quaternion_make_from_axis_angle([0, 1, 0], np.pi * 2),
+            la.quaternion_make_from_axis_angle([0, 0, 1], np.pi / 2),
+        ]
+    )
+    expected = np.array(
+        [
+            [np.pi, 0, 0],
+            [0, 0, 0],
+            [0, 0, np.pi / 2],
+        ]
+    )
+    actual = la.vector_euler_angles_from_quaternion(quaternions)
+
+    npt.assert_array_almost_equal(actual, expected)
