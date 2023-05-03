@@ -477,7 +477,7 @@ def vector_make_spherical_safe(vector, /, *, out=None, dtype=None):
 
 
 def vector_euler_angles_from_quaternion(quaternion, /, *, out=None, dtype=None):
-    """Convert quaternions to XYZ euler angles.
+    """Convert quaternions to XYZ Euler angles.
 
     Parameters
     ----------
@@ -494,7 +494,7 @@ def vector_euler_angles_from_quaternion(quaternion, /, *, out=None, dtype=None):
     Returns
     -------
     out : ndarray, [3]
-        A set of XYZ euler angles.
+        The XYZ Euler angles.
     """
     quaternion = np.asarray(quaternion, dtype=float)
 
