@@ -480,18 +480,27 @@ def test_vector_euler_angles_from_quaternion_broadcasting():
     """
     Test that vector_euler_angles_from_quaternion supports broadcasting.
     """
-    quaternions = np.asarray(
+    quaternions = la.quaternion_make_from_axis_angle(
         [
-            la.quaternion_make_from_axis_angle([1, 0, 0], np.pi),
-            la.quaternion_make_from_axis_angle([0, 1, 0], np.pi * 2),
-            la.quaternion_make_from_axis_angle([0, 0, 1], np.pi / 2),
-        ]
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+            [0, 0, 1],
+        ],
+        [
+            np.pi,
+            np.pi * 2,
+            np.pi / 2,
+            np.pi * 1.5,
+        ],
     )
+
     expected = np.array(
         [
             [np.pi, 0, 0],
             [0, 0, 0],
             [0, 0, np.pi / 2],
+            [0, 0, -np.pi / 2],
         ]
     )
     actual = la.vector_euler_angles_from_quaternion(quaternions)
