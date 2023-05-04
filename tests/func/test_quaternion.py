@@ -126,6 +126,34 @@ def test_quaternion_from_axis_angle(length):
     npt.assert_array_almost_equal(q, [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2])
 
 
+def test_quaternion_from_axis_angle_broadcasting():
+    actual = la.quaternion_make_from_axis_angle(
+        [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+            [0, 0, 1],
+        ],
+        [
+            np.pi,
+            np.pi * 2,
+            np.pi / 2,
+            np.pi * 1.5,
+        ],
+    )
+
+    expected = np.array(
+        [
+            [1, 0, 0, 0],
+            [0, 0, 0, -1],
+            [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2],
+            [0, 0, np.sqrt(2) / 2, -np.sqrt(2) / 2],
+        ]
+    )
+
+    npt.assert_array_almost_equal(actual, expected)
+
+
 @given(ct.test_unit_vector, ct.legal_angle)
 def test_quaternion_from_axis_angle_roundtrip(true_axis, true_angle):
     assume(abs(true_angle) > 1e-6)
