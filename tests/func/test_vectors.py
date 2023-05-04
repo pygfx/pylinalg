@@ -431,3 +431,78 @@ def test_vector_apply_matrix_orthographic():
         # This point would be at the egde of NDC
         vec2 = la.vector_apply_matrix((1, 0, -4), m)
         assert vec2[0] == 1
+
+
+@given(ct.test_angles_rad)
+def test_vector_euler_angles_from_quaternion(angles):
+    """
+    Test that we can recover a rotation in euler angles from a given quaternion.
+
+    This test applies the recovered rotation to a vector.
+    """
+    order = "xyz"
+    quaternion = la.quaternion_make_from_euler_angles(angles, order=order)
+    matrix = la.matrix_make_rotation_from_euler_angles(angles, order=order)
+
+    angles_reconstructed = la.vector_euler_angles_from_quaternion(quaternion)
+    matrix_reconstructed = la.matrix_make_rotation_from_euler_angles(
+        angles_reconstructed
+    )
+
+    expected = la.vector_apply_matrix([1, 2, 3], matrix)
+    actual = la.vector_apply_matrix([1, 2, 3], matrix_reconstructed)
+
+    assert np.allclose(actual, expected)
+
+
+@given(ct.test_angles_rad)
+def test_vector_euler_angles_from_quaternion_roundtrip(angles):
+    """
+    Test that we can recover a rotation in euler angles from a given quaternion.
+
+    This test creates another quaternion with the recovered angles and
+    test for equality.
+    """
+    order = "xyz"
+    quaternion = la.quaternion_make_from_euler_angles(angles, order=order)
+
+    angles_reconstructed = la.vector_euler_angles_from_quaternion(quaternion)
+    quaternion_reconstructed = la.quaternion_make_from_euler_angles(
+        angles_reconstructed, order=order
+    )
+
+    assert np.allclose(quaternion, quaternion_reconstructed) or np.allclose(
+        quaternion, -quaternion_reconstructed
+    )
+
+
+def test_vector_euler_angles_from_quaternion_broadcasting():
+    """
+    Test that vector_euler_angles_from_quaternion supports broadcasting.
+    """
+    quaternions = la.quaternion_make_from_axis_angle(
+        [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+            [0, 0, 1],
+        ],
+        [
+            np.pi,
+            np.pi * 2,
+            np.pi / 2,
+            np.pi * 1.5,
+        ],
+    )
+
+    expected = np.array(
+        [
+            [np.pi, 0, 0],
+            [0, 0, 0],
+            [0, 0, np.pi / 2],
+            [0, 0, -np.pi / 2],
+        ]
+    )
+    actual = la.vector_euler_angles_from_quaternion(quaternions)
+
+    npt.assert_array_almost_equal(actual, expected)

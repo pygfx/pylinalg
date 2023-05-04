@@ -476,4 +476,55 @@ def vector_make_spherical_safe(vector, /, *, out=None, dtype=None):
     return out
 
 
+def vector_euler_angles_from_quaternion(quaternion, /, *, out=None, dtype=None):
+    """Convert quaternions to XYZ Euler angles.
+
+    Parameters
+    ----------
+    quaternion : ndarray, [4]
+        The quaternion to convert (in xyzw format).
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    out : ndarray, [3]
+        The XYZ Euler angles.
+    """
+    quaternion = np.asarray(quaternion, dtype=float)
+
+    if out is None:
+        out = np.empty((*quaternion.shape[:-1], 3), dtype=dtype)
+
+    ysqr = quaternion[..., 1] ** 2
+
+    t0 = 2 * (
+        quaternion[..., 3] * quaternion[..., 0]
+        + quaternion[..., 1] * quaternion[..., 2]
+    )
+    t1 = 1 - 2 * (quaternion[..., 0] ** 2 + ysqr)
+    out[..., 0] = np.arctan2(t0, t1)
+
+    t2 = 2 * (
+        quaternion[..., 3] * quaternion[..., 1]
+        - quaternion[..., 2] * quaternion[..., 0]
+    )
+    t2 = np.clip(t2, a_min=-1, a_max=1)
+    out[..., 1] = np.arcsin(t2)
+
+    t3 = 2 * (
+        quaternion[..., 3] * quaternion[..., 2]
+        + quaternion[..., 0] * quaternion[..., 1]
+    )
+    t4 = 1 - 2 * (ysqr + quaternion[..., 2] ** 2)
+    out[..., 2] = np.arctan2(t3, t4)
+
+    return out
+
+
 __all__ = [name for name in globals() if name.startswith("vector_")]
