@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hypothesis import assume, example, given
+from hypothesis import HealthCheck, assume, example, given, settings
 from hypothesis.strategies import none
 
 import pylinalg as la
@@ -236,6 +236,7 @@ def test_vector_apply_rotation_about_z_matrix():
     )
 
 
+@settings(suppress_health_check=(HealthCheck.filter_too_much,))
 @given(ct.test_vector, ct.test_projection)
 def test_vec_unproject(expected, projection_matrix):
     expected_2d = la.vec_transform(expected, projection_matrix)
