@@ -1,8 +1,6 @@
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 
-__all__ = ["aabb_to_sphere", "aabb_transform", "axis_angle_from_quaternion"]
-
 
 def aabb_to_sphere(aabb, /, *, out=None, dtype=None):
     """A sphere that envelops an Axis-Aligned Bounding Box.
@@ -109,7 +107,7 @@ def aabb_transform(aabb, matrix, /, *, out=None, dtype=None):
     return out
 
 
-def axis_angle_from_quaternion(quaternion, /, *, out=None, dtype=None):
+def quat_to_axis_angle(quaternion, /, *, out=None, dtype=None):
     """Convert a quaternion to axis-angle representation.
 
     Parameters
@@ -151,3 +149,8 @@ def axis_angle_from_quaternion(quaternion, /, *, out=None, dtype=None):
         out[1][:] = 2 * np.arccos(quaternion[..., 3])
 
     return out
+
+
+__all__ = [
+    name for name in globals() if name.startswith(("vec_", "mat_", "quat_", "aabb_"))
+]

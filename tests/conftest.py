@@ -192,7 +192,7 @@ def perspecitve_matrix(
     hp.assume(0 < near)
     hp.assume(near < far)
 
-    matrix = la.matrix_make_perspective(left, right, top, bottom, near, far)
+    matrix = la.mat_perspective(left, right, top, bottom, near, far)
     hp.assume(not (np.any(np.isinf(matrix) | np.isnan(matrix))))
 
     try:
@@ -219,7 +219,7 @@ def orthographic_matrix(
     hp.assume(0 < near)
     hp.assume(near < far)
 
-    matrix = la.matrix_make_orthographic(left, right, top, bottom, near, far)
+    matrix = la.mat_orthographic(left, right, top, bottom, near, far)
     hp.assume(not (np.any(np.isinf(matrix) | np.isnan(matrix))))
 
     try:

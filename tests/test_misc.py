@@ -42,10 +42,10 @@ def test_aabb_transform(point, translation, scale):
     aabb[0, :] = np.min(candidate, axis=0)
     aabb[1, :] = np.max(candidate, axis=0)
 
-    translation_matrix = la.matrix_make_translation(translation)
+    translation_matrix = la.mat_from_translation(translation)
     result = la.aabb_transform(aabb, translation_matrix)
     assert np.allclose(result, aabb + translation, atol=1e-10)
 
-    scale_matrix = la.matrix_make_scaling(scale)
+    scale_matrix = la.mat_from_scale(scale)
     result = la.aabb_transform(aabb, scale_matrix)
     assert np.allclose(result, np.sort(aabb * scale, axis=0), atol=1e-10)

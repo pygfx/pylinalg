@@ -38,10 +38,10 @@ from . import conftest as ct
         ),
     ],
 )
-def test_quaternion_to_matrix(expected, quaternion, dtype):
-    matrix = la.quaternion_to_matrix(quaternion, dtype=dtype)
+def test_mat_from_quat(expected, quaternion, dtype):
+    matrix = la.mat_from_quat(quaternion, dtype=dtype)
 
-    expected_matrix = la.matrix_make_rotation_from_euler_angles(expected, dtype=dtype)
+    expected_matrix = la.mat_from_euler(expected, dtype=dtype)
     npt.assert_array_almost_equal(
         matrix,
         expected_matrix,
@@ -50,15 +50,15 @@ def test_quaternion_to_matrix(expected, quaternion, dtype):
     assert matrix.dtype == dtype
 
 
-def test_quaternion_multiply_quaternion():
+def test_quat_mul_quaternion():
     # quaternion corresponding to 90 degree rotation about z-axis
     a = np.array([0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
     b = np.array([0, 0, 0, 1])
-    c = la.quaternion_multiply(a, b)
+    c = la.quat_mul(a, b)
     # multiplying by the identity quaternion
     npt.assert_array_equal(c, a)
 
-    d = la.quaternion_multiply(a, a)
+    d = la.quat_mul(a, a)
     # should be 180 degree rotation about z-axis
     npt.assert_array_almost_equal(d, [0, 0, 1, 0])
 
@@ -88,15 +88,15 @@ def test_quaternion_from_unit_vectors(
     source = source_length * source_direction
     target = target_direction
 
-    rotation = la.quaternion_make_from_unit_vectors(source, target)
-    actual = la.vector_apply_quaternion(source_direction, rotation)
+    rotation = la.quat_from_vecs(source, target)
+    actual = la.vec_transform_quat(source_direction, rotation)
 
     assert np.allclose(actual, target_direction)
 
 
-def test_quaternion_inverse():
+def test_quat_inv():
     a = np.array([0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
-    ai = la.quaternion_inverse(a)
+    ai = la.quat_inv(a)
 
     npt.assert_array_equal(a[:3], -ai[:3])
     npt.assert_array_equal(a[3], ai[3])
@@ -109,7 +109,7 @@ def test_quaternion_inverse():
             [0, 0, 1, 0],
         ]
     )
-    bi = la.quaternion_inverse(b)
+    bi = la.quat_inv(b)
 
     npt.assert_array_equal(b[..., :3], -bi[..., :3])
     npt.assert_array_equal(b[..., 3], bi[..., 3])
@@ -121,13 +121,13 @@ def test_quaternion_from_axis_angle(length):
 
     axis = np.array([1, 0, 0], dtype="f4")
     angle = np.pi / 2
-    q = la.quaternion_make_from_axis_angle(length * axis, angle)
+    q = la.quat_from_axis_angle(length * axis, angle)
 
     npt.assert_array_almost_equal(q, [np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2])
 
 
 def test_quaternion_from_axis_angle_broadcasting():
-    actual = la.quaternion_make_from_axis_angle(
+    actual = la.quat_from_axis_angle(
         [
             [1, 0, 0],
             [0, 1, 0],
@@ -159,8 +159,8 @@ def test_quaternion_from_axis_angle_roundtrip(true_axis, true_angle):
     assume(abs(true_angle) > 1e-6)
     assume(abs(true_angle) < 2 * np.pi - 1e-6)
 
-    quaternion = la.quaternion_make_from_axis_angle(true_axis, true_angle)
-    axis, angle = la.axis_angle_from_quaternion(quaternion)
+    quaternion = la.quat_from_axis_angle(true_axis, true_angle)
+    axis, angle = la.quat_to_axis_angle(quaternion)
 
     assert np.allclose(angle, true_angle)
 
@@ -175,18 +175,18 @@ def test_quaternion_from_axis_angle_scaling(axis_scaling):
     assume(abs(axis_scaling) > 1e-6)
 
     true_axis = np.array((0, 1, 0))
-    quaternion = la.quaternion_make_from_axis_angle(axis_scaling * true_axis, np.pi / 2)
-    axis, angle = la.axis_angle_from_quaternion(quaternion)
+    quaternion = la.quat_from_axis_angle(axis_scaling * true_axis, np.pi / 2)
+    axis, angle = la.quat_to_axis_angle(quaternion)
 
     assert np.allclose(angle, np.pi / 2)
     assert np.allclose(axis, true_axis)
 
 
 @given(ct.test_angles_rad, text("xyz", min_size=1, max_size=3))
-def test_quaternion_make_from_euler_angles(angles, order):
+def test_quat_from_euler(angles, order):
     angles = np.squeeze(angles[: len(order)])
-    result = la.quaternion_make_from_euler_angles(angles, order=order)
-    actual = la.quaternion_to_matrix(result)
+    result = la.quat_from_euler(angles, order=order)
+    actual = la.mat_from_quat(result)
 
-    expected = la.matrix_make_rotation_from_euler_angles(angles, order=order)
+    expected = la.mat_from_euler(angles, order=order)
     assert np.allclose(actual, expected)
