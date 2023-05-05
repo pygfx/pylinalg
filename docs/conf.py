@@ -1,9 +1,8 @@
 """Configuration script for Sphinx."""
 
 import os
-import sys
 import shutil
-
+import sys
 
 ROOT_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
 sys.path.insert(0, ROOT_DIR)
