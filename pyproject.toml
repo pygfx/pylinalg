@@ -11,7 +11,7 @@ readme = "README.md"
 python = ">=3.8"
 numpy = ">=1.20.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "*"
 flake8 = "*"
 black = "*"
@@ -24,8 +24,14 @@ pytest-watcher = { version = "*", python = "<4.0.0" }
 isort = { version = "*", python = "<4.0.0" }
 hypothesis = {extras = ["numpy"], version = "^6.61.0"}
 
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "*"
+
 [build-system]
-requires = ["poetry>=1.2.0"]
+requires = ["poetry>=1.4.2"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.isort]

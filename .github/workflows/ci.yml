@@ -25,11 +25,29 @@ jobs:
         with:
           python-version: 3.9
       - name: Install poetry
-        run: pip install "poetry==1.3.1"
+        run: pip install "poetry==1.4.2"
       - name: Install dependencies
         run: poetry install
       - name: Lint
         run: poetry run flake8
+
+  docs-build:
+    name: Docs
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+    - name: Install poetry
+      run: pip install "poetry==1.4.2"
+    - name: Install dependencies
+      run: poetry install --with docs
+    - name: Build docs
+      run: |
+        cd docs
+        make html SPHINXOPTS="-W --keep-going"
 
   test:
     name: Test on ${{ matrix.name }}
@@ -53,7 +71,7 @@ jobs:
       - name: Install poetry
         # Note: we may wish to install in a dedicated venv in the future
         # to avoid updating/changing poetries dependencies accidentally
-        run: pip install "poetry==1.3.1"
+        run: pip install "poetry==1.4.2"
       - name: Install dependencies
         run: poetry install
       - name: Test
@@ -69,7 +87,7 @@ jobs:
       with:
         python-version: '3.9'
     - name: Install poetry
-      run: pip install "poetry==1.3.1"
+      run: pip install "poetry==1.4.2"
     - name: Install dependencies
       run: poetry install
     - name: Build wheel
