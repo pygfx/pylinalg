@@ -155,32 +155,24 @@ kernel supports batch processing of vetors, it assumes that the last dimension
 contains the relevant vector data and that all other dimensions are batch/loop
 dimensions. As such, you can think of vectors being row vectors.
 
-# Functional API conventions
+# API conventions
 
-This API is for internal use and for power-users that want to
+This API is for power-users that want to
 vectorize operations on large sets of things.
 
 Performance is prioritized over extensive input validation.
 
-The source for this API resides in the `pylinalg.func` subpackage and is
+The source for this API resides in the `pylinalg` package and is
 organized by type.
 
 ## Function naming
-
-The functional API has rather verbose names, but it makes things
-explicit.
 
 Since all functions are exposed on the root `pylinalg` module object,
 a simple naming scheme is put in place:
 
 * Functions are organized by type. For example, functions that work on
-  matrices, or create matrices, go into the `pylinalg/func/matrix.py` module
-  and their function names are prefixed by `matrix_`.
-* Creation routines, for example a function that creates a new rotation matrix
-  based on an axis and an angle, are additionally prefixed with `make_`, e.g.
-  `matrix_make_rotation_angle_axis` would be a candidate function name.
-* Conversion routines are named simply, taking the example of a matrix to
-  quaternion function: `quat_from_mat`
+  matrices, or create matrices, go into the `pylinalg/matrix.py` module
+  and their function names are prefixed by `mat_`.
 
 ## Function signatures
 
