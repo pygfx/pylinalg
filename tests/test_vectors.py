@@ -6,7 +6,7 @@ from hypothesis.strategies import none
 
 import pylinalg as la
 
-from .. import conftest as ct
+from . import conftest as ct
 
 
 def test_vector_normalize():

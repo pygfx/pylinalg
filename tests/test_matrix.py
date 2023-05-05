@@ -6,7 +6,7 @@ from hypothesis import assume, example, given
 
 import pylinalg as la
 
-from .. import conftest as ct
+from . import conftest as ct
 
 
 @given(ct.legal_numbers | ct.test_vector, st.none() | ct.test_dtype)

@@ -6,7 +6,7 @@ from hypothesis.strategies import text
 
 import pylinalg as la
 
-from .. import conftest as ct
+from . import conftest as ct
 
 
 @pytest.mark.parametrize(
