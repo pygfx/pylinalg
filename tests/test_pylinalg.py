@@ -11,8 +11,8 @@ def test_api():
         api.remove(key)
         return val
 
-    __version__ = popattr("__version__")
-    version_info = popattr("version_info")
+    __version__ = popattr("__version__")  # noqa: F841
+    version_info = popattr("version_info")  # noqa: F841
 
     legal_prefixes = ("vec_", "mat_", "quat_", "aabb_")
     for key in api:
