@@ -4,7 +4,7 @@ import numpy as np
 from numpy.lib.stride_tricks import as_strided
 
 
-def quaternion_to_matrix(quaternion, /, *, out=None, dtype=None):
+def mat_from_quat(quaternion, /, *, out=None, dtype=None):
     """
     Make a rotation matrix given a quaternion.
 
@@ -74,7 +74,7 @@ def quaternion_to_matrix(quaternion, /, *, out=None, dtype=None):
     return out
 
 
-def quaternion_multiply(a, b, /, *, out=None, dtype=None):
+def quat_mul(a, b, /, *, out=None, dtype=None):
     """
     Multiply two quaternions
 
@@ -112,7 +112,7 @@ def quaternion_multiply(a, b, /, *, out=None, dtype=None):
     return out
 
 
-def quaternion_make_from_unit_vectors(source, target, /, *, out=None, dtype=None):
+def quat_from_vecs(source, target, /, *, out=None, dtype=None):
     """Rotate one vector onto another.
 
     Create a quaternion that rotates ``source`` onto ``target``.
@@ -182,10 +182,10 @@ def quaternion_make_from_unit_vectors(source, target, /, *, out=None, dtype=None
 
         axis[use_fallback] = np.squeeze(fallback)
 
-    return quaternion_make_from_axis_angle(axis, angle, out=out)
+    return quat_from_axis_angle(axis, angle, out=out)
 
 
-def quaternion_inverse(quaternion, /, *, out=None, dtype=None):
+def quat_inv(quaternion, /, *, out=None, dtype=None):
     """
     Inverse of a given quaternion
 
@@ -217,7 +217,7 @@ def quaternion_inverse(quaternion, /, *, out=None, dtype=None):
     return out
 
 
-def quaternion_make_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
+def quat_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
     """Quaternion from axis-angle pair.
 
     Create a quaternion representing the rotation of an given angle
@@ -260,7 +260,7 @@ def quaternion_make_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
     return out
 
 
-def quaternion_make_from_euler_angles(angles, /, *, order="XYZ", out=None, dtype=None):
+def quat_from_euler(angles, /, *, order="XYZ", out=None, dtype=None):
     """
     Create a quaternion from euler angles.
 
@@ -305,11 +305,13 @@ def quaternion_make_from_euler_angles(angles, /, *, order="XYZ", out=None, dtype
     out[:] = quaternions[0]
     for idx in range(1, len(quaternions)):
         if is_extrinsic[idx]:
-            quaternion_multiply(out, quaternions[idx], out=out)
+            quat_mul(out, quaternions[idx], out=out)
         else:
-            quaternion_multiply(quaternions[idx], out, out=out)
+            quat_mul(quaternions[idx], out, out=out)
 
     return out
 
 
-__all__ = [name for name in globals() if name.startswith("quaternion_")]
+__all__ = [
+    name for name in globals() if name.startswith(("vec_", "mat_", "quat_", "aabb_"))
+]

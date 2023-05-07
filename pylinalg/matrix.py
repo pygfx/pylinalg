@@ -4,7 +4,7 @@ import numpy as np
 from numpy.lib.stride_tricks import as_strided
 
 
-def matrix_combine(matrices, /, *, out=None, dtype=None):
+def mat_combine(matrices, /, *, out=None, dtype=None):
     """
     Combine a list of affine matrices by multiplying them.
 
@@ -45,7 +45,7 @@ def matrix_combine(matrices, /, *, out=None, dtype=None):
     return out
 
 
-def matrix_make_translation(vector, /, *, out=None, dtype=None):
+def mat_from_translation(vector, /, *, out=None, dtype=None):
     """
     Make a translationmatrix given a translation vector.
 
@@ -86,7 +86,7 @@ def matrix_make_translation(vector, /, *, out=None, dtype=None):
     return out
 
 
-def matrix_make_scaling(factors, /, *, out=None, dtype=None):
+def mat_from_scale(factors, /, *, out=None, dtype=None):
     """
     Make a scaling matrix given scaling factors per axis, or a
     single uniform scaling factor.
@@ -120,9 +120,7 @@ def matrix_make_scaling(factors, /, *, out=None, dtype=None):
     return matrix
 
 
-def matrix_make_rotation_from_euler_angles(
-    angles, /, *, order="xyz", out=None, dtype=None
-):
+def mat_from_euler(angles, /, *, order="xyz", out=None, dtype=None):
     """
     Make a matrix given euler angles (in radians) per axis.
 
@@ -152,7 +150,7 @@ def matrix_make_rotation_from_euler_angles(
     If you are familiar with TreeJS note that this function uses ``order`` to
     denote both the order in which rotations are applied *and* the order in
     which angles are provided in ``angles``. I.e.,
-    ``matrix_make_rotation_from_euler_angles([np.pi, np.pi, 0], order="zyx")``
+    ``mat_from_euler([np.pi, np.pi, 0], order="zyx")``
     will first rotate 180° ccw (counter-clockwise) around the z-axis, then 180°
     ccw around the y-axis, and finally 0° around the x axis.
 
@@ -181,10 +179,10 @@ def matrix_make_rotation_from_euler_angles(
         matrices.append(affine_matrix)
 
     # note: combining in the loop would save time and memory usage
-    return matrix_combine([x for x in reversed(matrices)], out=out, dtype=dtype)
+    return mat_combine([x for x in reversed(matrices)], out=out, dtype=dtype)
 
 
-def matrix_make_rotation_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
+def mat_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
     """
     Make a rotation matrix given a rotation axis and an angle (in radians).
 
@@ -224,7 +222,7 @@ def matrix_make_rotation_from_axis_angle(axis, angle, /, *, out=None, dtype=None
     return out
 
 
-def matrix_to_quaternion(matrix, /, *, out=None, dtype=None):
+def quat_from_mat(matrix, /, *, out=None, dtype=None):
     """
     Make a quaternion given a rotation matrix.
 
@@ -282,7 +280,7 @@ def matrix_to_quaternion(matrix, /, *, out=None, dtype=None):
     return out
 
 
-def matrix_make_transform(translation, rotation, scaling, /, *, out=None, dtype=None):
+def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None):
     """
     Compose a transformation matrix given a translation vector, a
     quaternion and a scaling vector.
@@ -308,20 +306,20 @@ def matrix_make_transform(translation, rotation, scaling, /, *, out=None, dtype=
     ndarray, [4, 4]
         Transformation matrix
     """
-    from .quaternion import quaternion_to_matrix
+    from .quaternion import mat_from_quat
 
-    return matrix_combine(
+    return mat_combine(
         [
-            matrix_make_translation(translation),
-            quaternion_to_matrix(rotation),
-            matrix_make_scaling(scaling),
+            mat_from_translation(translation),
+            mat_from_quat(rotation),
+            mat_from_scale(scaling),
         ],
         out=out,
         dtype=dtype,
     )
 
 
-def matrix_decompose(matrix, /, *, dtype=None, out=None):
+def mat_decompose(matrix, /, *, dtype=None, out=None):
     """
     Decompose a transformation matrix into a translation vector, a
     quaternion and a scaling vector.
@@ -365,12 +363,12 @@ def matrix_decompose(matrix, /, *, dtype=None, out=None):
 
     rotation = out[1] if out is not None else None
     rotation_matrix = matrix[:-1, :-1] * (1 / scaling)[None, :]
-    rotation = matrix_to_quaternion(rotation_matrix, out=rotation, dtype=dtype)
+    rotation = quat_from_mat(rotation_matrix, out=rotation, dtype=dtype)
 
     return translation, rotation, scaling
 
 
-def matrix_make_perspective(
+def mat_perspective(
     left, right, top, bottom, near, far, /, *, depth_range=(-1, 1), out=None, dtype=None
 ):
     """
@@ -434,7 +432,7 @@ def matrix_make_perspective(
     return out
 
 
-def matrix_make_orthographic(
+def mat_orthographic(
     left, right, top, bottom, near, far, /, *, depth_range=(-1, 1), out=None, dtype=None
 ):
     """Create an orthographic projection matrix.
@@ -527,7 +525,7 @@ def matrix_make_orthographic(
     return out
 
 
-def matrix_make_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
+def mat_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     """
     Rotation that aligns two vectors.
 
@@ -616,4 +614,6 @@ def matrix_make_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     return out
 
 
-__all__ = [name for name in globals() if name.startswith("matrix_")]
+__all__ = [
+    name for name in globals() if name.startswith(("vec_", "mat_", "quat_", "aabb_"))
+]

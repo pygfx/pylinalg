@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def vector_normalize(vectors, /, *, out=None, dtype=None):
+def vec_normalize(vectors, /, *, out=None, dtype=None):
     """
     Normalize an array of vectors.
 
@@ -31,7 +31,7 @@ def vector_normalize(vectors, /, *, out=None, dtype=None):
     return np.divide(vectors, lengths, out=out)
 
 
-def vector_make_homogeneous(vectors, /, *, w=1, out=None, dtype=None):
+def vec_homogeneous(vectors, /, *, w=1, out=None, dtype=None):
     """
     Append homogeneous coordinates to vectors.
 
@@ -67,7 +67,7 @@ def vector_make_homogeneous(vectors, /, *, w=1, out=None, dtype=None):
     return out
 
 
-def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
+def vec_transform(vectors, matrix, /, *, w=1, out=None, dtype=None):
     """
     Apply a transformation matrix to a vector.
 
@@ -102,7 +102,7 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
         out_shape = np.broadcast_shapes(vectors.shape[:-1], matrix.shape[:-2])
         out = np.empty((*out_shape, 3), dtype=dtype)
 
-    vectors = vector_make_homogeneous(vectors, w=w)
+    vectors = vec_homogeneous(vectors, w=w)
     result = matrix @ vectors[..., None]
     result /= result[..., -1, :][..., None, :]
     out[:] = result[..., :-1, 0]
@@ -110,7 +110,7 @@ def vector_apply_matrix(vectors, matrix, /, *, w=1, out=None, dtype=None):
     return out
 
 
-def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
+def vec_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
     """
     Un-project a vector from 2D space to 3D space.
 
@@ -174,7 +174,7 @@ def vector_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
     return out
 
 
-def vector_apply_quaternion(vector, quaternion, /, *, out=None, dtype=None):
+def vec_transform_quat(vector, quaternion, /, *, out=None, dtype=None):
     """Rotate a vector using a quaternion.
 
     Parameters
@@ -219,7 +219,7 @@ def vector_apply_quaternion(vector, quaternion, /, *, out=None, dtype=None):
     return out
 
 
-def vector_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
+def vec_spherical_to_euclidian(spherical, /, *, out=None, dtype=None):
     """Convert spherical -> euclidian coordinates.
 
     Parameters
@@ -261,7 +261,7 @@ def vector_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
     return out
 
 
-def vector_distance_between(vector_a, vector_b, /, *, out=None, dtype=None):
+def vec_dist(vector_a, vector_b, /, *, out=None, dtype=None):
     """The distance between two vectors
 
     Parameters
@@ -299,7 +299,7 @@ def vector_distance_between(vector_a, vector_b, /, *, out=None, dtype=None):
     return out
 
 
-def vector_angle_between(vector_a, vector_b, /, *, out=None, dtype=None):
+def vec_angle(vector_a, vector_b, /, *, out=None, dtype=None):
     """The angle between two vectors
 
     Parameters
@@ -350,7 +350,7 @@ def vector_angle_between(vector_a, vector_b, /, *, out=None, dtype=None):
     return out
 
 
-def vector_from_matrix_position(homogeneous_matrix, /, *, out=None, dtype=None):
+def mat_decompose_translation(homogeneous_matrix, /, *, out=None, dtype=None):
     """Position component of a homogeneous matrix.
 
     Parameters
@@ -383,7 +383,7 @@ def vector_from_matrix_position(homogeneous_matrix, /, *, out=None, dtype=None):
     return out
 
 
-def vector_euclidean_to_spherical(euclidean, /, *, out=None, dtype=None):
+def vec_euclidian_to_spherical(euclidean, /, *, out=None, dtype=None):
     """Convert euclidean -> spherical coordinates
 
     Parameters
@@ -433,7 +433,7 @@ def vector_euclidean_to_spherical(euclidean, /, *, out=None, dtype=None):
     return out
 
 
-def vector_make_spherical_safe(vector, /, *, out=None, dtype=None):
+def vec_spherical_safe(vector, /, *, out=None, dtype=None):
     """Normalize sperhical coordinates.
 
     Normalizes a vector of spherical coordinates to restrict phi to [0, pi) and
@@ -476,7 +476,7 @@ def vector_make_spherical_safe(vector, /, *, out=None, dtype=None):
     return out
 
 
-def vector_euler_angles_from_quaternion(quaternion, /, *, out=None, dtype=None):
+def quat_to_euler(quaternion, /, *, out=None, dtype=None):
     """Convert quaternions to XYZ Euler angles.
 
     Parameters
@@ -527,4 +527,6 @@ def vector_euler_angles_from_quaternion(quaternion, /, *, out=None, dtype=None):
     return out
 
 
-__all__ = [name for name in globals() if name.startswith("vector_")]
+__all__ = [
+    name for name in globals() if name.startswith(("vec_", "mat_", "quat_", "aabb_"))
+]
