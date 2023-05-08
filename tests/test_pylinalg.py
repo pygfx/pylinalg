@@ -60,7 +60,7 @@ def test_api():
         has_out, has_dtype = False, False
         for param in sig.parameters.values():
             # all arguments are either positional-only, or keyword-only
-            assert param.kind == param.POSITIONAL_ONLY or param.KEYWORD_ONLY
+            assert param.kind in (param.POSITIONAL_ONLY, param.KEYWORD_ONLY)
             # every function has out & dtype keyword-only arguments
             if param.name == "dtype":
                 assert param.KEYWORD_ONLY
