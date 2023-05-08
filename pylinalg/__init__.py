@@ -14,3 +14,8 @@ __version__ = version("pylinalg")
 version_info = tuple(map(int, __version__.split(".")))
 
 del version
+
+
+__all__ = [
+    name for name in globals() if name.startswith(("vec_", "mat_", "quat_", "aabb_"))
+]

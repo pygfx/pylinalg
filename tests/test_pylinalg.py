@@ -26,10 +26,14 @@ def test_api():
     assert isinstance(version_info, tuple)
     assert all(isinstance(x, int) for x in version_info)
 
+    # assert that we expose __all__ for tools like sphinx
+    __all__ = popattr("__all__")
+
     # assert that all the remaining elements of the
     # public api are either builtins, submodules/packages,
     # or callables with legal prefixes
     legal_prefixes = ("vec_", "mat_", "quat_", "aabb_")
+    callables = []
     for key in api:
         if key.startswith("__") and key.endswith("__"):
             # builtins are OK
@@ -49,3 +53,7 @@ def test_api():
         # with a legal prefix
         assert key.startswith(legal_prefixes)
         assert callable(getattr(la, key))
+        callables.append(key)
+
+    # assert that all callables are available in __all__
+    assert set(__all__) == set(callables)
