@@ -10,7 +10,7 @@
 Linear algebra utilities for Python.
 
 <p align="center">
-[<a href="https://pylinalg.readthedocs.io/en/latest/index.html">API Reference</a>]
+[<a href="https://pylinalg.readthedocs.io/en/latest/reference.html">API Reference</a>]
 </p>
 
 ## Installation
