@@ -6,3 +6,4 @@ dist
 playground.py
 .hypothesis/
 .venv/
+docs/_build/
