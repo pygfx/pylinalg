@@ -55,5 +55,21 @@ def test_api():
         assert callable(getattr(la, key))
         callables.append(key)
 
+        # confirm the signature of each callable
+        sig = inspect.signature(getattr(la, key))
+        has_out, has_dtype = False, False
+        for param in sig.parameters.values():
+            # all arguments are either positional-only, or keyword-only
+            assert param.kind == param.POSITIONAL_ONLY or param.KEYWORD_ONLY
+            # every function has out & dtype keyword-only arguments
+            if param.name == "dtype":
+                assert param.KEYWORD_ONLY
+                has_dtype = True
+            elif param.name == "out":
+                assert param.KEYWORD_ONLY
+                has_out = True
+        assert has_out, f"Function {key} does not have 'out' keyword-only argument"
+        assert has_dtype, f"Function {key} does not have 'dtype' keyword-only argument"
+
     # assert that all callables are available in __all__
     assert set(__all__) == set(callables)
