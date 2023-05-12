@@ -5,6 +5,7 @@ Linear algebra utilities for Python.
 """
 from importlib.metadata import version
 
+from .geometry import *
 from .matrix import *
 from .misc import *
 from .quaternion import *
@@ -17,5 +18,7 @@ del version
 
 
 __all__ = [
-    name for name in globals() if name.startswith(("vec_", "mat_", "quat_", "aabb_"))
+    name
+    for name in globals()
+    if name.startswith(("vec_", "mat_", "quat_", "aabb_", "vertex_"))
 ]

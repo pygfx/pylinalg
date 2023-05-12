@@ -32,7 +32,7 @@ def test_api():
     # assert that all the remaining elements of the
     # public api are either builtins, submodules/packages,
     # or callables with legal prefixes
-    legal_prefixes = ("vec_", "mat_", "quat_", "aabb_")
+    legal_prefixes = ("vec_", "mat_", "quat_", "aabb_", "vertex_")
     callables = []
     for key in api:
         if key.startswith("__") and key.endswith("__"):
