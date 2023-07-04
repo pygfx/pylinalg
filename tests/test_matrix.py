@@ -219,6 +219,12 @@ def test_mat_compose_roundtrip():
     with pytest.raises(AssertionError):
         npt.assert_array_equal(rotation, rotation2)
 
+    # now inform decompose of the original scaling
+    translation3, rotation3, scaling3 = la.mat_decompose(matrix, scaling=scaling)
+    npt.assert_array_equal(translation, translation3)
+    npt.assert_array_equal(scaling, scaling3)
+    npt.assert_array_almost_equal(rotation, rotation3)
+
 
 def test_mat_perspective():
     a = la.mat_perspective(-1, 1, -1, 1, 1, 100)

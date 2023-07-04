@@ -319,7 +319,7 @@ def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None):
     )
 
 
-def mat_decompose(matrix, /, *, dtype=None, out=None):
+def mat_decompose(matrix, /, *, scaling=None, dtype=None, out=None):
     """
     Decompose a transformation matrix into a translation vector, a
     quaternion and a scaling vector.
@@ -328,6 +328,8 @@ def mat_decompose(matrix, /, *, dtype=None, out=None):
     ----------
     matrix : ndarray, [4, 4]
         transformation matrix
+    scaling : ndarray, [3], optional
+        scaling factors
     out : ndarray, optional
         A location into which the result is stored. If provided, it
         must have a shape that the inputs broadcast to. If not provided or
@@ -343,7 +345,7 @@ def mat_decompose(matrix, /, *, dtype=None, out=None):
     rotation : ndarray, [4]
         quaternion
     scaling : ndarray, [3]
-        scaling factor(s)
+        scaling factors
     """
     matrix = np.asarray(matrix)
 
@@ -353,13 +355,16 @@ def mat_decompose(matrix, /, *, dtype=None, out=None):
         translation = np.empty((3,), dtype=dtype)
     translation[:] = matrix[:-1, -1]
 
-    if out is not None:
-        scaling = out[2]
+    if scaling is not None:
+        scaling = np.asarray(scaling)
     else:
-        scaling = np.empty((3,), dtype=dtype)
-    scaling[:] = np.linalg.norm(matrix[:-1, :-1], axis=0)
-    if np.linalg.det(matrix) < 0:
-        scaling[0] *= -1
+        if out is not None:
+            scaling = out[2]
+        else:
+            scaling = np.empty((3,), dtype=dtype)
+        scaling[:] = np.linalg.norm(matrix[:-1, :-1], axis=0)
+        if np.linalg.det(matrix) < 0:
+            scaling[0] *= -1
 
     rotation = out[1] if out is not None else None
     rotation_matrix = matrix[:-1, :-1] * (1 / scaling)[None, :]
