@@ -192,6 +192,34 @@ def test_mat_decompose():
     npt.assert_array_almost_equal(rotation, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
 
 
+def test_mat_compose_roundtrip():
+    """Test that transform components survive a matrix
+    compose -> decompose roundtrip."""
+    scaling = [1, 2, -3]
+    # quaternion corresponding to 90 degree rotation about z-axis
+    rotation = [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2]
+    translation = [-100, -6, 5]
+    matrix = la.mat_compose(translation, rotation, scaling)
+    npt.assert_array_almost_equal(
+        matrix,
+        [
+            [0, -2, 0, -100],
+            [1, 0, 0, -6],
+            [0, 0, -3, 5],
+            [0, 0, 0, 1],
+        ],
+    )
+
+    # decompose cannot reconstruct original scaling
+    # so this is expected to fail
+    translation2, rotation2, scaling2 = la.mat_decompose(matrix)
+    npt.assert_array_equal(translation, translation2)
+    with pytest.raises(AssertionError):
+        npt.assert_array_equal(scaling, scaling2)
+    with pytest.raises(AssertionError):
+        npt.assert_array_equal(rotation, rotation2)
+
+
 def test_mat_perspective():
     a = la.mat_perspective(-1, 1, -1, 1, 1, 100)
     npt.assert_array_almost_equal(
