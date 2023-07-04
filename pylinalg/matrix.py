@@ -329,7 +329,9 @@ def mat_decompose(matrix, /, *, scaling=None, dtype=None, out=None):
     matrix : ndarray, [4, 4]
         transformation matrix
     scaling : ndarray, [3], optional
-        scaling factors
+        scaling factors. If you wish to preserve the original scaling
+        factors through a compose-decompose roundtrip, you should
+        provide the original scaling factors.
     out : ndarray, optional
         A location into which the result is stored. If provided, it
         must have a shape that the inputs broadcast to. If not provided or
