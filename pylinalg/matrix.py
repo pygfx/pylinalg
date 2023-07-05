@@ -364,9 +364,7 @@ def mat_decompose(matrix, /, *, scaling_signs=None, dtype=None, out=None):
     else:
         # if not, detect if a flip is needed to reconstruct the transform
         # and apply it to the first axis arbitrarily
-        flip = 1
-        if np.linalg.det(matrix) < 0:
-            flip = -1
+        flip = 1 if np.linalg.det(matrix) >= 0 else -1
         scaling_signs = np.array([flip, 1, 1])
 
     if out is not None:
