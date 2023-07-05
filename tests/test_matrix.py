@@ -192,37 +192,51 @@ def test_mat_decompose():
     npt.assert_array_almost_equal(rotation, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
 
 
-def test_mat_compose_roundtrip():
+@pytest.mark.parametrize(
+    "signs",
+    [
+        # enumerate all combinations of signs
+        [1, 1, 1],
+        [-1, 1, 1],
+        [1, -1, 1],
+        [-1, -1, 1],
+        [1, 1, -1],
+        [-1, 1, -1],
+        [1, -1, -1],
+        [-1, -1, -1],
+    ],
+    ids=str,
+)
+def test_mat_compose_roundtrip(signs):
     """Test that transform components survive a matrix
     compose -> decompose roundtrip."""
-    scaling = [1, 2, -3]
-    # quaternion corresponding to 90 degree rotation about z-axis
+    scaling = np.array([1, 2, 3]) * signs
     rotation = [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2]
     translation = [-100, -6, 5]
     matrix = la.mat_compose(translation, rotation, scaling)
-    npt.assert_array_almost_equal(
-        matrix,
-        [
-            [0, -2, 0, -100],
-            [1, 0, 0, -6],
-            [0, 0, -3, 5],
-            [0, 0, 0, 1],
-        ],
-    )
 
     # decompose cannot reconstruct original scaling
     # so this is expected to fail
     translation2, rotation2, scaling2 = la.mat_decompose(matrix)
     npt.assert_array_equal(translation, translation2)
-    with pytest.raises(AssertionError):
-        npt.assert_array_equal(scaling, scaling2)
-    with pytest.raises(AssertionError):
-        npt.assert_array_equal(rotation, rotation2)
+    if signs in ([1, 1, 1], [-1, 1, 1]):
+        # if there are no flips, or if the flip happens to be the first axis
+        # then we can correctly reconstruct the scaling without
+        # prior knowledge
+        npt.assert_array_almost_equal(scaling, scaling2)
+        npt.assert_array_almost_equal(rotation, rotation2)
+    else:
+        with pytest.raises(AssertionError):
+            npt.assert_array_almost_equal(scaling, scaling2)
+        with pytest.raises(AssertionError):
+            npt.assert_array_almost_equal(rotation, rotation2)
 
     # now inform decompose of the original scaling
-    translation3, rotation3, scaling3 = la.mat_decompose(matrix, scaling=scaling)
+    translation3, rotation3, scaling3 = la.mat_decompose(
+        matrix, scaling_signs=np.sign(scaling)
+    )
     npt.assert_array_equal(translation, translation3)
-    npt.assert_array_equal(scaling, scaling3)
+    npt.assert_array_almost_equal(scaling, scaling3)
     npt.assert_array_almost_equal(rotation, rotation3)
 
 
