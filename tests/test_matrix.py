@@ -192,6 +192,66 @@ def test_mat_decompose():
     npt.assert_array_almost_equal(rotation, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
 
 
+@pytest.mark.parametrize(
+    "signs",
+    [
+        # enumerate all combinations of signs
+        [1, 1, 1],
+        [-1, 1, 1],
+        [1, -1, 1],
+        [-1, -1, 1],
+        [1, 1, -1],
+        [-1, 1, -1],
+        [1, -1, -1],
+        [-1, -1, -1],
+    ],
+    ids=str,
+)
+def test_mat_compose_roundtrip(signs):
+    """Test that transform components survive a matrix
+    compose -> decompose roundtrip."""
+    scaling = np.array([1, 2, 3]) * signs
+    rotation = [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2]
+    translation = [-100, -6, 5]
+    matrix = la.mat_compose(translation, rotation, scaling)
+
+    # decompose cannot reconstruct original scaling
+    # so this is expected to fail
+    translation2, rotation2, scaling2 = la.mat_decompose(matrix)
+    npt.assert_array_equal(translation, translation2)
+    if signs in ([1, 1, 1], [-1, 1, 1]):
+        # if there are no flips, or if the flip happens to be the first axis
+        # then we can correctly reconstruct the scaling without
+        # prior knowledge
+        npt.assert_array_almost_equal(scaling, scaling2)
+        npt.assert_array_almost_equal(rotation, rotation2)
+    else:
+        with pytest.raises(AssertionError):
+            npt.assert_array_almost_equal(scaling, scaling2)
+        with pytest.raises(AssertionError):
+            npt.assert_array_almost_equal(rotation, rotation2)
+
+    # now inform decompose of the original scaling
+    translation3, rotation3, scaling3 = la.mat_decompose(
+        matrix, scaling_signs=np.sign(scaling)
+    )
+    npt.assert_array_equal(translation, translation3)
+    npt.assert_array_almost_equal(scaling, scaling3)
+    npt.assert_array_almost_equal(rotation, rotation3)
+
+
+def test_mat_compose_validation():
+    """Test that decompose validates consistency of scaling signs."""
+    signs = [-1, -1, -1]
+    scaling = np.array([1, 2, -3]) * signs
+    rotation = [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2]
+    translation = [-100, -6, 5]
+    matrix = la.mat_compose(translation, rotation, scaling)
+
+    with pytest.raises(ValueError):
+        la.mat_decompose(matrix, scaling_signs=signs)
+
+
 def test_mat_perspective():
     a = la.mat_perspective(-1, 1, -1, 1, 1, 100)
     npt.assert_array_almost_equal(

@@ -319,7 +319,7 @@ def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None):
     )
 
 
-def mat_decompose(matrix, /, *, dtype=None, out=None):
+def mat_decompose(matrix, /, *, scaling_signs=None, dtype=None, out=None):
     """
     Decompose a transformation matrix into a translation vector, a
     quaternion and a scaling vector.
@@ -328,6 +328,11 @@ def mat_decompose(matrix, /, *, dtype=None, out=None):
     ----------
     matrix : ndarray, [4, 4]
         transformation matrix
+    scaling_signs : ndarray, [3], optional
+        scaling factor signs. If you wish to preserve the original scaling
+        factors through a compose-decompose roundtrip, you should
+        provide the original scaling factors here, or alternatively just
+        the signs.
     out : ndarray, optional
         A location into which the result is stored. If provided, it
         must have a shape that the inputs broadcast to. If not provided or
@@ -343,7 +348,7 @@ def mat_decompose(matrix, /, *, dtype=None, out=None):
     rotation : ndarray, [4]
         quaternion
     scaling : ndarray, [3]
-        scaling factor(s)
+        scaling factors
     """
     matrix = np.asarray(matrix)
 
@@ -353,13 +358,25 @@ def mat_decompose(matrix, /, *, dtype=None, out=None):
         translation = np.empty((3,), dtype=dtype)
     translation[:] = matrix[:-1, -1]
 
+    flip = 1 if np.linalg.det(matrix) >= 0 else -1
+    if scaling_signs is not None:
+        # if the user provides the scaling signs, always use them
+        scaling_signs = np.sign(scaling_signs)
+        if np.prod(scaling_signs) != flip:
+            raise ValueError(
+                "Number of negative signs is inconsistent with the determinant"
+            )
+    else:
+        # if not, detect if a flip is needed to reconstruct the transform
+        # and apply it to the first axis arbitrarily
+        scaling_signs = np.array([flip, 1, 1])
+
     if out is not None:
         scaling = out[2]
     else:
         scaling = np.empty((3,), dtype=dtype)
     scaling[:] = np.linalg.norm(matrix[:-1, :-1], axis=0)
-    if np.linalg.det(matrix) < 0:
-        scaling[0] *= -1
+    scaling *= scaling_signs
 
     rotation = out[1] if out is not None else None
     rotation_matrix = matrix[:-1, :-1] * (1 / scaling)[None, :]
