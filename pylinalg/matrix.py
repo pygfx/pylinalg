@@ -358,13 +358,17 @@ def mat_decompose(matrix, /, *, scaling_signs=None, dtype=None, out=None):
         translation = np.empty((3,), dtype=dtype)
     translation[:] = matrix[:-1, -1]
 
+    flip = 1 if np.linalg.det(matrix) >= 0 else -1
     if scaling_signs is not None:
         # if the user provides the scaling signs, always use them
         scaling_signs = np.sign(scaling_signs)
+        if np.prod(scaling_signs) != flip:
+            raise ValueError(
+                "Number of negative signs is inconsistent with the determinant"
+            )
     else:
         # if not, detect if a flip is needed to reconstruct the transform
         # and apply it to the first axis arbitrarily
-        flip = 1 if np.linalg.det(matrix) >= 0 else -1
         scaling_signs = np.array([flip, 1, 1])
 
     if out is not None:

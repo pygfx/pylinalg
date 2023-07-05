@@ -240,6 +240,18 @@ def test_mat_compose_roundtrip(signs):
     npt.assert_array_almost_equal(rotation, rotation3)
 
 
+def test_mat_compose_validation():
+    """Test that decompose validates consistency of scaling signs."""
+    signs = [-1, -1, -1]
+    scaling = np.array([1, 2, -3]) * signs
+    rotation = [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2]
+    translation = [-100, -6, 5]
+    matrix = la.mat_compose(translation, rotation, scaling)
+
+    with pytest.raises(ValueError):
+        la.mat_decompose(matrix, scaling_signs=signs)
+
+
 def test_mat_perspective():
     a = la.mat_perspective(-1, 1, -1, 1, 1, 100)
     npt.assert_array_almost_equal(
