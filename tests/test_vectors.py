@@ -96,15 +96,15 @@ def test_vec_transform_out():
 @example((1, 0, np.pi / 2), (0, 0, 1))
 @example((1, np.pi / 2, np.pi / 2), (1, 0, 0))
 @example((1, 0, 0), (0, 1, 0))
-def test_vec_euclidian_to_spherical(expected, vector):
+def test_vec_euclidean_to_spherical(expected, vector):
     if vector is None:
         assume(abs(expected[0]) > 1e-10)
-        vector = la.vec_spherical_to_euclidian(expected)
+        vector = la.vec_spherical_to_euclidean(expected)
     else:
         expected = np.asarray(expected)
         vector = np.asarray(vector)
 
-    actual = la.vec_euclidian_to_spherical(vector)
+    actual = la.vec_euclidean_to_spherical(vector)
 
     assert np.allclose(actual, expected, rtol=1e-10)
 
@@ -177,7 +177,7 @@ def test_vec_transform_out_dtype():
 
 
 @given(ct.test_spherical)
-def test_vec_spherical_to_euclidian(spherical):
+def test_vec_spherical_to_euclidean(spherical):
     # accuracy of trigonometric ops close to 0, 90, 180, 270, 360 deg dependes a
     # lot on the underlying hardware. Let's avoid it here.
     angles = spherical[..., [1, 2]]
@@ -191,7 +191,7 @@ def test_vec_spherical_to_euclidian(spherical):
 
     # we can't do a simple round trip test. Instead we ensure that we are
     # rotating in the right direction and that the radius/length match
-    result = la.vec_spherical_to_euclidian(spherical)
+    result = la.vec_spherical_to_euclidean(spherical)
 
     # ensure azimuth rotates CCW
     expected_sign = np.where(spherical[1] < np.pi / 2, 1, -1)
@@ -209,12 +209,12 @@ def test_vec_spherical_to_euclidian(spherical):
     assert np.allclose(length, spherical[0], rtol=1e-16, atol=np.inf)
 
 
-def test_vec_spherical_to_euclidian_refs():
+def test_vec_spherical_to_euclidean_refs():
     # ensure that the reference axes get transformed as expected
-    result = la.vec_spherical_to_euclidian((1, 0, 0))
+    result = la.vec_spherical_to_euclidean((1, 0, 0))
     assert np.allclose(result, (0, 1, 0))
 
-    result = la.vec_spherical_to_euclidian((1, 0, np.pi / 2))
+    result = la.vec_spherical_to_euclidean((1, 0, np.pi / 2))
     assert np.allclose(result, (0, 0, 1))
 
 

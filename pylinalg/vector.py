@@ -1,4 +1,8 @@
+import logging
+
 import numpy as np
+
+logger = logging.getLogger()
 
 
 def vec_normalize(vectors, /, *, out=None, dtype=None):
@@ -219,8 +223,8 @@ def vec_transform_quat(vector, quaternion, /, *, out=None, dtype=None):
     return out
 
 
-def vec_spherical_to_euclidian(spherical, /, *, out=None, dtype=None):
-    """Convert spherical -> euclidian coordinates.
+def vec_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
+    """Convert spherical -> euclidean coordinates.
 
     Parameters
     ----------
@@ -238,7 +242,7 @@ def vec_spherical_to_euclidian(spherical, /, *, out=None, dtype=None):
     Returns
     -------
     euclidean : ndarray, [3]
-        A vector in euclidian coordinates.
+        A vector in euclidean coordinates.
 
     Notes
     -----
@@ -383,7 +387,7 @@ def mat_decompose_translation(homogeneous_matrix, /, *, out=None, dtype=None):
     return out
 
 
-def vec_euclidian_to_spherical(euclidean, /, *, out=None, dtype=None):
+def vec_euclidean_to_spherical(euclidean, /, *, out=None, dtype=None):
     """Convert euclidean -> spherical coordinates
 
     Parameters
@@ -525,6 +529,28 @@ def quat_to_euler(quaternion, /, *, out=None, dtype=None):
     out[..., 2] = np.arctan2(t3, t4)
 
     return out
+
+
+_warned_about_eucledian = False
+
+
+def _warn_about_eucledian():
+    global _warned_about_eucledian
+    if not _warned_about_eucledian:
+        _warned_about_eucledian = True
+        m = "methods vec_spherical_to_euclidian() and vec_euclidian_to_spherical()"
+        m += " have been renamed, because its eucledEan, not eucledIan."
+        logger.warning("pylinalg deprecation warning: " + m)
+
+
+def vec_euclidian_to_spherical(*args, **kwargs):
+    _warn_about_eucledian()
+    return vec_euclidean_to_spherical(*args, **kwargs)
+
+
+def vec_spherical_to_euclidian(*args, **kwargs):
+    _warn_about_eucledian()
+    return vec_spherical_to_euclidean(*args, **kwargs)
 
 
 __all__ = [
