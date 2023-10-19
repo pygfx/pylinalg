@@ -543,14 +543,14 @@ def _warn_about_eucledian():
         logger.warning("pylinalg deprecation warning: " + m)
 
 
-def vec_euclidian_to_spherical(*args, **kwargs):
+def vec_euclidian_to_spherical(euclidean, /, *, out=None, dtype=None):
     _warn_about_eucledian()
-    return vec_euclidean_to_spherical(*args, **kwargs)
+    return vec_euclidean_to_spherical(euclidean, out=out, dtype=dtype)
 
 
-def vec_spherical_to_euclidian(*args, **kwargs):
+def vec_spherical_to_euclidian(spherical, /, *, out=None, dtype=None):
     _warn_about_eucledian()
-    return vec_spherical_to_euclidean(*args, **kwargs)
+    return vec_spherical_to_euclidean(spherical, out=out, dtype=dtype)
 
 
 __all__ = [
