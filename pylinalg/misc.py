@@ -1,5 +1,4 @@
 import numpy as np
-from numpy.lib.stride_tricks import as_strided
 
 
 def aabb_to_sphere(aabb, /, *, out=None, dtype=None):
@@ -73,32 +72,25 @@ def aabb_transform(aabb, matrix, /, *, out=None, dtype=None):
     if out is None:
         out = np.empty_like(aabb, dtype=dtype)
 
-    corners = np.empty((*aabb.shape[:-2], 8, 4), dtype=float)
-    corners[...] = [1, 2, 3, 4]
-    size = corners.itemsize
-
-    corners_x = as_strided(
-        corners[..., 0],
-        shape=(*corners.shape[:-2], 4, 2),
-        strides=(*corners.strides[:-2], 8 * size, 4 * size),
+    corners = np.full(
+        aabb.shape[:-2] + (8, 4),
+        # Fill value of 1 is used for homogeneous coordinates.
+        fill_value=1.,
+        dtype=float,
     )
-    corners_x[:] = aabb[..., :, 0]
+    # x
+    corners[..., 0::2, 0] = aabb[..., 0, 0]
+    corners[..., 1::2, 0] = aabb[..., 1, 0]
 
-    corners_y = as_strided(
-        corners[..., 1],
-        shape=(*corners.shape[:-2], 2, 2, 2),
-        strides=(*corners.strides[:-2], 16 * size, 4 * size, 8 * size),
-    )
-    corners_y[:] = aabb[..., :, 1]
+    # y
+    corners[..., 0::4, 1] = aabb[..., 0, 1]
+    corners[..., 1::4, 1] = aabb[..., 0, 1]
+    corners[..., 2::4, 1] = aabb[..., 1, 1]
+    corners[..., 3::4, 1] = aabb[..., 1, 1]
 
-    corners_z = as_strided(
-        corners[..., 2],
-        shape=(*corners.shape[:-2], 4, 2),
-        strides=(*corners.strides[:-2], 4 * size, 16 * size),
-    )
-    corners_z[:] = aabb[..., :, 2]
-
-    corners[..., 3] = 1
+    # z
+    corners[..., 0:4, 2] = aabb[..., 0, 2]
+    corners[..., 4:8, 2] = aabb[..., 1, 2]
 
     corners = corners @ matrix
     out[..., 0, :] = np.min(corners[..., :-1], axis=-2)
