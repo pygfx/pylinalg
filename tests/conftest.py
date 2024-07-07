@@ -10,7 +10,7 @@ from hypothesis.extra.numpy import arrays, from_dtype
 import pylinalg as la
 
 
-def pytest_report_header(config, start_path, startdir):
+def pytest_report_header(config):
     # report the CPU model to allow detecting platform-specific problems
     if platform.system() == "Windows":
         name = (
