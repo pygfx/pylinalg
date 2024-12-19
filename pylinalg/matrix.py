@@ -380,7 +380,7 @@ def mat_decompose(matrix, /, *, scaling_signs=None, dtype=None, out=None):
 
     rotation = out[1] if out is not None else None
 
-    rotation_matrix = matrix[:-1, :-1].copy()
+    rotation_matrix = matrix[:-1, :-1].copy().astype(float)
     mask = scaling != 0
     rotation_matrix[:, mask] /= scaling[mask][None, :]
     rotation_matrix[:, ~mask] = 0.0 

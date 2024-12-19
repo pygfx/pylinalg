@@ -192,6 +192,21 @@ def test_mat_decompose():
     npt.assert_array_almost_equal(rotation, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
 
 
+def test_mat_decompose_scaling_0():
+    """Test that the matrices are decomposed correctly when scaling is 0."""
+
+    scaling = [0, 0, 2]
+    rotation = [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2]
+    translation = [2, 2, 2]
+
+    matrix = la.mat_compose(translation, rotation, scaling)
+    translation_, rotation_, scaling_ = la.mat_decompose(matrix)
+
+    npt.assert_array_almost_equal(translation_, translation)
+    npt.assert_array_almost_equal(scaling_, scaling)
+    # rotation is not uniquely defined when scaling is 0, but it should not be NaN
+    assert not np.isnan(rotation_).any()
+
 @pytest.mark.parametrize(
     "signs",
     [
