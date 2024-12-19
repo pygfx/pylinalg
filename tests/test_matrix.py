@@ -207,6 +207,7 @@ def test_mat_decompose_scaling_0():
     # rotation is not uniquely defined when scaling is 0, but it should not be NaN
     assert not np.isnan(rotation_).any()
 
+
 @pytest.mark.parametrize(
     "signs",
     [
