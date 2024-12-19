@@ -379,7 +379,11 @@ def mat_decompose(matrix, /, *, scaling_signs=None, dtype=None, out=None):
     scaling *= scaling_signs
 
     rotation = out[1] if out is not None else None
-    rotation_matrix = matrix[:-1, :-1] * (1 / scaling)[None, :]
+
+    rotation_matrix = matrix[:-1, :-1].copy().astype(float)
+    mask = scaling != 0
+    rotation_matrix[:, mask] /= scaling[mask][None, :]
+    rotation_matrix[:, ~mask] = 0.0
     rotation = quat_from_mat(rotation_matrix, out=rotation, dtype=dtype)
 
     return translation, rotation, scaling
