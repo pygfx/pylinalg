@@ -46,7 +46,7 @@ def test_api():
                 # should be `del`eted
                 raise AssertionError(
                     f"API includes module '{key}' which is not a submodule/package"
-                )
+                ) from None
             # actual pylinalg submodules/packages are OK
             continue
         # otherwise it should be a callable
