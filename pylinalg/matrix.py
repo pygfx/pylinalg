@@ -635,63 +635,6 @@ def mat_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     return out
 
 
-def mat_from_axes(axes, /, *, normalize=True, orthonormalize, out=None, dtype=None):
-    """
-    Rotates the neutral axes to align with a given set of
-    three orthogonal axes.
-
-    Parameters
-    ----------
-    axes : ndarray, [3, 3]
-        Set of three orthogonal axes. The first/row index is the axis-index.
-    out : ndarray, optional
-        A location into which the result is stored. If provided, it
-        must have a shape that the inputs broadcast to. If not provided or
-        None, a freshly-allocated array is returned. A tuple must have
-        length equal to the number of outputs.
-    dtype : data-type, optional
-        Overrides the data type of the result.
-
-    Returns
-    -------
-    rotation_matrix : ndarray, [4, 4]
-        A homogeneous matrix describing the rotation.
-
-    """
-    axes = np.asarray(axes)
-
-    if normalize:
-        from .vector import vec_normalize
-        vec_normalize(axes, out=axes)
-
-    rotation = np.eye(4, dtype=float)
-    rotation[:3, :3] = axes
-    if out is None:
-        out = rotation
-    else:
-        out[:] = rotation
-
-    # Note: The below is equivalent to np.fill_diagonal(out, 1, axes=(-2, -1)),
-    # i.e., treat the last two axes as a matrix and fill its diagonal with 1.
-    # Currently numpy doesn't support axes on fill_diagonal, so we do it
-    # ourselves to support input batches and mimic the `np.linalg` API.
-    n_matrices = np.prod(result_shape[:-1], dtype=int)
-    itemsize = out.itemsize
-    view = as_strided(out, shape=(n_matrices, 4), strides=(16 * itemsize, 5 * itemsize))
-    view[:] = 1
-
-    out[..., :-1, 2] = new_z / np.linalg.norm(new_z, axis=-1)
-    out[..., :-1, 0] = np.cross(
-        up_reference, out[..., :-1, 2], axisa=-1, axisb=-1, axisc=-1
-    )
-    out[..., :-1, 1] = np.cross(
-        out[..., :-1, 2], out[..., :-1, 0], axisa=-1, axisb=-1, axisc=-1
-    )
-    out /= np.linalg.norm(out, axis=-2)[..., None, :]
-
-    return out
-
-
 __all__ = [
     name for name in globals() if name.startswith(("vec_", "mat_", "quat_", "aabb_"))
 ]
