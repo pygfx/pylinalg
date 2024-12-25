@@ -306,17 +306,51 @@ def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None):
     ndarray, [4, 4]
         Transformation matrix
     """
-    from .quaternion import mat_from_quat
+    if out is None:
+        out = np.empty((4, 4), dtype=dtype)
 
-    return mat_combine(
-        [
-            mat_from_translation(translation),
-            mat_from_quat(rotation),
-            mat_from_scale(scaling),
-        ],
-        out=out,
-        dtype=dtype,
-    )
+    x = rotation[0]
+    y = rotation[1]
+    z = rotation[2]
+    w = rotation[3]
+    x2 = x + x
+    y2 = y + y
+    z2 = z + z
+    xx = x * x2
+    xy = x * y2
+    xz = x * z2
+    yy = y * y2
+    yz = y * z2
+    zz = z * z2
+    wx = w * x2
+    wy = w * y2
+    wz = w * z2
+
+    sx = scaling[0]
+    sy = scaling[1]
+    sz = scaling[2]
+
+    out.flat[0] = (1 - (yy + zz)) * sx
+    out.flat[4] = (xy + wz) * sx
+    out.flat[8] = (xz - wy) * sx
+    out.flat[12] = 0
+
+    out.flat[1] = (xy - wz) * sy
+    out.flat[5] = (1 - (xx + zz)) * sy
+    out.flat[9] = (yz + wx) * sy
+    out.flat[13] = 0
+
+    out.flat[2] = (xz + wy) * sz
+    out.flat[6] = (yz - wx) * sz
+    out.flat[10] = (1 - (xx + yy)) * sz
+    out.flat[14] = 0
+
+    out.flat[3] = translation[0]
+    out.flat[7] = translation[1]
+    out.flat[11] = translation[2]
+    out.flat[15] = 1
+
+    return out
 
 
 def mat_decompose(matrix, /, *, scaling_signs=None, dtype=None, out=None):
