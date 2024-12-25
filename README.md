@@ -18,3 +18,15 @@ Linear algebra utilities for Python.
 ```bash
 pip install pylinalg
 ```
+
+### Development Install
+To get a working dev install of pylinalg you can use the following steps:
+
+```bash
+# Click the Fork button on GitHub and navigate to your fork
+git clone <address_of_your_fork>
+cd pylinalg
+# if you use a venv, create and activate it
+pip install -e ".[dev,docs,examples]"
+pytest tests
+```
