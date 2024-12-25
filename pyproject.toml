@@ -1,40 +1,62 @@
-[tool.poetry]
+# ===== Project info
+
+[project]
 name = "pylinalg"
-version = "0.4.1"
+version = "0.5.0"
 description = "Linear algebra utilities for Python"
-authors = ["Korijn van Golen <korijn@gmail.com>"]
-license = "MIT"
-homepage = "https://github.com/pygfx/pylinalg"
 readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Almar Klein" }, { name = "Korijn van Golen" }]
+keywords = [
+    "graphics",
+    "3d",
+    "linear algebra",
+]
+requires-python = ">= 3.9"
+dependencies = [
+    "numpy>=1.20.0",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.8"
-numpy = ">=1.20.0"
+[project.optional-dependencies]
+lint = ["ruff"]
+docs = [
+    "sphinx>7.2",
+    "sphinx_rtd_theme",
+]
+tests = [
+    "pytest",
+    "pytest-cov",
+    "pytest-watcher",
+    "hypothesis[numpy]~=6.61.0",
+    "packaging",
+    "twine",
+]
+dev = ["pylinalg[lint,tests,docs]"]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "*"
-flake8 = "*"
-black = "*"
-flake8-black = "*"
-flake8-isort = "*"
-pep8-naming = "*"
-pytest-cov = "*"
-packaging = "*"
-twine = { version = "*", python = "<4.0.0" }
-pytest-watcher = { version = "*", python = "<4.0.0" }
-isort = { version = "*", python = "<4.0.0" }
-hypothesis = {extras = ["numpy"], version = "^6.61.0"}
+[project.urls]
+Repository = "https://github.com/pygfx/pylinalg"
 
-[tool.poetry.group.docs]
-optional = true
+# ===== Building
 
-[tool.poetry.group.docs.dependencies]
-sphinx = "*"
-sphinx-rtd-theme = "*"
-
+# Flit is great solution for simple pure-Python projects.
 [build-system]
-requires = ["poetry>=1.4.2"]
-build-backend = "poetry.core.masonry.api"
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
 
-[tool.isort]
-profile = "black"
+# ===== Tooling
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["F", "E", "W", "N", "B", "RUF"]
+ignore = [
+    "E501",   # Line too long
+    "E731",   # Do not assign a `lambda` expression, use a `def`
+    "B019",   # Use of `functools.lru_cache` or `functools.cache` on methods can lead to memory leaks
+    "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`"
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403"]
+"tests/conftest.py" = ["B008"]

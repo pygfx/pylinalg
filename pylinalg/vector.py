@@ -163,8 +163,8 @@ def vec_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
 
     try:
         inverse_projection = np.linalg.inv(matrix)
-    except np.linalg.LinAlgError:
-        raise ValueError("The provided matrix is not invertible.")
+    except np.linalg.LinAlgError as err:
+        raise ValueError("The provided matrix is not invertible.") from err
 
     vector_hom = np.empty((*result_shape, 4), dtype=dtype)
     vector_hom[..., 2] = depth

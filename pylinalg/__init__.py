@@ -3,6 +3,7 @@ pylinalg
 
 Linear algebra utilities for Python.
 """
+
 from importlib.metadata import version
 
 from .matrix import *
