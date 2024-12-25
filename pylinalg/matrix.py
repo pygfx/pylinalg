@@ -309,10 +309,7 @@ def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None):
     if out is None:
         out = np.empty((4, 4), dtype=dtype)
 
-    x = rotation[0]
-    y = rotation[1]
-    z = rotation[2]
-    w = rotation[3]
+    x, y, z, w = rotation
     x2 = x + x
     y2 = y + y
     z2 = z + z
@@ -326,9 +323,7 @@ def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None):
     wy = w * y2
     wz = w * z2
 
-    sx = scaling[0]
-    sy = scaling[1]
-    sz = scaling[2]
+    sx, sy, sz = scaling
 
     out.flat[0] = (1 - (yy + zz)) * sx
     out.flat[4] = (xy + wz) * sx
