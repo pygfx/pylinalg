@@ -324,10 +324,8 @@ def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None):
     wz = w * z2
 
     scaling = np.asarray(scaling)
-    if scaling.ndim == 0:
-        scaling = np.array([scaling, scaling, scaling])
-    elif scaling.size == 1:
-        scaling = np.array([scaling[0], scaling[0], scaling[0]])
+    if scaling.size == 1:
+        scaling = np.broadcast_to(scaling, (3,))
     sx, sy, sz = scaling
 
     out[0, 0] = (1 - (yy + zz)) * sx
