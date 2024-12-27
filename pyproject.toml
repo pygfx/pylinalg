@@ -30,6 +30,7 @@ tests = [
     "hypothesis[numpy]~=6.61.0",
     "packaging",
     "twine",
+    "scipy",
 ]
 dev = ["pylinalg[lint,tests,docs]"]
 

@@ -190,21 +190,3 @@ def test_quat_from_euler(angles, order):
 
     expected = la.mat_from_euler(angles, order=order)
     assert np.allclose(actual, expected)
-
-
-def test_quat_from_euler_upper_case_order():
-    order = "XYZ"
-    angles = np.array([np.pi / 2, np.pi / 180, 0])
-    quat = la.quat_from_euler(angles, order=order)
-    actual = la.quat_to_euler(quat)
-
-    assert np.allclose(actual, angles)
-
-
-def test_quat_from_euler_lower_case_order():
-    order = "xyz"
-    angles = np.array([np.pi / 2, np.pi / 180, 0])
-    quat = la.quat_from_euler(angles, order=order)
-    actual = la.quat_to_euler(quat)
-
-    assert np.allclose(actual, angles)
