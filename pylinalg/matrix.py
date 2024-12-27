@@ -323,27 +323,28 @@ def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None):
     wy = w * y2
     wz = w * z2
 
+    scaling = np.asarray(scaling)
+    if scaling.ndim == 0:
+        scaling = np.array([scaling, scaling, scaling])
+    elif scaling.size == 1:
+        scaling = np.array([scaling[0], scaling[0], scaling[0]])
     sx, sy, sz = scaling
 
-    out.flat[0] = (1 - (yy + zz)) * sx
-    out.flat[4] = (xy + wz) * sx
-    out.flat[8] = (xz - wy) * sx
-    out.flat[12] = 0
+    out[0, 0] = (1 - (yy + zz)) * sx
+    out[1, 0] = (xy + wz) * sx
+    out[2, 0] = (xz - wy) * sx
+    out[3, 0:3] = 0
 
-    out.flat[1] = (xy - wz) * sy
-    out.flat[5] = (1 - (xx + zz)) * sy
-    out.flat[9] = (yz + wx) * sy
-    out.flat[13] = 0
+    out[0, 1] = (xy - wz) * sy
+    out[1, 1] = (1 - (xx + zz)) * sy
+    out[2, 1] = (yz + wx) * sy
 
-    out.flat[2] = (xz + wy) * sz
-    out.flat[6] = (yz - wx) * sz
-    out.flat[10] = (1 - (xx + yy)) * sz
-    out.flat[14] = 0
+    out[0, 2] = (xz + wy) * sz
+    out[1, 2] = (yz - wx) * sz
+    out[2, 2] = (1 - (xx + yy)) * sz
 
-    out.flat[3] = translation[0]
-    out.flat[7] = translation[1]
-    out.flat[11] = translation[2]
-    out.flat[15] = 1
+    out[0:3, 3] = translation
+    out[3, 3] = 1
 
     return out
 

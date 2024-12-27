@@ -282,9 +282,22 @@ def naive_mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None
 
 def test_mat_compose_naive():
     """Compare the direct composition with the naive composition."""
-    npt.assert_almost_equal(
+    npt.assert_equal(
         la.mat_compose([1, 2, 3], [np.pi, np.pi / 4, 0, 1], [1, -2, 9]),
         naive_mat_compose([1, 2, 3], [np.pi, np.pi / 4, 0, 1], [1, -2, 9]),
+    )
+
+
+def test_mat_compose_scalar_scaling():
+    """Check that a scaler scaling argument is supported in mat_compose."""
+    npt.assert_equal(
+        la.mat_compose([1, 2, 3], [np.pi, np.pi / 4, 0, 1], [1.25, 1.25, 1.25]),
+        la.mat_compose([1, 2, 3], [np.pi, np.pi / 4, 0, 1], 1.25),
+    )
+
+    npt.assert_equal(
+        la.mat_compose([1, 2, 3], [np.pi, np.pi / 4, 0, 1], [1.25, 1.25, 1.25]),
+        la.mat_compose([1, 2, 3], [np.pi, np.pi / 4, 0, 1], [1.25]),
     )
 
 
