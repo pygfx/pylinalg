@@ -268,6 +268,26 @@ def test_mat_compose_validation():
         la.mat_decompose(matrix, scaling_signs=signs)
 
 
+def naive_mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None):
+    return la.mat_combine(
+        [
+            la.mat_from_translation(translation),
+            la.mat_from_quat(rotation),
+            la.mat_from_scale(scaling),
+        ],
+        out=out,
+        dtype=dtype,
+    )
+
+
+def test_mat_compose_naive():
+    """Compare the direct composition with the naive composition."""
+    npt.assert_almost_equal(
+        la.mat_compose([1, 2, 3], [np.pi, np.pi / 4, 0, 1], [1, -2, 9]),
+        naive_mat_compose([1, 2, 3], [np.pi, np.pi / 4, 0, 1], [1, -2, 9]),
+    )
+
+
 def test_mat_perspective():
     a = la.mat_perspective(-1, 1, -1, 1, 1, 100)
     npt.assert_array_almost_equal(
