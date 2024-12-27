@@ -296,7 +296,7 @@ def quat_from_euler(angles, /, *, order="XYZ", out=None, dtype=None):
     # work out the sequence in which to apply the rotations
     is_extrinsic = [x.islower() for x in order]
     basis_index = {"x": 0, "y": 1, "z": 2}
-    order = [basis_index[x.lower()] for x in order]
+    order = [basis_index[x] for x in order.lower()]
 
     # convert each euler matrix into a quaternion
     quaternions = np.zeros((len(order), *batch_shape, 4), dtype=float)

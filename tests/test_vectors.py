@@ -473,7 +473,7 @@ def test_quat_from_euler_upper_case_order():
     quat = la.quat_from_euler(angles, order=order)
     actual = la.quat_to_euler(quat, order=order)
 
-    assert np.allclose(actual, angles)
+    npt.assert_allclose(actual, angles)
 
 
 def test_quat_from_euler_lower_case_order():
@@ -482,7 +482,7 @@ def test_quat_from_euler_lower_case_order():
     quat = la.quat_from_euler(angles, order=order)
     actual = la.quat_to_euler(quat, order=order)
 
-    assert np.allclose(actual, angles)
+    npt.assert_allclose(actual, angles)
 
 
 def test_quat_euler_vs_scipy():
