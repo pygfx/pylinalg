@@ -480,7 +480,7 @@ def vec_spherical_safe(vector, /, *, out=None, dtype=None):
     return out
 
 
-def quat_to_euler(quaternion, /, *, order="XYZ", out=None, dtype=None):
+def quat_to_euler(quaternion, /, *, order="xyz", out=None, dtype=None):
     """Convert quaternions to Euler angles with specified rotation order.
 
     Parameters
@@ -490,7 +490,7 @@ def quat_to_euler(quaternion, /, *, order="XYZ", out=None, dtype=None):
     order : str, optional
         The rotation order as a string. Can include 'X', 'Y', 'Z' for intrinsic
         rotation (uppercase) or 'x', 'y', 'z' for extrinsic rotation (lowercase).
-        Default is "XYZ".
+        Default is "xyz".
     out : ndarray, optional
         A location into which the result is stored. If provided, it
         must have a shape that the inputs broadcast to. If not provided or

@@ -260,7 +260,7 @@ def quat_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
     return out
 
 
-def quat_from_euler(angles, /, *, order="XYZ", out=None, dtype=None):
+def quat_from_euler(angles, /, *, order="xyz", out=None, dtype=None):
     """
     Create a quaternion from euler angles.
 
@@ -271,7 +271,7 @@ def quat_from_euler(angles, /, *, order="XYZ", out=None, dtype=None):
     order : string, optional
         The rotation order as a string. Can include 'X', 'Y', 'Z' for intrinsic
         rotation (uppercase) or 'x', 'y', 'z' for extrinsic rotation (lowercase).
-        Default is "XYZ".
+        Default is "xyz".
     out : ndarray, optional
         A location into which the result is stored. If provided, it
         must have a shape that the inputs broadcast to. If not provided or

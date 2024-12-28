@@ -1,5 +1,3 @@
-from math import cos, sin
-
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 
@@ -129,8 +127,9 @@ def mat_from_euler(angles, /, *, order="xyz", out=None, dtype=None):
     angles : ndarray, [3]
         The euler angles.
     order : string, optional
-        The order in which the rotations should be applied. Default
-        is "xyz".
+        The rotation order as a string. Can include 'X', 'Y', 'Z' for intrinsic
+        rotation (uppercase) or 'x', 'y', 'z' for extrinsic rotation (lowercase).
+        Default is "xyz".
     out : ndarray, optional
         A location into which the result is stored. If provided, it
         must have a shape that the inputs broadcast to. If not provided or
@@ -155,31 +154,42 @@ def mat_from_euler(angles, /, *, order="xyz", out=None, dtype=None):
     ccw around the y-axis, and finally 0° around the x axis.
 
     """
-    angles = np.asarray(angles, dtype=float)
-    order = order.lower()
-
-    if angles.ndim == 0:
-        # add dimension to allow zip
-        angles = angles[None]
-
-    matrices = []
+    fill_out_first = out is not None
+    angles = np.atleast_1d(np.asarray(angles))
+    extrinsic = order.islower()
+    order = order.upper()
+    axis_lookup = {"X": 0, "Y": 1, "Z": 2}
+    if extrinsic:
+        angles = reversed(angles)
+        order = reversed(order)
     for angle, axis in zip(angles, order):
-        axis_idx = {"x": 0, "y": 1, "z": 2}[axis]
-
-        matrix = np.array([[cos(angle), -sin(angle)], [sin(angle), cos(angle)]])
-        if axis_idx == 1:
-            matrix = matrix.T
-        matrix = np.insert(matrix, axis_idx, 0, axis=0)
-        matrix = np.insert(matrix, axis_idx, 0, axis=1)
-        matrix[axis_idx, axis_idx] = 1
-
+        axis_idx = axis_lookup[axis]
         affine_matrix = np.identity(4, dtype=dtype)
-        affine_matrix[:3, :3] = matrix
 
-        matrices.append(affine_matrix)
+        if axis_idx == 0:
+            affine_matrix[1, 1] = np.cos(angle)
+            affine_matrix[1, 2] = -np.sin(angle)
+            affine_matrix[2, 1] = np.sin(angle)
+            affine_matrix[2, 2] = np.cos(angle)
+        elif axis_idx == 1:
+            affine_matrix[0, 0] = np.cos(angle)
+            affine_matrix[0, 2] = np.sin(angle)
+            affine_matrix[2, 0] = -np.sin(angle)
+            affine_matrix[2, 2] = np.cos(angle)
+        elif axis_idx == 2:
+            affine_matrix[0, 0] = np.cos(angle)
+            affine_matrix[0, 1] = -np.sin(angle)
+            affine_matrix[1, 0] = np.sin(angle)
+            affine_matrix[1, 1] = np.cos(angle)
 
-    # note: combining in the loop would save time and memory usage
-    return mat_combine([x for x in reversed(matrices)], out=out, dtype=dtype)
+        if fill_out_first:
+            out[:] = affine_matrix
+            fill_out_first = False
+        elif out is None:
+            out = affine_matrix
+        else:
+            out @= affine_matrix
+    return out
 
 
 def mat_from_axis_angle(axis, angle, /, *, out=None, dtype=None):

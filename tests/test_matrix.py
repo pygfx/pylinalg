@@ -356,3 +356,27 @@ def test_mat_look_at(eye, target, up_reference):
     # (map up_reference from target to source space and check if it's in the YZ-plane)
     new_reference = rotation.T @ la.vec_homogeneous(up_reference)
     assert np.abs(new_reference[0]) < 1e-10
+
+
+def test_mat_euler_vs_scipy():
+    """Compare our implementation with scipy's."""
+    from scipy.spatial.transform import Rotation as R  # noqa: N817
+
+    cases = [
+        ("XYZ", [np.pi / 2, np.pi / 180, 0]),
+        ("xyz", [np.pi / 2, np.pi / 180, 0]),
+        ("ZXY", [np.pi, np.pi / 180, -np.pi / 180]),
+        ("zxy", [np.pi, np.pi / 180, -np.pi / 180]),
+        ("ZYX", [0, np.pi / 2, np.pi / 2]),
+        ("zyx", [0, np.pi / 2, np.pi / 2]),
+    ]
+
+    for order, angles in cases:
+        scipy_mat = np.identity(4)
+        scipy_mat[:3, :3] = R.from_euler(order, angles).as_matrix()
+
+        npt.assert_allclose(
+            la.mat_from_euler(angles, order=order),
+            scipy_mat,
+            atol=1e-15,
+        )
