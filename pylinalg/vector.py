@@ -480,13 +480,17 @@ def vec_spherical_safe(vector, /, *, out=None, dtype=None):
     return out
 
 
-def quat_to_euler(quaternion, /, *, out=None, dtype=None):
-    """Convert quaternions to XYZ Euler angles.
+def quat_to_euler(quaternion, /, *, order="xyz", out=None, dtype=None):
+    """Convert quaternions to Euler angles with specified rotation order.
 
     Parameters
     ----------
     quaternion : ndarray, [4]
         The quaternion to convert (in xyzw format).
+    order : str, optional
+        The rotation order as a string. Can include 'X', 'Y', 'Z' for intrinsic
+        rotation (uppercase) or 'x', 'y', 'z' for extrinsic rotation (lowercase).
+        Default is "xyz".
     out : ndarray, optional
         A location into which the result is stored. If provided, it
         must have a shape that the inputs broadcast to. If not provided or
@@ -498,35 +502,130 @@ def quat_to_euler(quaternion, /, *, out=None, dtype=None):
     Returns
     -------
     out : ndarray, [3]
-        The XYZ Euler angles.
+        The Euler angles in the specified order.
+
+    References
+    ----------
+    This implementation is based on the method described in the following paper:
+    Bernardes E, Viollet S (2022) Quaternion to Euler angles conversion: A direct, general and computationally efficient method.
+    PLoS ONE 17(11): e0276302. https://doi.org/10.1371/journal.pone.0276302
     """
     quaternion = np.asarray(quaternion, dtype=float)
+    quat = np.atleast_2d(quaternion)
+    num_rotations = quat.shape[0]
 
     if out is None:
         out = np.empty((*quaternion.shape[:-1], 3), dtype=dtype)
 
-    ysqr = quaternion[..., 1] ** 2
+    extrinsic = order.islower()
+    order = order.lower()
+    if not extrinsic:
+        order = order[::-1]
 
-    t0 = 2 * (
-        quaternion[..., 3] * quaternion[..., 0]
-        + quaternion[..., 1] * quaternion[..., 2]
-    )
-    t1 = 1 - 2 * (quaternion[..., 0] ** 2 + ysqr)
-    out[..., 0] = np.arctan2(t0, t1)
+    basis_index = {"x": 0, "y": 1, "z": 2}
+    i = basis_index[order[0]]
+    j = basis_index[order[1]]
+    k = basis_index[order[2]]
 
-    t2 = 2 * (
-        quaternion[..., 3] * quaternion[..., 1]
-        - quaternion[..., 2] * quaternion[..., 0]
-    )
-    t2 = np.clip(t2, a_min=-1, a_max=1)
-    out[..., 1] = np.arcsin(t2)
+    is_proper = i == k
 
-    t3 = 2 * (
-        quaternion[..., 3] * quaternion[..., 2]
-        + quaternion[..., 0] * quaternion[..., 1]
-    )
-    t4 = 1 - 2 * (ysqr + quaternion[..., 2] ** 2)
-    out[..., 2] = np.arctan2(t3, t4)
+    if is_proper:
+        k = 3 - i - j  # get third axis
+
+    # Step 0
+    # Check if permutation is even (+1) or odd (-1)
+    sign = int((i - j) * (j - k) * (k - i) / 2)
+
+    eps = 1e-7
+    for ind in range(num_rotations):
+        if num_rotations == 1 and out.ndim == 1:
+            _angles = out
+        else:
+            _angles = out[ind, :]
+
+        if is_proper:
+            a = quat[ind, 3]
+            b = quat[ind, i]
+            c = quat[ind, j]
+            d = quat[ind, k] * sign
+        else:
+            a = quat[ind, 3] - quat[ind, j]
+            b = quat[ind, i] + quat[ind, k] * sign
+            c = quat[ind, j] + quat[ind, 3]
+            d = quat[ind, k] * sign - quat[ind, i]
+
+        n2 = a**2 + b**2 + c**2 + d**2
+
+        # Step 3
+        # Compute second angle...
+        # _angles[1] = 2*np.arccos(np.sqrt((a**2 + b**2) / n2))
+        _angles[1] = np.arccos(2 * (a**2 + b**2) / n2 - 1)
+
+        # ... and check if it is equal to 0 or pi, causing a singularity
+        safe1 = np.abs(_angles[1]) >= eps
+        safe2 = np.abs(_angles[1] - np.pi) >= eps
+        safe = safe1 and safe2
+
+        # Step 4
+        # compute first and third angles, according to case
+        if safe:
+            half_sum = np.arctan2(b, a)  # == (alpha+gamma)/2
+            half_diff = np.arctan2(-d, c)  # == (alpha-gamma)/2
+
+            _angles[0] = half_sum + half_diff
+            _angles[2] = half_sum - half_diff
+
+        else:
+            # _angles[0] = 0
+
+            if not extrinsic:
+                # For intrinsic, set first angle to zero so that after reversal we
+                # ensure that third angle is zero
+                # 6a
+                if not safe:
+                    _angles[0] = 0
+                if not safe1:
+                    half_sum = np.arctan2(b, a)
+                    _angles[2] = 2 * half_sum
+                # 6c
+                if not safe2:
+                    half_diff = np.arctan2(-d, c)
+                    _angles[2] = -2 * half_diff
+            else:
+                # For extrinsic, set third angle to zero
+                # 6b
+                if not safe:
+                    _angles[2] = 0
+                if not safe1:
+                    half_sum = np.arctan2(b, a)
+                    _angles[0] = 2 * half_sum
+                # 6c
+                if not safe2:
+                    half_diff = np.arctan2(-d, c)
+                    _angles[0] = 2 * half_diff
+
+        for i_ in range(3):
+            if _angles[i_] < -np.pi:
+                _angles[i_] += 2 * np.pi
+            elif _angles[i_] > np.pi:
+                _angles[i_] -= 2 * np.pi
+
+        # for Tait-Bryan angles
+        if not is_proper:
+            _angles[2] *= sign
+            _angles[1] -= np.pi / 2
+
+        if not extrinsic:
+            # reversal
+            _angles[0], _angles[2] = _angles[2], _angles[0]
+
+        # Step 8
+        if not safe:
+            logger.warning(
+                "Gimbal lock detected. Setting third angle to zero "
+                "since it is not possible to uniquely determine "
+                "all angles."
+            )
 
     return out
 

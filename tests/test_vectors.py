@@ -391,7 +391,7 @@ def test_vec_transform__perspective():
             assert vec2[0] == expected
 
         # Check cases batched
-        vectors1 = np.row_stack([v for v, _ in cases])
+        vectors1 = np.vstack([v for v, _ in cases])
         vectors2 = la.vec_transform(vectors1, m)
         assert vectors2[0][0] == cases[0][1]
         assert vectors2[1][0] == cases[1][1]
@@ -439,7 +439,7 @@ def test_quat_to_euler(angles):
     quaternion = la.quat_from_euler(angles, order=order)
     matrix = la.mat_from_euler(angles, order=order)
 
-    angles_reconstructed = la.quat_to_euler(quaternion)
+    angles_reconstructed = la.quat_to_euler(quaternion, order=order)
     matrix_reconstructed = la.mat_from_euler(angles_reconstructed)
 
     expected = la.vec_transform([1, 2, 3], matrix)
@@ -459,12 +459,56 @@ def test_quat_to_euler_roundtrip(angles):
     order = "xyz"
     quaternion = la.quat_from_euler(angles, order=order)
 
-    angles_reconstructed = la.quat_to_euler(quaternion)
+    angles_reconstructed = la.quat_to_euler(quaternion, order=order)
     quaternion_reconstructed = la.quat_from_euler(angles_reconstructed, order=order)
 
     assert np.allclose(quaternion, quaternion_reconstructed) or np.allclose(
         quaternion, -quaternion_reconstructed
     )
+
+
+def test_quat_from_euler_upper_case_order():
+    order = "XYZ"
+    angles = np.array([np.pi / 2, np.pi / 180, 0])
+    quat = la.quat_from_euler(angles, order=order)
+    actual = la.quat_to_euler(quat, order=order)
+
+    npt.assert_allclose(actual, angles)
+
+
+def test_quat_from_euler_lower_case_order():
+    order = "xyz"
+    angles = np.array([np.pi / 2, np.pi / 180, 0])
+    quat = la.quat_from_euler(angles, order=order)
+    actual = la.quat_to_euler(quat, order=order)
+
+    npt.assert_allclose(actual, angles)
+
+
+def test_quat_euler_vs_scipy():
+    """Compare our implementation with scipy's."""
+    from scipy.spatial.transform import Rotation as R  # noqa: N817
+
+    cases = [
+        ("xyz", [np.pi / 2, np.pi / 180, 0]),
+        ("XYZ", [np.pi / 2, np.pi / 180, 0]),
+        ("zxy", [np.pi, np.pi / 180, -np.pi / 180]),
+        ("ZXY", [np.pi, np.pi / 180, -np.pi / 180]),
+    ]
+
+    for order, angles in cases:
+        npt.assert_allclose(
+            la.quat_from_euler(angles, order=order),
+            R.from_euler(order, angles).as_quat(),
+        )
+
+    cases = [(order, la.quat_from_euler(euler, order=order)) for order, euler in cases]
+
+    for order, quat in cases:
+        npt.assert_allclose(
+            la.quat_to_euler(quat, order=order),
+            R.from_quat(quat).as_euler(order),
+        )
 
 
 def test_quat_to_euler_broadcasting():
