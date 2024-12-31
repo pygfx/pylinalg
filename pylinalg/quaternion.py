@@ -252,7 +252,7 @@ def quat_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
 
     # result should be independent of the length of the given axis
     lengths_shape = axis.shape[:-1] + (1,)
-    axis /= np.linalg.norm(axis, axis=-1).reshape(lengths_shape)
+    axis = axis / np.linalg.norm(axis, axis=-1).reshape(lengths_shape)
 
     out[..., :3] = axis * np.sin(angle / 2).reshape(lengths_shape)
     out[..., 3] = np.cos(angle / 2)
