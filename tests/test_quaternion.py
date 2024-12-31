@@ -190,3 +190,11 @@ def test_quat_from_euler(angles, order):
 
     expected = la.mat_from_euler(angles, order=order)
     assert np.allclose(actual, expected)
+
+
+def test_quat_from_axis_angle_input_mutation():
+    """(Regression) test that the input arguments are not mutated in-place."""
+    axis = np.array((0.0, 2.0, 0.0))
+    backup = axis.copy()
+    la.quat_from_axis_angle(axis, np.pi / 2)
+    npt.assert_array_equal(axis, backup)
