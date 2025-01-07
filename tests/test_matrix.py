@@ -307,3 +307,17 @@ def test_mat_look_at(eye, target, up_reference):
     # (map up_reference from target to source space and check if it's in the YZ-plane)
     new_reference = rotation.T @ la.vec_homogeneous(up_reference)
     assert np.abs(new_reference[0]) < 1e-10
+
+
+def test_mat_inverse():
+    a = la.mat_from_translation([1, 2, 3])
+    np_inv = la.mat_inverse(a, method="numpy")
+    manual_inv = la.mat_inverse(a, method="manual")
+    npt.assert_array_equal(np_inv, manual_inv)
+
+    # test for singular matrix
+    b = la.mat_from_scale([0, 2, 3])
+    np_inv = la.mat_inverse(b, method="numpy")
+    manual_inv = la.mat_inverse(b, method="manual")
+    npt.assert_array_equal(np_inv, np.zeros((4, 4)))
+    npt.assert_array_equal(manual_inv, np.zeros((4, 4)))

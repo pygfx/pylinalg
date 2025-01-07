@@ -631,6 +631,242 @@ def mat_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     return out
 
 
+def _mat_inv(m):
+    # Reference:
+    # https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js
+    # based on:
+    # http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
+    out = np.empty((4, 4), dtype=m.dtype)
+    me = m.flat
+
+    n11 = me[0]
+    n21 = me[4]
+    n31 = me[8]
+    n41 = me[12]
+    n12 = me[1]
+    n22 = me[5]
+    n32 = me[9]
+    n42 = me[13]
+    n13 = me[2]
+    n23 = me[6]
+    n33 = me[10]
+    n43 = me[14]
+    n14 = me[3]
+    n24 = me[7]
+    n34 = me[11]
+    n44 = me[15]
+
+    t11 = (
+        n23 * n34 * n42
+        - n24 * n33 * n42
+        + n24 * n32 * n43
+        - n22 * n34 * n43
+        - n23 * n32 * n44
+        + n22 * n33 * n44
+    )
+    t12 = (
+        n14 * n33 * n42
+        - n13 * n34 * n42
+        - n14 * n32 * n43
+        + n12 * n34 * n43
+        + n13 * n32 * n44
+        - n12 * n33 * n44
+    )
+    t13 = (
+        n13 * n24 * n42
+        - n14 * n23 * n42
+        + n14 * n22 * n43
+        - n12 * n24 * n43
+        - n13 * n22 * n44
+        + n12 * n23 * n44
+    )
+    t14 = (
+        n14 * n23 * n32
+        - n13 * n24 * n32
+        - n14 * n22 * n33
+        + n12 * n24 * n33
+        + n13 * n22 * n34
+        - n12 * n23 * n34
+    )
+
+    det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14
+
+    if det == 0:
+        out.fill(0)
+        return out  # singular matrix
+
+    det_inv = 1 / det
+
+    oe = out.flat
+    oe[0] = t11 * det_inv
+    oe[4] = (
+        n24 * n33 * n41
+        - n23 * n34 * n41
+        - n24 * n31 * n43
+        + n21 * n34 * n43
+        + n23 * n31 * n44
+        - n21 * n33 * n44
+    ) * det_inv
+    oe[8] = (
+        n22 * n34 * n41
+        - n24 * n32 * n41
+        + n24 * n31 * n42
+        - n21 * n34 * n42
+        - n22 * n31 * n44
+        + n21 * n32 * n44
+    ) * det_inv
+    oe[12] = (
+        n23 * n32 * n41
+        - n22 * n33 * n41
+        - n23 * n31 * n42
+        + n21 * n33 * n42
+        + n22 * n31 * n43
+        - n21 * n32 * n43
+    ) * det_inv
+
+    oe[1] = t12 * det_inv
+    oe[5] = (
+        n13 * n34 * n41
+        - n14 * n33 * n41
+        + n14 * n31 * n43
+        - n11 * n34 * n43
+        - n13 * n31 * n44
+        + n11 * n33 * n44
+    ) * det_inv
+    oe[9] = (
+        n14 * n32 * n41
+        - n12 * n34 * n41
+        - n14 * n31 * n42
+        + n11 * n34 * n42
+        + n12 * n31 * n44
+        - n11 * n32 * n44
+    ) * det_inv
+    oe[13] = (
+        n12 * n33 * n41
+        - n13 * n32 * n41
+        + n13 * n31 * n42
+        - n11 * n33 * n42
+        - n12 * n31 * n43
+        + n11 * n32 * n43
+    ) * det_inv
+
+    oe[2] = t13 * det_inv
+    oe[6] = (
+        n14 * n23 * n41
+        - n13 * n24 * n41
+        - n14 * n21 * n43
+        + n11 * n24 * n43
+        + n13 * n21 * n44
+        - n11 * n23 * n44
+    ) * det_inv
+    oe[10] = (
+        n12 * n24 * n41
+        - n14 * n22 * n41
+        + n14 * n21 * n42
+        - n11 * n24 * n42
+        - n12 * n21 * n44
+        + n11 * n22 * n44
+    ) * det_inv
+    oe[14] = (
+        n13 * n22 * n41
+        - n12 * n23 * n41
+        - n13 * n21 * n42
+        + n11 * n23 * n42
+        + n12 * n21 * n43
+        - n11 * n22 * n43
+    ) * det_inv
+
+    oe[3] = t14 * det_inv
+    oe[7] = (
+        n13 * n24 * n31
+        - n14 * n23 * n31
+        + n14 * n21 * n33
+        - n11 * n24 * n33
+        - n13 * n21 * n34
+        + n11 * n23 * n34
+    ) * det_inv
+    oe[11] = (
+        n14 * n22 * n31
+        - n12 * n24 * n31
+        - n14 * n21 * n32
+        + n11 * n24 * n32
+        + n12 * n21 * n34
+        - n11 * n22 * n34
+    ) * det_inv
+    oe[15] = (
+        n12 * n23 * n31
+        - n13 * n22 * n31
+        + n13 * n21 * n32
+        - n11 * n23 * n32
+        - n12 * n21 * n33
+        + n11 * n22 * n33
+    ) * det_inv
+
+    return out
+
+
+if int(np.__version__.split(".")[0]) >= 2:
+    _default_mat_inv_method = "numpy"
+else:
+    _default_mat_inv_method = "manual"
+
+
+def mat_inverse(
+    matrix, /, *, method=_default_mat_inv_method, dtype=None, out=None
+) -> np.ndarray:
+    """
+    Compute the inverse of a matrix.
+
+    Parameters
+    ----------
+    matrix : ndarray, [4, 4]
+        The matrix to invert.
+    method : str, optional
+        The method to use for inversion. The default is "numpy" when
+        numpy version is 2.0.0 or newer, otherwise "manual".
+    dtype : data-type, optional
+        Overrides the data type of the result.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it must have a
+        shape that the inputs broadcast to. If not provided or None, a
+        freshly-allocated array is returned. A tuple must have length equal to
+        the number of outputs.
+
+    Returns
+    -------
+    out : ndarray, [4, 4]
+        The inverse of the input matrix.
+
+    Notes
+    -----
+    The default method is "numpy" when numpy version > 2.0.0,
+    which uses the `numpy.linalg.inv` function.
+    The alternative method is "manual", which uses a manual implementation of
+    the inversion algorithm. The manual method is used to avoid a performance
+    issue with `numpy.linalg.inv` on some platforms when numpy version < 2.0.0.
+    See: https://github.com/pygfx/pygfx/issues/763
+    The manual method is slower than the numpy method, but it is guaranteed to work.
+
+    When the matrix is singular, it will return a matrix filled with zeros,
+    This is a common behavior in real-time graphics applications.
+
+    """
+
+    fn = {
+        "numpy": np.linalg.inv,
+        "manual": _mat_inv,
+    }[method]
+
+    matrix = np.asarray(matrix)
+    if out is None:
+        out = np.empty_like(matrix, dtype=dtype)
+    try:
+        out[:] = fn(matrix)
+    except np.linalg.LinAlgError:
+        out[:] = 0
+    return out
+
+
 __all__ = [
     name for name in globals() if name.startswith(("vec_", "mat_", "quat_", "aabb_"))
 ]
