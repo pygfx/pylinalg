@@ -5,7 +5,7 @@ import numpy as np
 logger = logging.getLogger()
 
 
-def vec_normalize(vectors, /, *, out=None, dtype=None):
+def vec_normalize(vectors, /, *, out=None, dtype=None) -> np.ndarray:
     """
     Normalize an array of vectors.
 
@@ -35,7 +35,7 @@ def vec_normalize(vectors, /, *, out=None, dtype=None):
     return np.divide(vectors, lengths, out=out)
 
 
-def vec_homogeneous(vectors, /, *, w=1, out=None, dtype=None):
+def vec_homogeneous(vectors, /, *, w=1, out=None, dtype=None) -> np.ndarray:
     """
     Append homogeneous coordinates to vectors.
 
@@ -71,7 +71,7 @@ def vec_homogeneous(vectors, /, *, w=1, out=None, dtype=None):
     return out
 
 
-def vec_transform(vectors, matrix, /, *, w=1, out=None, dtype=None):
+def vec_transform(vectors, matrix, /, *, w=1, out=None, dtype=None) -> np.ndarray:
     """
     Apply a transformation matrix to a vector.
 
@@ -114,7 +114,7 @@ def vec_transform(vectors, matrix, /, *, w=1, out=None, dtype=None):
     return out
 
 
-def vec_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
+def vec_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None) -> np.ndarray:
     """
     Un-project a vector from 2D space to 3D space.
 
@@ -178,7 +178,7 @@ def vec_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None):
     return out
 
 
-def vec_transform_quat(vector, quaternion, /, *, out=None, dtype=None):
+def vec_transform_quat(vector, quaternion, /, *, out=None, dtype=None) -> np.ndarray:
     """Rotate a vector using a quaternion.
 
     Parameters
@@ -223,7 +223,7 @@ def vec_transform_quat(vector, quaternion, /, *, out=None, dtype=None):
     return out
 
 
-def vec_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
+def vec_spherical_to_euclidean(spherical, /, *, out=None, dtype=None) -> np.ndarray:
     """Convert spherical -> euclidean coordinates.
 
     Parameters
@@ -265,7 +265,7 @@ def vec_spherical_to_euclidean(spherical, /, *, out=None, dtype=None):
     return out
 
 
-def vec_dist(vector_a, vector_b, /, *, out=None, dtype=None):
+def vec_dist(vector_a, vector_b, /, *, out=None, dtype=None) -> np.ndarray:
     """The distance between two vectors
 
     Parameters
@@ -303,7 +303,7 @@ def vec_dist(vector_a, vector_b, /, *, out=None, dtype=None):
     return out
 
 
-def vec_angle(vector_a, vector_b, /, *, out=None, dtype=None):
+def vec_angle(vector_a, vector_b, /, *, out=None, dtype=None) -> np.ndarray:
     """The angle between two vectors
 
     Parameters
@@ -322,7 +322,7 @@ def vec_angle(vector_a, vector_b, /, *, out=None, dtype=None):
 
     Returns
     -------
-    angle : float
+    angle : ndarray
         The angle between both vectors.
 
     """
@@ -354,7 +354,9 @@ def vec_angle(vector_a, vector_b, /, *, out=None, dtype=None):
     return out
 
 
-def mat_decompose_translation(homogeneous_matrix, /, *, out=None, dtype=None):
+def mat_decompose_translation(
+    homogeneous_matrix, /, *, out=None, dtype=None
+) -> np.ndarray:
     """Position component of a homogeneous matrix.
 
     Parameters
@@ -387,7 +389,7 @@ def mat_decompose_translation(homogeneous_matrix, /, *, out=None, dtype=None):
     return out
 
 
-def vec_euclidean_to_spherical(euclidean, /, *, out=None, dtype=None):
+def vec_euclidean_to_spherical(euclidean, /, *, out=None, dtype=None) -> np.ndarray:
     """Convert euclidean -> spherical coordinates
 
     Parameters
@@ -437,7 +439,7 @@ def vec_euclidean_to_spherical(euclidean, /, *, out=None, dtype=None):
     return out
 
 
-def vec_spherical_safe(vector, /, *, out=None, dtype=None):
+def vec_spherical_safe(vector, /, *, out=None, dtype=None) -> np.ndarray:
     """Normalize sperhical coordinates.
 
     Normalizes a vector of spherical coordinates to restrict phi to [0, pi) and
@@ -480,7 +482,7 @@ def vec_spherical_safe(vector, /, *, out=None, dtype=None):
     return out
 
 
-def quat_to_euler(quaternion, /, *, order="xyz", out=None, dtype=None):
+def quat_to_euler(quaternion, /, *, order="xyz", out=None, dtype=None) -> np.ndarray:
     """Convert quaternions to Euler angles with specified rotation order.
 
     Parameters
@@ -642,12 +644,12 @@ def _warn_about_eucledian():
         logger.warning("pylinalg deprecation warning: " + m)
 
 
-def vec_euclidian_to_spherical(euclidean, /, *, out=None, dtype=None):
+def vec_euclidian_to_spherical(euclidean, /, *, out=None, dtype=None) -> np.ndarray:
     _warn_about_eucledian()
     return vec_euclidean_to_spherical(euclidean, out=out, dtype=dtype)
 
 
-def vec_spherical_to_euclidian(spherical, /, *, out=None, dtype=None):
+def vec_spherical_to_euclidian(spherical, /, *, out=None, dtype=None) -> np.ndarray:
     _warn_about_eucledian()
     return vec_spherical_to_euclidean(spherical, out=out, dtype=dtype)
 
