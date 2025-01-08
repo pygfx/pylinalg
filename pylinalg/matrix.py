@@ -900,12 +900,16 @@ def mat_inverse(
     }[method]
 
     matrix = np.asarray(matrix)
-    if out is None:
-        out = np.empty_like(matrix, dtype=dtype)
     try:
-        out[:] = fn(matrix)
+        inverse = fn(matrix)
     except np.linalg.LinAlgError:
-        out[:] = 0
+        inverse = np.zeros_like(matrix, dtype=dtype)
+    if out is None:
+        if dtype is not None:
+            return inverse.astype(dtype, copy=False)
+        return inverse
+    else:
+        out[:] = inverse
     return out
 
 
