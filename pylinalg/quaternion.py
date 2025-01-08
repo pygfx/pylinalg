@@ -252,7 +252,7 @@ def quat_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
 
     # result should be independent of the length of the given axis
     lengths_shape = axis.shape[:-1] + (1,)
-    axis /= np.linalg.norm(axis, axis=-1).reshape(lengths_shape)
+    axis = axis / np.linalg.norm(axis, axis=-1).reshape(lengths_shape)
 
     out[..., :3] = axis * np.sin(angle / 2).reshape(lengths_shape)
     out[..., 3] = np.cos(angle / 2)
@@ -260,7 +260,7 @@ def quat_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
     return out
 
 
-def quat_from_euler(angles, /, *, order="XYZ", out=None, dtype=None):
+def quat_from_euler(angles, /, *, order="xyz", out=None, dtype=None):
     """
     Create a quaternion from euler angles.
 
@@ -269,8 +269,9 @@ def quat_from_euler(angles, /, *, order="XYZ", out=None, dtype=None):
     angles : ndarray, [3]
         A set of XYZ euler angles.
     order : string, optional
-        The order in which the rotations should be applied. Default
-        is "xyz".
+        The rotation order as a string. Can include 'X', 'Y', 'Z' for intrinsic
+        rotation (uppercase) or 'x', 'y', 'z' for extrinsic rotation (lowercase).
+        Default is "xyz".
     out : ndarray, optional
         A location into which the result is stored. If provided, it
         must have a shape that the inputs broadcast to. If not provided or
@@ -293,8 +294,9 @@ def quat_from_euler(angles, /, *, order="XYZ", out=None, dtype=None):
         out = np.empty((*batch_shape, 4), dtype=dtype)
 
     # work out the sequence in which to apply the rotations
-    is_extrinsic = [x.isupper() for x in order]
-    order = [{"X": 0, "Y": 1, "Z": 2}[x.upper()] for x in order]
+    is_extrinsic = [x.islower() for x in order]
+    basis_index = {"x": 0, "y": 1, "z": 2}
+    order = [basis_index[x] for x in order.lower()]
 
     # convert each euler matrix into a quaternion
     quaternions = np.zeros((len(order), *batch_shape, 4), dtype=float)
@@ -305,9 +307,9 @@ def quat_from_euler(angles, /, *, order="XYZ", out=None, dtype=None):
     out[:] = quaternions[0]
     for idx in range(1, len(quaternions)):
         if is_extrinsic[idx]:
-            quat_mul(out, quaternions[idx], out=out)
-        else:
             quat_mul(quaternions[idx], out, out=out)
+        else:
+            quat_mul(out, quaternions[idx], out=out)
 
     return out
 

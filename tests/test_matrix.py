@@ -192,6 +192,22 @@ def test_mat_decompose():
     npt.assert_array_almost_equal(rotation, [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
 
 
+def test_mat_decompose_scaling_0():
+    """Test that the matrices are decomposed correctly when scaling is 0."""
+
+    scaling = [0, 0, 2]
+    rotation = [0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2]
+    translation = [2, 2, 2]
+
+    matrix = la.mat_compose(translation, rotation, scaling)
+    translation_, rotation_, scaling_ = la.mat_decompose(matrix)
+
+    npt.assert_array_almost_equal(translation_, translation)
+    npt.assert_array_almost_equal(scaling_, scaling)
+    # rotation is not uniquely defined when scaling is 0, but it should not be NaN
+    assert not np.isnan(rotation_).any()
+
+
 @pytest.mark.parametrize(
     "signs",
     [
@@ -252,6 +268,39 @@ def test_mat_compose_validation():
         la.mat_decompose(matrix, scaling_signs=signs)
 
 
+def naive_mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None):
+    return la.mat_combine(
+        [
+            la.mat_from_translation(translation),
+            la.mat_from_quat(rotation),
+            la.mat_from_scale(scaling),
+        ],
+        out=out,
+        dtype=dtype,
+    )
+
+
+def test_mat_compose_naive():
+    """Compare the direct composition with the naive composition."""
+    npt.assert_equal(
+        la.mat_compose([1, 2, 3], [np.pi, np.pi / 4, 0, 1], [1, -2, 9]),
+        naive_mat_compose([1, 2, 3], [np.pi, np.pi / 4, 0, 1], [1, -2, 9]),
+    )
+
+
+def test_mat_compose_scalar_scaling():
+    """Check that a scaler scaling argument is supported in mat_compose."""
+    npt.assert_equal(
+        la.mat_compose([1, 2, 3], [np.pi, np.pi / 4, 0, 1], [1.25, 1.25, 1.25]),
+        la.mat_compose([1, 2, 3], [np.pi, np.pi / 4, 0, 1], 1.25),
+    )
+
+    npt.assert_equal(
+        la.mat_compose([1, 2, 3], [np.pi, np.pi / 4, 0, 1], [1.25, 1.25, 1.25]),
+        la.mat_compose([1, 2, 3], [np.pi, np.pi / 4, 0, 1], [1.25]),
+    )
+
+
 def test_mat_perspective():
     a = la.mat_perspective(-1, 1, -1, 1, 1, 100)
     npt.assert_array_almost_equal(
@@ -307,6 +356,30 @@ def test_mat_look_at(eye, target, up_reference):
     # (map up_reference from target to source space and check if it's in the YZ-plane)
     new_reference = rotation.T @ la.vec_homogeneous(up_reference)
     assert np.abs(new_reference[0]) < 1e-10
+
+
+def test_mat_euler_vs_scipy():
+    """Compare our implementation with scipy's."""
+    from scipy.spatial.transform import Rotation as R  # noqa: N817
+
+    cases = [
+        ("XYZ", [np.pi / 2, np.pi / 180, 0]),
+        ("xyz", [np.pi / 2, np.pi / 180, 0]),
+        ("ZXY", [np.pi, np.pi / 180, -np.pi / 180]),
+        ("zxy", [np.pi, np.pi / 180, -np.pi / 180]),
+        ("ZYX", [0, np.pi / 2, np.pi / 2]),
+        ("zyx", [0, np.pi / 2, np.pi / 2]),
+    ]
+
+    for order, angles in cases:
+        scipy_mat = np.identity(4)
+        scipy_mat[:3, :3] = R.from_euler(order, angles).as_matrix()
+
+        npt.assert_allclose(
+            la.mat_from_euler(angles, order=order),
+            scipy_mat,
+            atol=1e-15,
+        )
 
 
 def test_mat_inverse():
