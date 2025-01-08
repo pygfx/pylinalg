@@ -2,7 +2,7 @@
 
 [project]
 name = "pylinalg"
-version = "0.6.1"
+version = "0.6.2"
 description = "Linear algebra utilities for Python"
 readme = "README.md"
 license = { file = "LICENSE" }
