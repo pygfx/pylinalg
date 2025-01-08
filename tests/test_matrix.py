@@ -380,3 +380,17 @@ def test_mat_euler_vs_scipy():
             scipy_mat,
             atol=1e-15,
         )
+
+
+def test_mat_inverse():
+    a = la.mat_from_translation([1, 2, 3])
+    np_inv = la.mat_inverse(a, method="numpy")
+    manual_inv = la.mat_inverse(a, method="manual")
+    npt.assert_array_equal(np_inv, manual_inv)
+
+    # test for singular matrix
+    b = la.mat_from_scale([0, 2, 3])
+    np_inv = la.mat_inverse(b, method="numpy")
+    manual_inv = la.mat_inverse(b, method="manual")
+    npt.assert_array_equal(np_inv, np.zeros((4, 4)))
+    npt.assert_array_equal(manual_inv, np.zeros((4, 4)))
