@@ -636,7 +636,7 @@ def _mat_inv(m):
     # https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js
     # based on:
     # http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
-    out = np.empty((4, 4), dtype=m.dtype)
+    out = np.empty((4, 4), dtype=float)
     me = m.flat
 
     n11 = me[0]
