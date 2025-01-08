@@ -881,7 +881,7 @@ def mat_inverse(
 
     Notes
     -----
-    The default method is "numpy" when numpy version > 2.0.0,
+    The default method is "numpy" when numpy version >= 2.0.0,
     which uses the `numpy.linalg.inv` function.
     The alternative method is "manual", which uses a manual implementation of
     the inversion algorithm. The manual method is used to avoid a performance
