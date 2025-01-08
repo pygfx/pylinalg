@@ -26,7 +26,7 @@ def vec_normalize(vectors, /, *, out=None, dtype=None) -> np.ndarray:
     ndarray, [..., 3]
         array of normalized vectors.
     """
-    vectors = np.asarray(vectors, dtype=np.float64)
+    vectors = np.asarray(vectors, dtype=float)
     if out is None:
         out = np.empty_like(vectors, dtype=dtype)
 
@@ -102,14 +102,15 @@ def vec_transform(vectors, matrix, /, *, w=1, out=None, dtype=None) -> np.ndarra
     vectors = np.asarray(vectors, dtype=float)
     matrix = np.asarray(matrix, dtype=float)
 
-    if out is None:
-        out_shape = np.broadcast_shapes(vectors.shape[:-1], matrix.shape[:-2])
-        out = np.empty((*out_shape, 3), dtype=dtype)
-
     vectors = vec_homogeneous(vectors, w=w)
     result = matrix @ vectors[..., None]
     result /= result[..., -1, :][..., None, :]
-    out[:] = result[..., :-1, 0]
+    result = result[..., :-1, 0]
+
+    if out is not None:
+        out[:] = result
+    else:
+        out = result.astype(dtype, copy=False)
 
     return out
 
@@ -482,7 +483,9 @@ def vec_spherical_safe(vector, /, *, out=None, dtype=None) -> np.ndarray:
     return out
 
 
-def quat_to_euler(quaternion, /, *, order="xyz", out=None, dtype=None) -> np.ndarray:
+def quat_to_euler(
+    quaternion, /, *, order="xyz", epsilon=1e-7, out=None, dtype=None
+) -> np.ndarray:
     """Convert quaternions to Euler angles with specified rotation order.
 
     Parameters
@@ -493,6 +496,8 @@ def quat_to_euler(quaternion, /, *, order="xyz", out=None, dtype=None) -> np.nda
         The rotation order as a string. Can include 'X', 'Y', 'Z' for intrinsic
         rotation (uppercase) or 'x', 'y', 'z' for extrinsic rotation (lowercase).
         Default is "xyz".
+    epsilon : float, optional
+        The floating point error margin. Default is 1e-7.
     out : ndarray, optional
         A location into which the result is stored. If provided, it
         must have a shape that the inputs broadcast to. If not provided or
@@ -538,7 +543,6 @@ def quat_to_euler(quaternion, /, *, order="xyz", out=None, dtype=None) -> np.nda
     # Check if permutation is even (+1) or odd (-1)
     sign = int((i - j) * (j - k) * (k - i) / 2)
 
-    eps = 1e-7
     for ind in range(num_rotations):
         if num_rotations == 1 and out.ndim == 1:
             _angles = out
@@ -564,8 +568,8 @@ def quat_to_euler(quaternion, /, *, order="xyz", out=None, dtype=None) -> np.nda
         _angles[1] = np.arccos(2 * (a**2 + b**2) / n2 - 1)
 
         # ... and check if it is equal to 0 or pi, causing a singularity
-        safe1 = np.abs(_angles[1]) >= eps
-        safe2 = np.abs(_angles[1] - np.pi) >= eps
+        safe1 = np.abs(_angles[1]) >= epsilon
+        safe2 = np.abs(_angles[1] - np.pi) >= epsilon
         safe = safe1 and safe2
 
         # Step 4
