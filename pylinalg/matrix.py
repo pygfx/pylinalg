@@ -285,8 +285,9 @@ def quat_from_mat(matrix, /, *, out=None, dtype=None) -> np.ndarray:
         w = (m[1, 0] - m[0, 1]) / s
 
     if out is None:
-        out = np.empty((4,), dtype=dtype)
-    out[:] = np.array([x, y, z, w])
+        out = np.array([x, y, z, w], dtype=dtype)
+    else:
+        out[:] = [x, y, z, w]
     return out
 
 
@@ -422,7 +423,7 @@ def mat_decompose(
 
     rotation = out[1] if out is not None else None
 
-    rotation_matrix = matrix[:-1, :-1].copy().astype(float)
+    rotation_matrix = matrix[:-1, :-1].astype(float, copy=True)
     mask = scaling != 0
     rotation_matrix[:, mask] /= scaling[mask][None, :]
     rotation_matrix[:, ~mask] = 0.0
