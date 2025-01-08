@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def aabb_to_sphere(aabb, /, *, out=None, dtype=None):
+def aabb_to_sphere(aabb, /, *, out=None, dtype=None) -> np.ndarray:
     """A sphere that envelops an Axis-Aligned Bounding Box.
 
     Parameters
@@ -34,7 +34,7 @@ def aabb_to_sphere(aabb, /, *, out=None, dtype=None):
     return out
 
 
-def aabb_transform(aabb, matrix, /, *, out=None, dtype=None):
+def aabb_transform(aabb, matrix, /, *, out=None, dtype=None) -> np.ndarray:
     """Apply an affine transformation to an axis-aligned bounding box.
 
     Parameters
@@ -99,7 +99,7 @@ def aabb_transform(aabb, matrix, /, *, out=None, dtype=None):
     return out
 
 
-def quat_to_axis_angle(quaternion, /, *, out=None, dtype=None):
+def quat_to_axis_angle(quaternion, /, *, out=None, dtype=None) -> np.ndarray:
     """Convert a quaternion to axis-angle representation.
 
     Parameters

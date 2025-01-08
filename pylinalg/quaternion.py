@@ -4,7 +4,7 @@ import numpy as np
 from numpy.lib.stride_tricks import as_strided
 
 
-def mat_from_quat(quaternion, /, *, out=None, dtype=None):
+def mat_from_quat(quaternion, /, *, out=None, dtype=None) -> np.ndarray:
     """
     Make a rotation matrix given a quaternion.
 
@@ -74,7 +74,7 @@ def mat_from_quat(quaternion, /, *, out=None, dtype=None):
     return out
 
 
-def quat_mul(a, b, /, *, out=None, dtype=None):
+def quat_mul(a, b, /, *, out=None, dtype=None) -> np.ndarray:
     """
     Multiply two quaternions
 
@@ -112,7 +112,7 @@ def quat_mul(a, b, /, *, out=None, dtype=None):
     return out
 
 
-def quat_from_vecs(source, target, /, *, out=None, dtype=None):
+def quat_from_vecs(source, target, /, *, out=None, dtype=None) -> np.ndarray:
     """Rotate one vector onto another.
 
     Create a quaternion that rotates ``source`` onto ``target``.
@@ -185,7 +185,7 @@ def quat_from_vecs(source, target, /, *, out=None, dtype=None):
     return quat_from_axis_angle(axis, angle, out=out)
 
 
-def quat_inv(quaternion, /, *, out=None, dtype=None):
+def quat_inv(quaternion, /, *, out=None, dtype=None) -> np.ndarray:
     """
     Inverse of a given quaternion
 
@@ -217,7 +217,7 @@ def quat_inv(quaternion, /, *, out=None, dtype=None):
     return out
 
 
-def quat_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
+def quat_from_axis_angle(axis, angle, /, *, out=None, dtype=None) -> np.ndarray:
     """Quaternion from axis-angle pair.
 
     Create a quaternion representing the rotation of an given angle
@@ -260,7 +260,7 @@ def quat_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
     return out
 
 
-def quat_from_euler(angles, /, *, order="xyz", out=None, dtype=None):
+def quat_from_euler(angles, /, *, order="xyz", out=None, dtype=None) -> np.ndarray:
     """
     Create a quaternion from euler angles.
 

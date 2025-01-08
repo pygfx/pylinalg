@@ -1,8 +1,9 @@
+from typing import Tuple
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 
 
-def mat_combine(matrices, /, *, out=None, dtype=None):
+def mat_combine(matrices, /, *, out=None, dtype=None) -> np.ndarray:
     """
     Combine a list of affine matrices by multiplying them.
 
@@ -43,7 +44,7 @@ def mat_combine(matrices, /, *, out=None, dtype=None):
     return out
 
 
-def mat_from_translation(vector, /, *, out=None, dtype=None):
+def mat_from_translation(vector, /, *, out=None, dtype=None) -> np.ndarray:
     """
     Make a translationmatrix given a translation vector.
 
@@ -84,7 +85,7 @@ def mat_from_translation(vector, /, *, out=None, dtype=None):
     return out
 
 
-def mat_from_scale(factors, /, *, out=None, dtype=None):
+def mat_from_scale(factors, /, *, out=None, dtype=None) -> np.ndarray:
     """
     Make a scaling matrix given scaling factors per axis, or a
     single uniform scaling factor.
@@ -118,7 +119,7 @@ def mat_from_scale(factors, /, *, out=None, dtype=None):
     return matrix
 
 
-def mat_from_euler(angles, /, *, order="xyz", out=None, dtype=None):
+def mat_from_euler(angles, /, *, order="xyz", out=None, dtype=None) -> np.ndarray:
     """
     Make a matrix given euler angles (in radians) per axis.
 
@@ -142,7 +143,6 @@ def mat_from_euler(angles, /, *, order="xyz", out=None, dtype=None):
     -------
     ndarray, [4, 4]
         Rotation matrix.
-
 
     Notes
     -----
@@ -192,7 +192,7 @@ def mat_from_euler(angles, /, *, order="xyz", out=None, dtype=None):
     return out
 
 
-def mat_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
+def mat_from_axis_angle(axis, angle, /, *, out=None, dtype=None) -> np.ndarray:
     """
     Make a rotation matrix given a rotation axis and an angle (in radians).
 
@@ -232,7 +232,7 @@ def mat_from_axis_angle(axis, angle, /, *, out=None, dtype=None):
     return out
 
 
-def quat_from_mat(matrix, /, *, out=None, dtype=None):
+def quat_from_mat(matrix, /, *, out=None, dtype=None) -> np.ndarray:
     """
     Make a quaternion given a rotation matrix.
 
@@ -290,7 +290,9 @@ def quat_from_mat(matrix, /, *, out=None, dtype=None):
     return out
 
 
-def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None):
+def mat_compose(
+    translation, rotation, scaling, /, *, out=None, dtype=None
+) -> np.ndarray:
     """
     Compose a transformation matrix given a translation vector, a
     quaternion and a scaling vector.
@@ -357,7 +359,9 @@ def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None):
     return out
 
 
-def mat_decompose(matrix, /, *, scaling_signs=None, dtype=None, out=None):
+def mat_decompose(
+    matrix, /, *, scaling_signs=None, dtype=None, out=None
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Decompose a transformation matrix into a translation vector, a
     quaternion and a scaling vector.
@@ -429,7 +433,7 @@ def mat_decompose(matrix, /, *, scaling_signs=None, dtype=None, out=None):
 
 def mat_perspective(
     left, right, top, bottom, near, far, /, *, depth_range=(-1, 1), out=None, dtype=None
-):
+) -> np.ndarray:
     """
     Create a perspective projection matrix.
 
@@ -493,7 +497,7 @@ def mat_perspective(
 
 def mat_orthographic(
     left, right, top, bottom, near, far, /, *, depth_range=(-1, 1), out=None, dtype=None
-):
+) -> np.ndarray:
     """Create an orthographic projection matrix.
 
     The result projects points from local space into NDC (normalized device
@@ -584,7 +588,7 @@ def mat_orthographic(
     return out
 
 
-def mat_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
+def mat_look_at(eye, target, up_reference, /, *, out=None, dtype=None) -> np.ndarray:
     """
     Rotation that aligns two vectors.
 
@@ -606,7 +610,6 @@ def mat_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     rotation" (opposite direction of world frame's up) and will create a result
     with a level attitude.
 
-
     Parameters
     ----------
     eye : ndarray, [3]
@@ -622,7 +625,6 @@ def mat_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
         length equal to the number of outputs.
     dtype : data-type, optional
         Overrides the data type of the result.
-
 
     Returns
     -------
@@ -673,7 +675,7 @@ def mat_look_at(eye, target, up_reference, /, *, out=None, dtype=None):
     return out
 
 
-def _mat_inv(m):
+def _mat_inv(m) -> np.ndarray:
     # Reference:
     # https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js
     # based on:
@@ -911,6 +913,29 @@ def mat_inverse(
     else:
         out[:] = inverse
     return out
+
+
+def mat_has_shear(matrix, epsilon=1e-7) -> bool:
+    """
+    Check if a matrix has shear by checking the orthogonality of its basis vectors.
+
+    Parameters
+    ----------
+    matrix : ndarray, [4, 4]
+        The matrix to check.
+    epsilon : float, optional
+        The floating point error margin. Default is 1e-7.
+
+    Returns
+    -------
+    out : bool
+        True if the matrix has a shearing component, False otherwise.
+    """
+    v1, v2, v3 = matrix[:3, :3].T
+    for pair in ((v1, v2), (v1, v3), (v2, v3)):
+        if np.abs(np.dot(*pair)) > epsilon:
+            return True
+    return False
 
 
 __all__ = [

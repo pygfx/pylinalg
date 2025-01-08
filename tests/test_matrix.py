@@ -394,3 +394,20 @@ def test_mat_inverse():
     manual_inv = la.mat_inverse(b, method="manual")
     npt.assert_array_equal(np_inv, np.zeros((4, 4)))
     npt.assert_array_equal(manual_inv, np.zeros((4, 4)))
+
+
+def test_mat_has_shear():
+    translate = la.mat_from_translation([1, 2, 3])
+    assert not la.mat_has_shear(translate)
+
+    rot_z = la.mat_from_euler([0, 0, 0.5])
+    assert not la.mat_has_shear(rot_z)
+
+    scale_y = la.mat_from_scale([0, 1.5, 0])
+    assert not la.mat_has_shear(scale_y)
+
+    transform_no_shear = la.mat_combine([rot_z, scale_y])
+    assert not la.mat_has_shear(transform_no_shear)
+
+    transform_shear = la.mat_combine([scale_y, rot_z])
+    assert la.mat_has_shear(transform_shear)
