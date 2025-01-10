@@ -167,7 +167,9 @@ def vec_unproject(
     if out is None:
         out = np.empty((*result_shape, 3), dtype=dtype)
 
-    if not matrix_is_inv:
+    if matrix_is_inv:
+        inverse_projection = matrix
+    else:
         from .matrix import mat_inverse
 
         inverse_projection = mat_inverse(matrix, raise_err=True)

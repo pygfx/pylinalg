@@ -303,6 +303,16 @@ def test_vec_unproject_exceptions():
         la.vec_unproject(vector, matrix)
 
 
+def test_vec_unproject_is_inverse():
+    a = la.mat_perspective(-1, 1, -1, 1, 1, 100)
+    a_inv = la.mat_inverse(a)
+    vecs = np.array([[1, 2], [4, 5], [7, 8]])
+
+    expected = la.vec_unproject(vecs, a)
+    actual = la.vec_unproject(vecs, a_inv, matrix_is_inv=True)
+    npt.assert_array_equal(expected, actual)
+
+
 def test_vector_apply_rotation_ordered():
     """Test that a positive pi/2 rotation about the z-axis and then the y-axis
     results in a different output then in standard rotation ordering."""
