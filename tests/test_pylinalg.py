@@ -58,9 +58,9 @@ def test_api():
         # confirm the signature of each callable
         sig = inspect.signature(getattr(la, key))
 
-        assert (
-            sig.return_annotation is not inspect.Signature.empty
-        ), f"Missing return annotation on {key}"
+        assert sig.return_annotation is not inspect.Signature.empty, (
+            f"Missing return annotation on {key}"
+        )
         if sig.return_annotation is bool:
             key_parts = key.split("_")
             assert key_parts[1] in ("is", "has")
@@ -77,9 +77,9 @@ def test_api():
                     assert param.KEYWORD_ONLY
                     has_out = True
             assert has_out, f"Function {key} does not have 'out' keyword-only argument"
-            assert (
-                has_dtype
-            ), f"Function {key} does not have 'dtype' keyword-only argument"
+            assert has_dtype, (
+                f"Function {key} does not have 'dtype' keyword-only argument"
+            )
 
     # assert that all callables are available in __all__
     assert set(__all__) == set(callables)
