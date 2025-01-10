@@ -115,7 +115,9 @@ def vec_transform(vectors, matrix, /, *, w=1, out=None, dtype=None) -> np.ndarra
     return out
 
 
-def vec_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None) -> np.ndarray:
+def vec_unproject(
+    vector, matrix, /, *, matrix_is_inv=False, depth=0, out=None, dtype=None
+) -> np.ndarray:
     """
     Un-project a vector from 2D space to 3D space.
 
@@ -130,6 +132,9 @@ def vec_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None) -> np.nda
         The vector to be un-projected.
     matrix: ndarray, [4, 4]
         The camera's intrinsic matrix.
+    matrix_is_inv: bool, optional
+        Default is False. If True, the provided matrix is assumed to be the
+        inverse of the camera's intrinsic matrix.
     depth : number, optional
         The distance of the unprojected vector from the camera.
     out : ndarray, optional
@@ -162,10 +167,13 @@ def vec_unproject(vector, matrix, /, *, depth=0, out=None, dtype=None) -> np.nda
     if out is None:
         out = np.empty((*result_shape, 3), dtype=dtype)
 
-    try:
-        inverse_projection = np.linalg.inv(matrix)
-    except np.linalg.LinAlgError as err:
-        raise ValueError("The provided matrix is not invertible.") from err
+    if not matrix_is_inv:
+        from .matrix import mat_inverse
+
+        try:
+            inverse_projection = mat_inverse(matrix)
+        except np.linalg.LinAlgError as err:
+            raise ValueError("The provided matrix is not invertible.") from err
 
     vector_hom = np.empty((*result_shape, 4), dtype=dtype)
     vector_hom[..., 2] = depth
@@ -295,7 +303,7 @@ def vec_dist(vector_a, vector_b, /, *, out=None, dtype=None) -> np.ndarray:
 
     shape = vector_a.shape[:-1]
     if out is None:
-        out = np.linalg.norm(vector_a - vector_b, axis=-1).astype(dtype)
+        out = np.linalg.norm(vector_a - vector_b, axis=-1).astype(dtype, copy=False)
     elif len(shape) >= 0:
         out[:] = np.linalg.norm(vector_a - vector_b, axis=-1)
     else:
@@ -346,7 +354,7 @@ def vec_angle(vector_a, vector_b, /, *, out=None, dtype=None) -> np.ndarray:
     )
 
     if out is None:
-        out = np.arccos(the_cos).astype(dtype)
+        out = np.arccos(the_cos).astype(dtype, copy=False)
     elif len(shape) >= 0:
         out[:] = np.arccos(the_cos)
     else:

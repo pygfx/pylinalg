@@ -853,7 +853,7 @@ def _mat_inv(m) -> np.ndarray:
 if int(np.__version__.split(".")[0]) >= 2:
     _default_mat_inv_method = "numpy"
 else:
-    _default_mat_inv_method = "manual"
+    _default_mat_inv_method = "python"
 
 
 def mat_inverse(
@@ -868,7 +868,7 @@ def mat_inverse(
         The matrix to invert.
     method : str, optional
         The method to use for inversion. The default is "numpy" when
-        numpy version is 2.0.0 or newer, otherwise "manual".
+        numpy version is 2.0.0 or newer, otherwise "python".
     dtype : data-type, optional
         Overrides the data type of the result.
     out : ndarray, optional
@@ -886,11 +886,11 @@ def mat_inverse(
     -----
     The default method is "numpy" when numpy version >= 2.0.0,
     which uses the `numpy.linalg.inv` function.
-    The alternative method is "manual", which uses a manual implementation of
-    the inversion algorithm. The manual method is used to avoid a performance
+    The alternative method is "python", which uses a pure python implementation of
+    the inversion algorithm. The python method is used to avoid a performance
     issue with `numpy.linalg.inv` on some platforms when numpy version < 2.0.0.
     See: https://github.com/pygfx/pygfx/issues/763
-    The manual method is slower than the numpy method, but it is guaranteed to work.
+    The python method is slower than the numpy method, but it is guaranteed to work.
 
     When the matrix is singular, it will return a matrix filled with zeros,
     This is a common behavior in real-time graphics applications.
@@ -899,7 +899,7 @@ def mat_inverse(
 
     fn = {
         "numpy": np.linalg.inv,
-        "manual": _mat_inv,
+        "python": _mat_inv,
     }[method]
 
     matrix = np.asarray(matrix)
@@ -908,9 +908,7 @@ def mat_inverse(
     except np.linalg.LinAlgError:
         inverse = np.zeros_like(matrix, dtype=dtype)
     if out is None:
-        if dtype is not None:
-            return inverse.astype(dtype, copy=False)
-        return inverse
+        return np.asarray(inverse, dtype=dtype)
     else:
         out[:] = inverse
     return out
