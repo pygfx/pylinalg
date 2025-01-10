@@ -170,9 +170,7 @@ def vec_unproject(
     if not matrix_is_inv:
         from .matrix import mat_inverse
 
-        inverse_projection = mat_inverse(matrix)
-        if np.all(inverse_projection == 0):
-            raise ValueError("The provided matrix is not invertible.")
+        inverse_projection = mat_inverse(matrix, raise_err=True)
 
     vector_hom = np.empty((*result_shape, 4), dtype=dtype)
     vector_hom[..., 2] = depth

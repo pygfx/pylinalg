@@ -737,8 +737,7 @@ def _mat_inv(m) -> np.ndarray:
     det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14
 
     if det == 0:
-        out.fill(0)
-        return out  # singular matrix
+        raise np.linalg.LinAlgError("Singular matrix")
 
     det_inv = 1 / det
 
@@ -857,7 +856,7 @@ else:
 
 
 def mat_inverse(
-    matrix, /, *, method=_default_mat_inv_method, dtype=None, out=None
+    matrix, /, *, method=_default_mat_inv_method, raise_err=False, dtype=None, out=None
 ) -> np.ndarray:
     """
     Compute the inverse of a matrix.
@@ -869,6 +868,8 @@ def mat_inverse(
     method : str, optional
         The method to use for inversion. The default is "numpy" when
         numpy version is 2.0.0 or newer, otherwise "python".
+    raise_err : bool, optional
+        Raise a ValueError if the matrix is singular. Default is False.
     dtype : data-type, optional
         Overrides the data type of the result.
     out : ndarray, optional
@@ -905,7 +906,9 @@ def mat_inverse(
     matrix = np.asarray(matrix)
     try:
         inverse = fn(matrix)
-    except np.linalg.LinAlgError:
+    except np.linalg.LinAlgError as err:
+        if raise_err:
+            raise ValueError("The provided matrix is not invertible.") from err
         inverse = np.zeros_like(matrix, dtype=dtype)
     if out is None:
         return np.asarray(inverse, dtype=dtype)
