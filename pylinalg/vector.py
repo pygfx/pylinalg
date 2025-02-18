@@ -61,11 +61,12 @@ def vec_homogeneous(vectors, /, *, w=1, out=None, dtype=None) -> np.ndarray:
     ndarray, [..., 4]
         The list of vectors with appended homogeneous value.
     """
-    vectors = np.asarray(vectors)
-    shape = list(vectors.shape)
-    shape[-1] += 1
+
     if out is None:
-        out = np.empty_like(vectors, shape=shape, dtype=dtype)
+        vectors = np.asarray(vectors)
+        shape = list(vectors.shape)
+        shape[-1] += 1
+        out = np.empty(shape, dtype=dtype)
     out[..., -1] = w
     out[..., :-1] = vectors
     return out
@@ -99,10 +100,9 @@ def vec_transform(vectors, matrix, /, *, w=1, out=None, dtype=None) -> np.ndarra
         transformed vectors
     """
 
-    vectors = np.asarray(vectors, dtype=float)
-    matrix = np.asarray(matrix, dtype=float)
+    matrix = np.asarray(matrix)
 
-    vectors = vec_homogeneous(vectors, w=w)
+    vectors = vec_homogeneous(vectors, w=w, dtype=float)
     result = matrix @ vectors[..., None]
     result /= result[..., -1, :][..., None, :]
     result = result[..., :-1, 0]
@@ -110,7 +110,9 @@ def vec_transform(vectors, matrix, /, *, w=1, out=None, dtype=None) -> np.ndarra
     if out is not None:
         out[:] = result
     else:
-        out = result.astype(dtype, copy=False)
+        out = result
+        if dtype is not None:
+            out = out.astype(dtype, copy=False)
 
     return out
 
@@ -302,7 +304,9 @@ def vec_dist(vector_a, vector_b, /, *, out=None, dtype=None) -> np.ndarray:
 
     shape = vector_a.shape[:-1]
     if out is None:
-        out = np.linalg.norm(vector_a - vector_b, axis=-1).astype(dtype, copy=False)
+        out = np.linalg.norm(vector_a - vector_b, axis=-1)
+        if dtype is not None:
+            out = out.astype(dtype, copy=False)
     elif len(shape) >= 0:
         out[:] = np.linalg.norm(vector_a - vector_b, axis=-1)
     else:
@@ -353,7 +357,9 @@ def vec_angle(vector_a, vector_b, /, *, out=None, dtype=None) -> np.ndarray:
     )
 
     if out is None:
-        out = np.arccos(the_cos).astype(dtype, copy=False)
+        out = np.arccos(the_cos)
+        if dtype is not None:
+            out = out.astype(dtype, copy=False)
     elif len(shape) >= 0:
         out[:] = np.arccos(the_cos)
     else:
@@ -387,12 +393,14 @@ def mat_decompose_translation(
 
     """
 
-    homogeneous_matrix = np.asarray(homogeneous_matrix, dtype=float)
+    homogeneous_matrix = np.asarray(homogeneous_matrix)
 
     if out is None:
-        out = np.empty((*homogeneous_matrix.shape[:-2], 3), dtype=dtype)
-
-    out[:] = homogeneous_matrix[..., :-1, -1]
+        out = homogeneous_matrix[..., :-1, -1]
+        if dtype is not None:
+            out = out.astype(dtype, copy=False)
+    else:
+        out[:] = homogeneous_matrix[..., :-1, -1]
 
     return out
 
