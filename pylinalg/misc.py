@@ -131,7 +131,8 @@ def quat_to_axis_angle(quaternion, /, *, out=None, dtype=None) -> np.ndarray:
     quaternion = np.asarray(quaternion)
 
     if out is None:
-        quaternion = quaternion.astype(dtype, copy=False)
+        if dtype is not None:
+            quaternion = quaternion.astype(dtype, copy=False)
         out = (
             quaternion[..., :3] / np.sqrt(1 - quaternion[..., 3] ** 2),
             2 * np.arccos(quaternion[..., 3]),
