@@ -72,7 +72,9 @@ def vec_homogeneous(vectors, /, *, w=1, out=None, dtype=None) -> np.ndarray:
     return out
 
 
-def vec_transform(vectors, matrix, /, *, w=1, out=None, dtype=None) -> np.ndarray:
+def vec_transform(
+    vectors, matrix, /, *, w=1, projection=True, out=None, dtype=None
+) -> np.ndarray:
     """
     Apply a transformation matrix to a vector.
 
@@ -86,6 +88,9 @@ def vec_transform(vectors, matrix, /, *, w=1, out=None, dtype=None) -> np.ndarra
         The value of the scale component of the homogeneous coordinate. This
         affects the result of translation transforms. use 0 (vectors) if the
         translation component should not be applied, 1 (positions) otherwise.
+    projection : bool, optional
+        If False, the matrix is assumed to be purely affine
+        and the homogeneous component is not applied. Default is True.
     out : ndarray, optional
         A location into which the result is stored. If provided, it must have a
         shape that the inputs broadcast to. If not provided or None, a
@@ -102,17 +107,22 @@ def vec_transform(vectors, matrix, /, *, w=1, out=None, dtype=None) -> np.ndarra
 
     matrix = np.asarray(matrix)
 
-    vectors = vec_homogeneous(vectors, w=w, dtype=float)
-    result = matrix @ vectors[..., None]
-    result /= result[..., -1, :][..., None, :]
-    result = result[..., :-1, 0]
-
-    if out is not None:
-        out[:] = result
+    if projection:
+        vectors = vec_homogeneous(vectors, w=w, dtype=float)
+        vectors @= matrix.T
+        vectors[..., :-1] /= vectors[..., -1, None]
+        vectors = vectors[..., :-1]
     else:
-        out = result
+        vectors = np.asarray(vectors, dtype=float, copy=True)
+        vectors @= matrix[:-1, :-1].T
+        vectors += matrix[:-1, -1]
+
+    if out is None:
+        out = vectors
         if dtype is not None:
             out = out.astype(dtype, copy=False)
+    else:
+        out[:] = vectors
 
     return out
 

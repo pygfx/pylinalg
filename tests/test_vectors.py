@@ -67,7 +67,7 @@ def test_vector_apply_translation():
     vectors = np.array([[1, 0, 0]])
     expected = np.array([[0, 2, 2]])
     matrix = la.mat_from_translation([-1, 2, 2])
-    result = la.vec_transform(vectors, matrix)
+    result = la.vec_transform(vectors, matrix, projection=False)
 
     npt.assert_array_almost_equal(
         result,
@@ -90,6 +90,34 @@ def test_vec_transform_out():
     result = la.vec_transform(vectors, matrix, out=out)
 
     assert result is out
+
+
+def test_vec_transform_projection_flag():
+    vectors = np.array(
+        [
+            [1, 0, 0],
+            [1, 2, 3],
+            [1, 1, 1],
+            [0, 0, 0],
+            [7, 8, -9],
+        ],
+        dtype="f4",
+    )
+    translation = np.array([-1, 2, 2], dtype=float)
+    expected = vectors + translation[None, :]
+
+    matrix = la.mat_from_translation(translation)
+
+    for projection in [True, False]:
+        for batch in [True, False]:
+            if batch:
+                vectors_in = vectors
+                expected_out = expected
+            else:
+                vectors_in = vectors[0]
+                expected_out = expected[0]
+            result = la.vec_transform(vectors_in, matrix, projection=projection)
+            npt.assert_array_equal(result, expected_out)
 
 
 @given(ct.test_spherical, none())
