@@ -105,17 +105,28 @@ def vec_transform(
         transformed vectors
     """
 
-    matrix = np.asarray(matrix)
+    matrix = np.asarray(matrix, dtype="f8")
 
     if projection:
-        vectors = vec_homogeneous(vectors, w=w, dtype=float)
-        vectors @= matrix.T
-        vectors[..., :-1] /= vectors[..., -1, None]
-        vectors = vectors[..., :-1]
+        vectors = vec_homogeneous(vectors, w=w, dtype="f8")
+        if vectors.ndim == 1:
+            vectors = matrix @ vectors
+            vectors[:-1] /= vectors[-1]
+            vectors = vectors[:-1]
+        elif vectors.ndim == 2:
+            vectors = (matrix @ vectors.T).T
+            vectors = vectors[..., :-1] / vectors[..., -1, None]
+        else:
+            raise ValueError("vectors must be a 1D or 2D array")
     else:
-        vectors = np.asarray(vectors, dtype=float, copy=True)
-        vectors @= matrix[:-1, :-1].T
-        vectors += matrix[:-1, -1]
+        if vectors.ndim == 1:
+            vectors = matrix[:-1, :-1] @ vectors + matrix[:-1, -1]
+        elif vectors.ndim == 2:
+            vectors = vec_homogeneous(vectors, w=w, dtype="f8")
+            vectors = (matrix @ vectors.T).T
+            vectors = vectors[..., :-1]
+        else:
+            raise ValueError("vectors must be a 1D or 2D array")
 
     if out is None:
         out = vectors
