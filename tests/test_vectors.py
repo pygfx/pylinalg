@@ -101,9 +101,9 @@ def test_vec_transform_projection_flag():
             [0, 0, 0],
             [7, 8, -9],
         ],
-        dtype="f4",
+        dtype="f8",
     )
-    translation = np.array([-1, 2, 2], dtype=float)
+    translation = np.array([-1, 2, 2], dtype="f8")
     expected = vectors + translation[None, :]
 
     matrix = la.mat_from_translation(translation)
