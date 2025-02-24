@@ -108,48 +108,55 @@ def vec_transform(
     matrix = np.asarray(matrix)
     vectors = np.asarray(vectors)
 
-    # this code has been micro-optimized for the 1D and 2D cases
     vectors_ndim = vectors.ndim
     if vectors_ndim > 2:
-        raise ValueError("vectors must be a 1D or 2D array")
-
-    # determine if we are working with a batch of vectors
-    batch = vectors_ndim != 1
-
-    # we don't need to work in homogeneous vector space
-    # if matrix is purely affine and vectors is a single vector
-    homogeneous = projection or batch
-
-    if homogeneous:
+        # for 3D+ we use a generalized broadcasting solution
         vectors = vec_homogeneous(vectors, w=w)
-        matmul_matrix = matrix
+        vectors = matrix @ vectors[..., None]
+        if projection:
+            vectors = vectors[..., :-1, 0] / vectors[..., -1, :]
+        else:
+            vectors = vectors[..., :-1, 0]
     else:
-        # if we are not working in homogeneous space, it's
-        # more efficient to matmul the 3x3 (scale + rotation)
-        # part of the matrix with the vectors and then add
-        # the translation part after
-        matmul_matrix = matrix[:-1, :-1]
+        # this code has been micro-optimized for the 1D and 2D cases
 
-    if batch:
-        # transposing the vectors array performs better
-        # than transposing the matrix
-        vectors = (matmul_matrix @ vectors.T).T
-    else:
-        vectors = matmul_matrix @ vectors
-        if not homogeneous:
-            # as alluded to before, we add the translation
-            # part of the matrix after the matmul
-            # if we are not working in homogeneous space
-            vectors = vectors + matrix[:-1, -1]
+        # determine if we are working with a batch of vectors
+        batch = vectors_ndim != 1
 
-    if projection:
-        # if we are projecting, we divide by the last
-        # element of the vectors array
-        vectors = vectors[..., :-1] / vectors[..., -1, None]
-    elif homogeneous:
-        # if we are NOT projecting but we are working in
-        # homogeneous space, just drop the last element
-        vectors = vectors[..., :-1]
+        # we don't need to work in homogeneous vector space
+        # if matrix is purely affine and vectors is a single vector
+        homogeneous = projection or batch
+
+        if homogeneous:
+            vectors = vec_homogeneous(vectors, w=w)
+            matmul_matrix = matrix
+        else:
+            # if we are not working in homogeneous space, it's
+            # more efficient to matmul the 3x3 (scale + rotation)
+            # part of the matrix with the vectors and then add
+            # the translation part after
+            matmul_matrix = matrix[:-1, :-1]
+
+        if batch:
+            # transposing the vectors array performs better
+            # than transposing the matrix
+            vectors = (matmul_matrix @ vectors.T).T
+        else:
+            vectors = matmul_matrix @ vectors
+            if not homogeneous:
+                # as alluded to before, we add the translation
+                # part of the matrix after the matmul
+                # if we are not working in homogeneous space
+                vectors = vectors + matrix[:-1, -1]
+
+        if projection:
+            # if we are projecting, we divide by the last
+            # element of the vectors array
+            vectors = vectors[..., :-1] / vectors[..., -1, None]
+        elif homogeneous:
+            # if we are NOT projecting but we are working in
+            # homogeneous space, just drop the last element
+            vectors = vectors[..., :-1]
 
     if out is None:
         out = vectors
