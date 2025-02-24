@@ -95,6 +95,47 @@ jobs:
       run: |
         pytest -v tests --cov=pylinalg --cov-report=term-missing
 
+  test-pygfx-builds:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Test pygfx
+            os: ubuntu-latest
+            pyversion: '3.12'
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        path: pylinalg
+    - uses: actions/checkout@v4
+      with:
+        repository: pygfx/pygfx
+        path: pygfx
+    - name: Set up Python ${{ matrix.pyversion }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.pyversion }}
+    - name: Install llvmpipe and lavapipe for offscreen canvas
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update -y -qq
+        sudo apt install -y libegl1-mesa-dev libgl1-mesa-dri libxcb-xfixes0-dev mesa-vulkan-drivers
+    - name: Install package and dev dependencies
+      run: |
+        python -m pip install --upgrade pip
+        cd pygfx
+        pip install .[tests]
+        rm -r pygfx
+        cd ../pylinalg
+        pip install .
+        rm -r pylinalg
+    - name: Unit tests
+      run: |
+        cd pygfx
+        pytest -v tests
+
   release-build:
     name: Build release on ubuntu-latest
     runs-on: ubuntu-latest
