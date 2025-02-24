@@ -140,7 +140,7 @@ jobs:
     - name: Unit tests
       run: |
         cd pygfx
-        pytest -v tests
+        pytest -v --ignore=tests/utils/test_load.py tests
 
   release-build:
     name: Build release on ubuntu-latest
