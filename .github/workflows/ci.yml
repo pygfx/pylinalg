@@ -102,8 +102,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Test pygfx
+          - name: Test pygfx release
             os: ubuntu-latest
+            ref: refs/tags/v0.7.0
+            pyversion: '3.12'
+          - name: Test pygfx main
+            os: ubuntu-latest
+            ref: refs/heads/main
             pyversion: '3.12'
     steps:
     - uses: actions/checkout@v4
@@ -113,6 +118,7 @@ jobs:
       with:
         repository: pygfx/pygfx
         path: pygfx
+        ref: ${{ matrix.ref }}
     - name: Set up Python ${{ matrix.pyversion }}
       uses: actions/setup-python@v5
       with:
