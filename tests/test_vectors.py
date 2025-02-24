@@ -120,6 +120,36 @@ def test_vec_transform_projection_flag():
             npt.assert_array_equal(result, expected_out)
 
 
+def test_vec_transform_ndim():
+    vectors_2d = np.array(
+        [
+            [1, 0, 0],
+            [1, 2, 3],
+            [1, 1, 1],
+            [1, 1, -1],
+            [0, 0, 0],
+            [7, 8, -9],
+        ],
+        dtype="f8",
+    )
+    translation = np.array([-1, 2, 2], dtype="f8")
+
+    vectors_3d = vectors_2d.reshape((3, 2, 3))
+    vectors_4d = vectors_2d.reshape((6, 1, 1, 3))
+
+    expected_3d = vectors_3d + translation[None, None, :]
+    expected_4d = vectors_4d + translation[None, None, None, :]
+
+    matrix = la.mat_from_translation(translation)
+
+    for projection in [True, False]:
+        result = la.vec_transform(vectors_3d, matrix, projection=projection)
+        npt.assert_array_equal(result, expected_3d)
+
+        result = la.vec_transform(vectors_4d, matrix, projection=projection)
+        npt.assert_array_equal(result, expected_4d)
+
+
 @given(ct.test_spherical, none())
 @example((1, 0, np.pi / 2), (0, 0, 1))
 @example((1, np.pi / 2, np.pi / 2), (1, 0, 0))
