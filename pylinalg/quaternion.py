@@ -251,7 +251,7 @@ def quat_from_axis_angle(axis, angle, /, *, out=None, dtype=None) -> np.ndarray:
         out = np.empty((*out_shape, 4), dtype=dtype)
 
     # result should be independent of the length of the given axis
-    lengths_shape = axis.shape[:-1] + (1,)
+    lengths_shape = (*axis.shape[:-1], 1)
     axis = axis / np.linalg.norm(axis, axis=-1).reshape(lengths_shape)
 
     out[..., :3] = axis * np.sin(angle / 2).reshape(lengths_shape)

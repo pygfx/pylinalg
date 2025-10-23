@@ -30,7 +30,7 @@ def vec_normalize(vectors, /, *, out=None, dtype=None) -> np.ndarray:
     if out is None:
         out = np.empty_like(vectors, dtype=dtype)
 
-    lengths_shape = vectors.shape[:-1] + (1,)
+    lengths_shape = (*vectors.shape[:-1], 1)
     lengths = np.linalg.norm(vectors, axis=-1).reshape(lengths_shape)
     return np.divide(vectors, lengths, out=out)
 

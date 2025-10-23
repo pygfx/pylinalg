@@ -73,7 +73,7 @@ def aabb_transform(aabb, matrix, /, *, out=None, dtype=None) -> np.ndarray:
         out = np.empty_like(aabb, dtype=dtype)
 
     corners = np.full(
-        aabb.shape[:-2] + (8, 4),
+        (*aabb.shape[:-2], 8, 4),
         # Fill value of 1 is used for homogeneous coordinates.
         fill_value=1.0,
         dtype=float,
