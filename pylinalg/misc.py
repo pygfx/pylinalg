@@ -67,10 +67,19 @@ def aabb_transform(aabb, matrix, /, *, out=None, dtype=None) -> np.ndarray:
     """
 
     aabb = np.asarray(aabb, dtype=float)
-    matrix = np.asarray(matrix, dtype=float).transpose((-1, -2))
+    matrix = np.asarray(matrix, dtype=float)
+
+    # transpose last two dimensions
+    axes = list(range(matrix.ndim))
+    axes[-2:] = axes[-1], axes[-2]
+    matrix = matrix.transpose(axes)
 
     if out is None:
-        out = np.empty_like(aabb, dtype=dtype)
+        # Compute output shape by broadcasting aabb and matrix shapes (excluding last 2 dims)
+        aabb_shape = aabb.shape[:-2]
+        matrix_shape = matrix.shape[:-2]
+        broadcast_shape = np.broadcast_shapes(aabb_shape, matrix_shape)
+        out = np.empty((*broadcast_shape, *aabb.shape[-2:]), dtype=dtype)
 
     corners = np.full(
         (*aabb.shape[:-2], 8, 4),
@@ -78,19 +87,20 @@ def aabb_transform(aabb, matrix, /, *, out=None, dtype=None) -> np.ndarray:
         fill_value=1.0,
         dtype=float,
     )
+
     # x
-    corners[..., 0::2, 0] = aabb[..., 0, 0]
-    corners[..., 1::2, 0] = aabb[..., 1, 0]
+    corners[..., 0::2, 0] = aabb[..., 0, 0, np.newaxis]
+    corners[..., 1::2, 0] = aabb[..., 1, 0, np.newaxis]
 
     # y
-    corners[..., 0::4, 1] = aabb[..., 0, 1]
-    corners[..., 1::4, 1] = aabb[..., 0, 1]
-    corners[..., 2::4, 1] = aabb[..., 1, 1]
-    corners[..., 3::4, 1] = aabb[..., 1, 1]
+    corners[..., 0::4, 1] = aabb[..., 0, 1, np.newaxis]
+    corners[..., 1::4, 1] = aabb[..., 0, 1, np.newaxis]
+    corners[..., 2::4, 1] = aabb[..., 1, 1, np.newaxis]
+    corners[..., 3::4, 1] = aabb[..., 1, 1, np.newaxis]
 
     # z
-    corners[..., 0:4, 2] = aabb[..., 0, 2]
-    corners[..., 4:8, 2] = aabb[..., 1, 2]
+    corners[..., 0:4, 2] = aabb[..., 0, 2, np.newaxis]
+    corners[..., 4:8, 2] = aabb[..., 1, 2, np.newaxis]
 
     corners = corners @ matrix
     out[..., 0, :] = np.min(corners[..., :-1], axis=-2)
