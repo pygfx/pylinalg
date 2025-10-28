@@ -49,3 +49,51 @@ def test_aabb_transform(point, translation, scale):
     scale_matrix = la.mat_from_scale(scale)
     result = la.aabb_transform(aabb, scale_matrix)
     assert np.allclose(result, np.sort(aabb * scale, axis=0), atol=1e-10)
+
+
+def test_aabb_transform_single():
+    """Test single transform."""
+    aabb = np.array([[-1, -1, -1], [1, 1, 1]])
+    translation = np.array([1, 0, 0])
+    translation_matrix = la.mat_from_translation(translation)
+
+    expected = aabb + translation
+    result = la.aabb_transform(aabb, translation_matrix)
+    assert np.allclose(result, expected, atol=1e-10)
+
+
+def test_aabb_transform_broadcasting():
+    """Test pairwise broadcasting of AABBs and matrices."""
+    aabbs = np.array(
+        [
+            [[-1, -1, -1], [1, 1, 1]],
+            [[-2, -2, -2], [2, 2, 2]],
+        ]
+    )
+    translations = np.array(
+        [
+            [1, 0, 0],
+            [0, 1, 0],
+        ]
+    )
+    translation_matrices = la.mat_from_translation(translations)
+
+    expected = aabbs + translations[:, np.newaxis, :]
+    result = la.aabb_transform(aabbs, translation_matrices)
+    assert np.allclose(result, expected, atol=1e-10)
+
+
+def test_aabb_transform_broadcasting_2():
+    """Test broadcasting many matrices and one AABB."""
+    aabb = np.array([[-1, -1, -1], [1, 1, 1]])
+    translations = np.array(
+        [
+            [1, 0, 0],
+            [0, 1, 0],
+        ]
+    )
+    translation_matrices = la.mat_from_translation(translations)
+
+    expected = aabb[np.newaxis, ...] + translations[:, np.newaxis, :]
+    result = la.aabb_transform(aabb, translation_matrices)
+    assert np.allclose(result, expected, atol=1e-10)

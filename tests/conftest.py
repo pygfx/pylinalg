@@ -13,13 +13,16 @@ import pylinalg as la
 def pytest_report_header(config):
     # report the CPU model to allow detecting platform-specific problems
     if platform.system() == "Windows":
-        name = (
-            subprocess.check_output(["wmic", "cpu", "get", "name"])
-            .decode()
-            .strip()
-            .split("\n")[1]
-        )
-        cpu_info = " ".join([name])
+        try:
+            name = (
+                subprocess.check_output(["wmic", "cpu", "get", "name"])
+                .decode()
+                .strip()
+                .split("\n")[1]
+            )
+            cpu_info = " ".join([name])
+        except Exception:
+            cpu_info = "Unknown CPU (wmic not available)"
     elif platform.system() == "Linux":
         info_string = subprocess.check_output(["lscpu"]).decode()
         for line in info_string.split("\n"):
