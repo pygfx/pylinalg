@@ -114,6 +114,41 @@ def quat_mul(a, b, /, *, out=None, dtype=None) -> np.ndarray:
 
 
 def quat_from_vecs(source, target, /, *, out=None, dtype=None) -> np.ndarray:
+    """Rotate one vector onto one or more other vectors.
+
+    Create quaternion(s) that rotates ``source`` onto ``target``.
+
+    Parameters
+    ----------
+    source : ndarray, [3] or [1, 3]
+        The vector that should be rotated.
+    target : ndarray, [3] or [num_vectors, 3]
+        The vector that will be rotated onto.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+
+    Returns
+    -------
+    ndarray, [4] or [num_vectors, 4]
+        Quaternion.
+
+    Notes
+    -----
+    Among all the possible rotations that send ``source`` onto ``target`` this
+    function always chooses the right-hand rotation around the origin. In cases
+    where more than one right-hand rotation around the origin exists (``source``
+    and ``target`` are parallel), an arbitrary one is returned.
+
+    While this function is intended to be used with unit vectors, it also works
+    on non-unit vectors in which case the returned rotation will point
+    ``source`` in the direction of ``target``.
+
+    """
     source = np.asarray(source, dtype=float)
     if source.ndim == 1:
         source = source[None, :]
@@ -188,7 +223,7 @@ def quat_inv(quaternion, /, *, out=None, dtype=None) -> np.ndarray:
 def quat_from_axis_angle(axis, angle, /, *, out=None, dtype=None) -> np.ndarray:
     """Quaternion from axis-angle pair.
 
-    Create a quaternion representing the rotation of an given angle
+    Create a quaternion representing the rotation of a given angle
     about a given unit vector
 
     Parameters

@@ -300,15 +300,28 @@ def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None) -> n
     ----------
     translation : ndarray, [3] or [num_vectors, 3]
     rotation : ndarray, [4] or [num_vectors, 4]
-    scaling : ndarray, [3] or [num_vectors, 3]
+    scaling : ndarray, [3] or [num_vectors, 3]out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
+    out : ndarray, optional
+        A location into which the result is stored. If provided, it
+        must have a shape that the inputs broadcast to. If not provided or
+        None, a freshly-allocated array is returned. A tuple must have
+        length equal to the number of outputs.
+    dtype : data-type, optional
+        Overrides the data type of the result.
 
     Returns
     -------
     ndarray, [num_vectors, 4, 4] or [4, 4]
     """
-    rotation    = np.asarray(rotation, dtype=float)
-    translation = np.asarray(translation, dtype=float)
-    scaling     = np.asarray(scaling, dtype=float)
+    rotation = np.asarray(rotation)
+    translation = np.asarray(translation)
+    scaling = np.asarray(scaling)
 
     if rotation.ndim == 1:
         rotation = rotation[None, :]
@@ -324,7 +337,7 @@ def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None) -> n
     num_vectors = max(rotation.shape[0], translation.shape[0], scaling.shape[0])
 
     if out is None:
-        out = np.zeros((num_vectors, 4, 4), dtype=dtype)
+        out = np.empty((num_vectors, 4, 4), dtype=dtype)
     else:
         out[..., :, :] = 0
 
@@ -352,6 +365,7 @@ def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None) -> n
 
     out[:, 0:3, 3] = translation
     out[:, 3, 3] = 1
+    out[:, 3, :3] = 0  # only unassigned entries
 
     return out.squeeze(0) if out.shape[0] == 1 else out
 
