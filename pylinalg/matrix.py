@@ -291,74 +291,69 @@ def quat_from_mat(matrix, /, *, out=None, dtype=None) -> np.ndarray:
     return out
 
 
-def mat_compose(
-    translation, rotation, scaling, /, *, out=None, dtype=None
-) -> np.ndarray:
+def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None) -> np.ndarray:
     """
-    Compose a transformation matrix given a translation vector, a
-    quaternion and a scaling vector.
+    Compose transformation matrices given translation vectors, quaternions,
+    and scaling vectors.
 
     Parameters
     ----------
-    translation : number or ndarray, [3]
-        translation vector
-    rotation : ndarray, [4]
-        quaternion
-    scaling : number or ndarray, [3]
-        scaling factor(s)
-    out : ndarray, optional
-        A location into which the result is stored. If provided, it
-        must have a shape that the inputs broadcast to. If not provided or
-        None, a freshly-allocated array is returned. A tuple must have
-        length equal to the number of outputs.
-    dtype : data-type, optional
-        Overrides the data type of the result.
+    translation : ndarray, [3] or [num_vectors, 3]
+    rotation : ndarray, [4] or [num_vectors, 4]
+    scaling : ndarray, [3] or [num_vectors, 3]
 
     Returns
     -------
-    ndarray, [4, 4]
-        Transformation matrix
+    ndarray, [num_vectors, 4, 4] or [4, 4]
     """
+    rotation    = np.asarray(rotation, dtype=float)
+    translation = np.asarray(translation, dtype=float)
+    scaling     = np.asarray(scaling, dtype=float)
+
+    if rotation.ndim == 1:
+        rotation = rotation[None, :]
+    if translation.ndim == 1:
+        translation = translation[None, :]
+    if scaling.ndim == 0:
+        scaling = np.full((1, 3), scaling)
+    elif scaling.ndim == 1 and scaling.shape[0] == 3:
+        scaling = scaling[None, :]
+    elif scaling.ndim == 1:
+        scaling = scaling[:, None] * np.ones(3)
+
+    num_vectors = max(rotation.shape[0], translation.shape[0], scaling.shape[0])
+
     if out is None:
-        out = np.empty((4, 4), dtype=dtype)
+        out = np.zeros((num_vectors, 4, 4), dtype=dtype)
+    else:
+        out[..., :, :] = 0
 
-    x, y, z, w = rotation
-    x2 = x + x
-    y2 = y + y
-    z2 = z + z
-    xx = x * x2
-    xy = x * y2
-    xz = x * z2
-    yy = y * y2
-    yz = y * z2
-    zz = z * z2
-    wx = w * x2
-    wy = w * y2
-    wz = w * z2
+    x, y, z, w = rotation[:, 0], rotation[:, 1], rotation[:, 2], rotation[:, 3]
 
-    scaling = np.asarray(scaling)
-    if scaling.size == 1:
-        scaling = np.broadcast_to(scaling, (3,))
-    sx, sy, sz = scaling
+    x2, y2, z2 = x + x, y + y, z + z
+    xx, xy, xz = x * x2, x * y2, x * z2
+    yy, yz, zz = y * y2, y * z2, z * z2
+    wx, wy, wz = w * x2, w * y2, w * z2
 
-    out[0, 0] = (1 - (yy + zz)) * sx
-    out[1, 0] = (xy + wz) * sx
-    out[2, 0] = (xz - wy) * sx
-    out[3, 0:3] = 0
+    sx, sy, sz = scaling[:, 0], scaling[:, 1], scaling[:, 2]
 
-    out[0, 1] = (xy - wz) * sy
-    out[1, 1] = (1 - (xx + zz)) * sy
-    out[2, 1] = (yz + wx) * sy
 
-    out[0, 2] = (xz + wy) * sz
-    out[1, 2] = (yz - wx) * sz
-    out[2, 2] = (1 - (xx + yy)) * sz
+    out[:, 0, 0] = (1 - (yy + zz)) * sx
+    out[:, 1, 0] = (xy + wz) * sx
+    out[:, 2, 0] = (xz - wy) * sx
 
-    out[0:3, 3] = translation
-    out[3, 3] = 1
+    out[:, 0, 1] = (xy - wz) * sy
+    out[:, 1, 1] = (1 - (xx + zz)) * sy
+    out[:, 2, 1] = (yz + wx) * sy
 
-    return out
+    out[:, 0, 2] = (xz + wy) * sz
+    out[:, 1, 2] = (yz - wx) * sz
+    out[:, 2, 2] = (1 - (xx + yy)) * sz
 
+    out[:, 0:3, 3] = translation
+    out[:, 3, 3] = 1
+
+    return out.squeeze(0) if out.shape[0] == 1 else out
 
 def mat_decompose(
     matrix, /, *, scaling_signs=None, dtype=None, out=None
