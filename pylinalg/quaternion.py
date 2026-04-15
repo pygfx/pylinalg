@@ -113,15 +113,15 @@ def quat_mul(a, b, /, *, out=None, dtype=None) -> np.ndarray:
 
 
 def quat_from_vecs(source, target, /, *, out=None, dtype=None) -> np.ndarray:
-    """Rotate one vector onto another.
+    """Rotate one vector onto one or more other vectors.
 
-    Create a quaternion that rotates ``source`` onto ``target``.
+    Create quaternion(s) that rotates ``source`` onto ``target``.
 
     Parameters
     ----------
-    source : ndarray, [3]
+    source : ndarray, [3] or [1, 3]
         The vector that should be rotated.
-    target : ndarray, [3]
+    target : ndarray, [3] or [num_vectors, 3]
         The vector that will be rotated onto.
     out : ndarray, optional
         A location into which the result is stored. If provided, it
@@ -133,7 +133,7 @@ def quat_from_vecs(source, target, /, *, out=None, dtype=None) -> np.ndarray:
 
     Returns
     -------
-    ndarray, [4]
+    ndarray, [4] or [num_vectors, 4]
         Quaternion.
 
     Notes
@@ -148,39 +148,41 @@ def quat_from_vecs(source, target, /, *, out=None, dtype=None) -> np.ndarray:
     ``source`` in the direction of ``target``.
 
     """
-
     source = np.asarray(source, dtype=float)
+    if source.ndim == 1:
+        source = source[None, :]
     target = np.asarray(target, dtype=float)
+    if target.ndim == 1:
+        target = target[None, :]
 
+    num_vecs = target.shape[0]
+    result_shape = (num_vecs, 4)
     if out is None:
-        result_shape = np.broadcast_shapes(source.shape, target.shape)[:-1]
-        out = np.empty((*result_shape, 4), dtype=dtype)
+        out = np.empty(result_shape, dtype=dtype)
 
-    axis = np.cross(source, target)
-    angle = np.arctan2(np.linalg.norm(axis), np.dot(source, target))
+    axis = np.cross(source, target)  # (num_pts, 3)
+    axis_norm = np.linalg.norm(axis, axis=-1)  # (num_pts,)
+    angle = np.arctan2(axis_norm, (target @ source.T).squeeze(1))  # (num_pts,)
 
-    # if source and target are parallel, axis will be 0. In this case, we
-    # need to choose a replacement axis, which is any vector that is orthogonal
-    # to source (and/or target).
-    use_fallback = np.linalg.norm(axis, axis=-1) == 0
+    # Handle degenerate case: source and target are parallel (axis is zero vector).
+    # Pick any axis orthogonal to source as a replacement.
+    use_fallback = axis_norm == 0
     if np.any(use_fallback):
-        fallback = np.empty((*use_fallback.shape, 3), dtype=float)
-        fallback = np.atleast_2d(fallback)
+        t = np.broadcast_to(source, (num_vecs, 3))[use_fallback]
 
-        template = source[use_fallback]
-        y_zero = template[..., 1] == 0
-        z_zero = template[..., 2] == 0
-        both_nonzero = ~(y_zero | z_zero)
+        # Better case split:
+        y_zero = t[:, 1] == 0
+        z_zero = t[:, 2] == 0
+        neither_zero = ~y_zero & ~z_zero
 
-        # if any axis is zero, we can use that axis
-        fallback[y_zero, :] = (0, 1, 0)
-        fallback[z_zero, :] = (0, 0, 1)
+        fb = np.empty((y_zero.shape[0], 3), dtype=float)
+        fb[y_zero] = (0.0, 1.0, 0.0)
+        fb[~y_zero & z_zero] = (0.0, 0.0, 1.0)
+        fb[neither_zero, 0] = 0.0
+        fb[neither_zero, 1] = -t[neither_zero, 2]
+        fb[neither_zero, 2] = t[neither_zero, 1]
 
-        # if two axes are non-zero we can use those
-        if np.any(both_nonzero):
-            fallback[both_nonzero, :] = (0, -1, 1) * template[both_nonzero, [0, 2, 1]]
-
-        axis[use_fallback] = np.squeeze(fallback)
+        axis[use_fallback] = fb
 
     return quat_from_axis_angle(axis, angle, out=out)
 
@@ -220,14 +222,14 @@ def quat_inv(quaternion, /, *, out=None, dtype=None) -> np.ndarray:
 def quat_from_axis_angle(axis, angle, /, *, out=None, dtype=None) -> np.ndarray:
     """Quaternion from axis-angle pair.
 
-    Create a quaternion representing the rotation of an given angle
+    Create a quaternion representing the rotation of a given angle
     about a given unit vector
 
     Parameters
     ----------
-    axis : ndarray, [3]
+    axis : ndarray, [num_vectors, 3] or [3]
         Unit vector
-    angle : number
+    angle : number or np.ndarray of shape [num_pts,]
         The angle (in radians) to rotate about axis
     out : ndarray, optional
         A location into which the result is stored. If provided, it
@@ -239,7 +241,7 @@ def quat_from_axis_angle(axis, angle, /, *, out=None, dtype=None) -> np.ndarray:
 
     Returns
     -------
-    ndarray, [4]
+    ndarray, [num_pts, 4] or [4]
         Quaternion.
     """
 
@@ -257,7 +259,7 @@ def quat_from_axis_angle(axis, angle, /, *, out=None, dtype=None) -> np.ndarray:
     out[..., :3] = axis * np.sin(angle / 2).reshape(lengths_shape)
     out[..., 3] = np.cos(angle / 2)
 
-    return out
+    return out.squeeze(0) if out.shape[0] == 1 else out
 
 
 def quat_from_euler(angles, /, *, order="xyz", out=None, dtype=None) -> np.ndarray:

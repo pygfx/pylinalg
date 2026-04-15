@@ -94,6 +94,28 @@ def test_quaternion_from_unit_vectors(
     assert np.allclose(actual, target_direction)
 
 
+@given(ct.test_unit_vector, ct.test_unit_vector, ct.legal_positive_number)
+def test_quaternion_from_unit_vectors_broadcasting(
+    source_direction, target_direction, source_length
+):
+    assume(abs(source_length) > 1e-8)
+
+    num_repeats = 5
+    # Note: the length of the cross product of two large vectors can overflow
+    # and become Inf. to avoid this, we only scale source.
+    source = source_length * source_direction
+    target = np.zeros((num_repeats, np.prod(target_direction.shape)))
+    target[:] = target_direction[None, :]
+
+    rotation = la.quat_from_vecs(source, target)
+
+    for ind in range(num_repeats):
+        actual = la.vec_transform_quat(source_direction, rotation[ind, :])
+        assert np.allclose(actual, target_direction)
+
+
+
+
 def test_quat_inv():
     a = np.array([0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
     ai = la.quat_inv(a)

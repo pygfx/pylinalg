@@ -177,6 +177,32 @@ def test_mat_compose():
         ],
     )
 
+def test_mat_compose_batch():
+    """Test that the matrices are composed correctly in SRT order."""
+    # non-uniform scaling such that the test would fail if rotation/scaling are
+    # applied in the incorrect order
+    num_repeats = 5
+    scaling = [1, 2, 1]
+    # quaternion corresponding to 90 degree rotation about z-axis
+    rotation_single = np.array([0, 0, np.sqrt(2) / 2, np.sqrt(2) / 2])
+    rotations = np.zeros((num_repeats, rotation_single.shape[0]))
+    rotations[:, :] = rotation_single[None, :] #Shape (num_repeats, 5)
+    translation = [2, 2, 2]
+    # compose the transform
+    result = la.mat_compose(translation, rotations, scaling)
+
+    for k in range(num_repeats):
+        npt.assert_array_almost_equal(
+            result[k],
+            [
+                [0, -2, 0, 2],
+                [1, 0, 0, 2],
+                [0, 0, 1, 2],
+                [0, 0, 0, 1],
+            ],
+        )
+
+
 
 def test_mat_decompose():
     """Test that the matrices are decomposed correctly."""
