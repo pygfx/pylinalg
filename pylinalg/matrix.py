@@ -291,7 +291,9 @@ def quat_from_mat(matrix, /, *, out=None, dtype=None) -> np.ndarray:
     return out
 
 
-def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None) -> np.ndarray:
+def mat_compose(
+    translation, rotation, scaling, /, *, out=None, dtype=None
+) -> np.ndarray:
     """
     Compose transformation matrices given translation vectors, quaternions,
     and scaling vectors.
@@ -350,7 +352,6 @@ def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None) -> n
 
     sx, sy, sz = scaling[:, 0], scaling[:, 1], scaling[:, 2]
 
-
     out[:, 0, 0] = (1 - (yy + zz)) * sx
     out[:, 1, 0] = (xy + wz) * sx
     out[:, 2, 0] = (xz - wy) * sx
@@ -368,6 +369,7 @@ def mat_compose(translation, rotation, scaling, /, *, out=None, dtype=None) -> n
     out[:, 3, :3] = 0  # only unassigned entries
 
     return out.squeeze(0) if out.shape[0] == 1 else out
+
 
 def mat_decompose(
     matrix, /, *, scaling_signs=None, dtype=None, out=None

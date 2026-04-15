@@ -112,7 +112,6 @@ def quat_mul(a, b, /, *, out=None, dtype=None) -> np.ndarray:
     return out
 
 
-
 def quat_from_vecs(source, target, /, *, out=None, dtype=None) -> np.ndarray:
     """Rotate one vector onto one or more other vectors.
 
@@ -177,11 +176,11 @@ def quat_from_vecs(source, target, /, *, out=None, dtype=None) -> np.ndarray:
         neither_zero = ~y_zero & ~z_zero
 
         fb = np.empty((y_zero.shape[0], 3), dtype=float)
-        fb[y_zero]      = (0., 1., 0.)
-        fb[~y_zero & z_zero] = (0., 0., 1.)
-        fb[neither_zero, 0] =  0.
+        fb[y_zero] = (0.0, 1.0, 0.0)
+        fb[~y_zero & z_zero] = (0.0, 0.0, 1.0)
+        fb[neither_zero, 0] = 0.0
         fb[neither_zero, 1] = -t[neither_zero, 2]
-        fb[neither_zero, 2] =  t[neither_zero, 1]
+        fb[neither_zero, 2] = t[neither_zero, 1]
 
         axis[use_fallback] = fb
 
